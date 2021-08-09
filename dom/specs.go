@@ -11,7 +11,9 @@ import (
 
 var domReg = &lit.Reg{}
 
-func domSpec(val interface{}, sig string, env bool, rs ext.Rules) *ext.NodeSpec {
+type subSpecs = func(k string) exp.Spec
+
+func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub subSpecs) *ext.NodeSpec {
 	n, err := ext.NewNode(domReg, val)
 	if err != nil {
 		panic(err)
@@ -23,65 +25,54 @@ func domSpec(val interface{}, sig string, env bool, rs ext.Rules) *ext.NodeSpec 
 	exp.SigRes(s).Type = n.Type()
 	spec := ext.NewNodeSpec(s, n, rs)
 	spec.Env = env
+	spec.Sub = sub
 	return spec
 }
 
-var projectSpec = func() *ext.NodeSpec {
-	return domSpec(&Project{}, "<form project name:sym tags:tupl?|exp @>", true, ext.Rules{
-		Default: ext.Rule{
-			Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
-			Setter:  ext.ExtraSetter("extra"),
-		},
-	})
-}()
+var projectSpec = domSpec(&Project{}, "<form project name:sym tags:tupl?|exp @>", true, ext.Rules{
+	Default: ext.Rule{
+		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
+		Setter:  ext.ExtraSetter("extra"),
+	},
+}, nil)
 
-var schemaSpec = func() *ext.NodeSpec {
-	spec := domSpec(&Schema{}, "<form schema name:sym tags:tupl?|exp @>", true, ext.Rules{
-		Default: ext.Rule{
-			Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
-			Setter:  ext.ExtraSetter("extra"),
-		},
-	})
-	spec.Sub = func(k string) exp.Spec {
-		if k == ":" || k == "model" {
-			return modelSpec
-		}
-		return nil
+var schemaSpec = domSpec(&Schema{}, "<form schema name:sym tags:tupl?|exp @>", true, ext.Rules{
+	Default: ext.Rule{
+		Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
+		Setter:  ext.ExtraSetter("extra"),
+	},
+}, func(k string) exp.Spec {
+	if k == ":" || k == "model" {
+		return modelSpec
 	}
-	return spec
-}()
+	return nil
+})
 
-var modelSpec = func() *ext.NodeSpec {
-	spec := domSpec(&Model{}, "<form model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
-		Default: ext.Rule{
-			Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
-			Setter:  ext.ExtraSetter("extra"),
-		},
-	})
-	spec.Sub = func(k string) exp.Spec {
-		if k == ":" || k == "elem" {
-			return elemSpec
-		}
-		return nil
+var modelSpec = domSpec(&Model{}, "<form model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
+	Default: ext.Rule{
+		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
+		Setter:  ext.ExtraSetter("extra"),
+	},
+}, func(k string) exp.Spec {
+	if k == ":" || k == "elem" {
+		return elemSpec
 	}
-	return spec
-}()
+	return nil
+})
 
-var elemSpec = func() *ext.NodeSpec {
-	bitRule := ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
-	return domSpec(&Elem{}, "<form field name:sym type:typ tupl?|tag @>", false, ext.Rules{
-		Key: map[string]ext.Rule{
-			"opt":  bitRule,
-			"pk":   bitRule,
-			"idx":  bitRule,
-			"uniq": bitRule,
-			"ordr": bitRule,
-			"auto": bitRule,
-			"ro":   bitRule,
-		},
-		Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
-	})
-}()
+var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
+var elemSpec = domSpec(&Elem{}, "<form field name:sym type:typ tupl?|tag @>", false, ext.Rules{
+	Key: map[string]ext.Rule{
+		"opt":  bitRule,
+		"pk":   bitRule,
+		"idx":  bitRule,
+		"uniq": bitRule,
+		"ordr": bitRule,
+		"auto": bitRule,
+		"ro":   bitRule,
+	},
+	Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
+}, nil)
 
 func keySetter(key string) ext.KeySetter {
 	return func(p *exp.Prog, n ext.Node, _ string, v lit.Val) error {
