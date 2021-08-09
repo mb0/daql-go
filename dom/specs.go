@@ -43,7 +43,7 @@ var schemaSpec = func() *ext.NodeSpec {
 		},
 	})
 	spec.Sub = func(k string) exp.Spec {
-		if k == ":" {
+		if k == ":" || k == "model" {
 			return modelSpec
 		}
 		return nil
@@ -59,7 +59,7 @@ var modelSpec = func() *ext.NodeSpec {
 		},
 	})
 	spec.Sub = func(k string) exp.Spec {
-		if k == ":" {
+		if k == ":" || k == "elem" {
 			return elemSpec
 		}
 		return nil
@@ -129,7 +129,12 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (lit.Val, error) {
 	m := n.Ptr().(*Model)
 	el := &Elem{Name: key}
-	switch k := m.Kind.Kind; k {
+	k := m.Kind.Kind
+	if k == 0 {
+		k = knd.Obj
+		m.Kind.Kind = k
+	}
+	switch k {
 	case knd.Bits, knd.Enum:
 		if arg == nil {
 			if k == knd.Bits {

@@ -44,23 +44,27 @@ func TestDom(t *testing.T) {
 				`elems:[{name:'Name' type:<str>}]` +
 				`}]}`,
 		},
-		{`(schema test (Point:obj X:int Y:int))`,
+		{`(schema test (Point; X:int Y:int))`,
 			`{name:'test' models:[{kind:<obj> name:'Point' schema:'test' ` +
 				`elems:[{name:'X' type:<int>} {name:'Y' type:<int>}]}]}`,
 		},
-		{`(schema test (Named:obj (ID:uuid pk;) Name:str))`,
+		{`(schema test (model Point obj (elem X int) (elem Y int)))`,
+			`{name:'test' models:[{kind:<obj> name:'Point' schema:'test' ` +
+				`elems:[{name:'X' type:<int>} {name:'Y' type:<int>}]}]}`,
+		},
+		{`(schema test (Named; (ID:uuid pk;) Name:str))`,
 			`{name:'test' models:[{kind:<obj> name:'Named' schema:'test' elems:[` +
 				`{name:'ID' type:<uuid> bits:2} {name:'Name' type:<str>}]}]}`,
 		},
-		{`(schema test (Foo:obj A:str) (Bar:obj B:str))`, `{name:'test' models:[` +
+		{`(schema test (Foo; A:str) (Bar; B:str))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
 			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'B' type:<str>}]}]}`,
 		},
-		{`(schema test (Foo:obj A:str) (Bar:obj B:@test.Foo))`, `{name:'test' models:[` +
+		{`(schema test (Foo; A:str) (Bar; B:@test.Foo))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
 			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'B' type:<obj test.foo>}]}]}`,
 		},
-		{`(schema test (Group:obj (ID:str pk;)) (Entry:obj (ID:int pk;) (Group:str ref:'..group')))`,
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) (Group:str ref:'..group')))`,
 			`{name:'test' models:[` +
 				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
