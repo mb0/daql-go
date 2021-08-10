@@ -22,6 +22,11 @@ type Backends []Backend
 
 // Subj returns a subject from the first backend provides ref or an error.
 func (bs Backends) Subj(ref string) (*Subj, error) {
+	switch ref[0] {
+	case '.', '/', '$': // path subj
+		s := Subj{Ref: ref, Bend: &LitBackend{}}
+		return &s, nil
+	}
 	for _, b := range bs {
 		if m := b.Proj().Model(ref); m != nil {
 			s := &Subj{Ref: ref, Bend: b, Model: m}

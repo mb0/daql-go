@@ -64,7 +64,7 @@ func paramField(p typ.Param) *Field {
 }
 
 func subjFields(t typ.Type) Fields {
-	if t.Kind&knd.Strc == 0 {
+	if k := t.Kind & knd.Strc; k == 0 || t.Kind&knd.All != k {
 		return nil
 	}
 	pb := t.Body.(*typ.ParamBody)

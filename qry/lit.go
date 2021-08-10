@@ -1,0 +1,276 @@
+package qry
+
+import (
+	"fmt"
+	"sort"
+
+	"xelf.org/daql/dom"
+	"xelf.org/xelf/exp"
+	"xelf.org/xelf/lib"
+	"xelf.org/xelf/lit"
+	"xelf.org/xelf/typ"
+)
+
+// LitBackend is a query backend that operates on literal values from the program environment.
+type LitBackend struct{}
+
+func (b *LitBackend) Proj() *dom.Project { return nil }
+
+func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
+	a, err := p.Eval(j.Env, &exp.Sym{Sym: j.Ref})
+	if err != nil {
+		return nil, err
+	}
+	var list *lit.List
+	switch v := a.Val.(type) {
+	case *lit.List:
+		list = v
+	case lit.Idxr:
+		vs := make([]lit.Val, 0, v.Len())
+		v.IterIdx(func(idx int, el lit.Val) error {
+			vs = append(vs, el)
+			return nil
+		})
+		list = &lit.List{Vals: vs}
+	}
+	if list == nil {
+		return nil, fmt.Errorf("literal query expects list got %T", a)
+	}
+	return execListQry(p, j, list)
+}
+
+// MemBackend is a query backend evaluates queries using xelf on in-memory literal values.
+type MemBackend struct {
+	*lit.Reg
+	*dom.Project
+	Data map[string]*lit.List
+}
+
+// NewMemBackend returns a new memory backend for the given project.
+func NewMemBackend(reg *lit.Reg, pr *dom.Project) *MemBackend {
+	return &MemBackend{reg, pr, make(map[string]*lit.List)}
+}
+
+func (b *MemBackend) Proj() *dom.Project { return b.Project }
+
+func (b *MemBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
+	key := j.Model.Qualified()
+	list := b.Data[key]
+	if list == nil {
+		return nil, fmt.Errorf("lit backend query data %q not found", key)
+	}
+	return execListQry(p, j, list)
+}
+
+// Add converts a list of list of valies to a list of model strc and sets it to this backend.
+func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
+	if b.Data == nil {
+		b.Data = make(map[string]*lit.List)
+	}
+	mt := m.Type()
+	for i, v := range list.Vals {
+		l := v.(*lit.List)
+		s := &lit.Strc{Reg: b.Reg, Typ: mt, Vals: l.Vals}
+		list.Vals[i] = s
+	}
+	b.Data[m.Qualified()] = list
+	return nil
+}
+
+var andSpec = lib.And
+
+func execListQry(p *exp.Prog, j *Job, list *lit.List) (lit.Val, error) {
+	var whr exp.Exp
+	if len(j.Whr) > 0 {
+		whr = &exp.Call{Args: append([]exp.Exp{&exp.Lit{Res: andSpec.Type(), Val: andSpec}}, j.Whr...)}
+	}
+	if j.Kind == KindCount {
+		return collectCount(p, j, list, whr)
+	}
+	res, err := collectList(p, j, list, whr)
+	if err != nil {
+		return nil, err
+	}
+	switch j.Kind {
+	case KindOne:
+		if len(res.Vals) == 0 {
+			return lit.Null{}, nil
+		}
+		return res.Vals[0], nil
+	case KindMany:
+		return res, nil
+	}
+	return nil, fmt.Errorf("exec unknown query kind %s", j.Ref)
+}
+
+func collectList(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*lit.List, error) {
+	res := make([]lit.Val, 0, len(list.Vals))
+	org := list.Vals
+	if whr != nil {
+		org = make([]lit.Val, 0, len(list.Vals))
+	}
+	for _, l := range list.Vals {
+		j.Cur = l
+		if whr != nil {
+			ok, err := filter(p, j, l, whr)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				continue
+			}
+			org = append(org, l)
+		}
+		if len(j.Sel.Fields) == 0 {
+			res = append(res, l)
+			continue
+		}
+		rec := l.(lit.Keyr)
+		px, err := p.Reg.Zero(j.Sel.Type)
+		if err != nil {
+			return nil, err
+		}
+		z, ok := px.(lit.Keyr)
+		for _, f := range j.Sel.Fields {
+			var val lit.Val
+			var err error
+			if f.Exp != nil {
+				el, err := p.Eval(j, f.Exp)
+				if err != nil {
+					return nil, err
+				}
+				val = el.Val
+			} else {
+				val, err = rec.Key(f.Key)
+				if err != nil {
+					return nil, err
+				}
+			}
+			if ok {
+				err = z.SetKey(f.Key, val)
+			} else {
+				err = px.Assign(val)
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
+		res = append(res, px)
+	}
+	if len(j.Ord) != 0 {
+		err := orderResult(res, org, j.Ord)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if j.Off > 0 {
+		if len(res) > int(j.Off) {
+			res = res[j.Off:]
+		} else {
+			res = nil
+		}
+	}
+	if j.Lim > 0 && len(res) > int(j.Lim) {
+		res = res[:j.Lim]
+	}
+	return &lit.List{Vals: res}, nil
+}
+
+func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (lit.Val, error) {
+	// we can ignore order and selection completely
+	var res int64
+	if whr == nil {
+		res = int64(len(list.Vals))
+	} else {
+		for _, l := range list.Vals {
+			j.Cur = l
+			ok, err := filter(p, j, l, whr)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				continue
+			}
+			res++
+		}
+	}
+	if j.Off > 0 {
+		if res > j.Off {
+			res -= j.Off
+		} else {
+			res = 0
+		}
+	}
+	if j.Lim > 0 && res > j.Lim {
+		res = j.Lim
+	}
+	return lit.Int(res), nil
+}
+
+func filter(p *exp.Prog, env exp.Env, l lit.Val, whr exp.Exp) (bool, error) {
+	whr, err := p.Resl(env, whr, typ.Bool)
+	if err != nil {
+		return false, err
+	}
+	res, err := p.Eval(env, whr)
+	if err != nil {
+		return false, err
+	}
+	b, err := lit.ToBool(res.Val)
+	if err != nil {
+		return false, err
+	}
+	return b == true, nil
+}
+
+func orderResult(sel, subj []lit.Val, ords []Ord) (res error) {
+	sort.Stable(orderer{sel, subj, func(i, j int) bool {
+		less, err := orderFunc(sel, subj, i, j, ords)
+		if err != nil && res == nil {
+			res = err
+		}
+		return less
+	}})
+	return res
+}
+
+func orderFunc(sel, subj []lit.Val, i, j int, ords []Ord) (bool, error) {
+	ord := ords[0]
+	list := sel
+	if ord.Subj {
+		list = subj
+	}
+	a, err := lit.Select(list[i], ord.Key)
+	if err != nil {
+		return true, err
+	}
+	b, err := lit.Select(list[j], ord.Key)
+	if err != nil {
+		return true, err
+	}
+	cmp, err := lit.Compare(a, b)
+	if err != nil {
+		return true, err
+	}
+	if cmp == 0 && len(ords) > 1 {
+		return orderFunc(sel, subj, i, j, ords[1:])
+	}
+	if ord.Desc {
+		return cmp > 0, nil
+	}
+	return cmp < 0, nil
+}
+
+type orderer struct {
+	a, b []lit.Val
+	less func(i, j int) bool
+}
+
+func (o orderer) Len() int { return len(o.a) }
+func (o orderer) Swap(i, j int) {
+	o.a[i], o.a[j] = o.a[j], o.a[i]
+	o.b[i], o.b[j] = o.b[j], o.b[i]
+}
+func (o orderer) Less(i, j int) bool {
+	return o.less(i, j)
+}
