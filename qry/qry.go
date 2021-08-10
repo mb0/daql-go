@@ -62,7 +62,7 @@ func (q *Qry) Exec(str string, arg lit.Val) (lit.Val, error) {
 	return q.ExecExp(x, arg)
 }
 
-// Exec executes the given query expr with arg and returns a value or an error.
+// ExecExp executes the given query expr with arg and returns a value or an error.
 func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
 	if arg == nil {
 		arg = lit.Null{}
@@ -84,6 +84,27 @@ func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
 	return a.Val, nil
+}
+
+// ExecAuto generates query from and saves the query result into a tagged go struct value pointer.
+func (q *Qry) ExecAuto(pp interface{}, arg lit.Val) (lit.Mut, error) {
+	x, err := ReflectQuery(q.Reg, pp)
+	if err != nil {
+		return nil, err
+	}
+	mut, err := q.Reg.Proxy(pp)
+	if err != nil {
+		return nil, err
+	}
+	el, err := q.ExecExp(x, arg)
+	if err != nil {
+		return nil, err
+	}
+	err = mut.Assign(el)
+	if err != nil {
+		return nil, err
+	}
+	return mut, nil
 }
 
 // Doc is an query program environment that collects and tracks all jobs.
