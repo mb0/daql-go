@@ -1,0 +1,62 @@
+(schema dom
+
+(Bit:bits doc:`is a bit set used for a number of field options.`
+	Opt;
+	PK;
+	Idx;
+	Uniq;
+	Ordr;
+	Auto;
+	RO;
+)
+
+(Elem; doc:`holds additional information for either constants or type parameters.`
+	Name?:str
+	Type?:typ
+	Val?:int
+	Bits?:@dom.Bit
+	Ref?:str
+	Extra?:dict
+)
+
+(Index; doc:`represents a record model index, mainly used for databases.`
+	Name?:str
+	Keys:list|str
+	Unique?:bool
+)
+
+(Object; doc:`holds data specific to object types for grouping.`
+	Indices?:list|@dom.Index?
+	OrderBy?:list|str
+	(<> TODO add triggers and references)
+)
+
+(Model; doc:`represents either a bits, enum or obj type and has extra domain information.`
+	Kind:typ
+	Name:str
+	Schema?:str
+	Extra?:dict
+	Elems?:list|@dom.Elem?
+	Object?:@dom.Object?
+)
+
+(Schema; doc:`is a namespace for models.`
+	Name:str
+	Extra?:dict
+	Path?:str
+	Use?:list|str
+	Models:list|@dom.Model?
+)
+
+(Project; doc:`is a collection of schemas and project specific extra configuration.
+
+The schema definition can either be declared as part of the project file, or included from an
+external schema file. Includes should have syntax to filtering the included schema definition.
+
+Extra setting, usually include, but are not limited to, targets and output paths for code
+generation, paths to look for the project's manifest and history.`
+	Name?:str
+	Extra?:dict
+	Schemas:list|@dom.Schema?
+)
+)
