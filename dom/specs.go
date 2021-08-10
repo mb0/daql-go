@@ -34,7 +34,12 @@ var projectSpec = domSpec(&Project{}, "<form project name:sym tags:tupl?|exp @>"
 		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
-}, nil)
+}, func(k string) exp.Spec {
+	if k == "load" {
+		return load
+	}
+	return nil
+})
 
 var schemaSpec = domSpec(&Schema{}, "<form schema name:sym tags:tupl?|exp @>", true, ext.Rules{
 	Default: ext.Rule{
