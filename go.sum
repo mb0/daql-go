@@ -1,2 +1,6 @@
+github.com/mattn/go-runewidth v0.0.3 h1:a+kO+98RDGEfo6asOGMmpodZq4FNtnGP54yps8BzLR4=
+github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/peterh/liner v1.2.1 h1:O4BlKaq/LWu6VRWmol4ByWfzx6MfXc5Op5HETyIy5yg=
+github.com/peterh/liner v1.2.1/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 xelf.org/xelf v0.0.0-20210810171413-c955a8c198be h1:A0b9rzhgAMwvxhSOY/VC15urnD7a6A4acvhCzVMtor0=
 xelf.org/xelf v0.0.0-20210810171413-c955a8c198be/go.mod h1:R1+C/jFy1ky7OVyHKejRI/9cL1Z9IVd+5rlX3+E58Hc=

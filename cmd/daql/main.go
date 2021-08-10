@@ -22,10 +22,13 @@ Configuration flags:
                If this flag is not set, the current directory and its parents will be searched.
 
 Code generation commands
-   gengo       Generate go code for specific schemas
+   gengo       Generates go code for specific schemas specified in args.
 
 Other commands
-   help        Display help message
+   help        Displays this help message.
+   repl        Runs a read-eval-print-loop to explore xelf and daql.
+               Repl currently only uses a test data model for queries.
+
 `
 
 var (
@@ -46,6 +49,8 @@ func main() {
 	switch cmd := flag.Arg(0); cmd {
 	case "gengo":
 		err = genGen(cmd, args)
+	case "repl":
+		err = repl(args)
 	case "help":
 		if len(args) > 0 {
 			// TODO print command help
