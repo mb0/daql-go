@@ -8,10 +8,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"xelf.org/daql/cmd"
 	"xelf.org/daql/dom"
 	"xelf.org/daql/gen/gengo"
+	"xelf.org/daql/mig"
 	"xelf.org/xelf/bfr"
 )
 
@@ -24,6 +26,7 @@ Configuration flags:
 
 Model versioning commands
    status      Prints the model version manifest for the current project.
+   commit      Writes the current project changes to the project history.
    graph       Prints a dot graph for the specified schema names. Use graphviz to render:
                $ daql graph | dot -Tsvg > graph.svg && open graph.svg
 
@@ -55,6 +58,8 @@ func main() {
 	switch cmd := flag.Arg(0); cmd {
 	case "status":
 		err = status(args)
+	case "commit":
+		err = commit(args)
 	case "graph":
 		err = graph(args)
 	case "gengo":
@@ -83,6 +88,23 @@ func status(args []string) error {
 	b := bufio.NewWriter(os.Stdout)
 	pr.Status(&bfr.P{Writer: b})
 	return b.Flush()
+}
+
+func commit(args []string) error {
+	pr, err := cmd.LoadProject(*dirFlag)
+	if err != nil {
+		return err
+	}
+	err = pr.Commit(strings.Join(args, "_"))
+	if err == mig.ErrNoChanges {
+		fmt.Printf("%s %s unchanged\n", pr.Name, pr.First().Vers)
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s %s committed\n", pr.Name, pr.First().Vers)
+	return nil
 }
 
 func graph(args []string) error {
