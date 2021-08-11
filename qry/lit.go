@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"xelf.org/daql/dom"
+	"xelf.org/daql/mig"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib"
 	"xelf.org/xelf/lit"
@@ -15,7 +16,6 @@ import (
 type LitBackend struct{}
 
 func (b *LitBackend) Proj() *dom.Project { return nil }
-
 func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
 	a, err := p.Eval(j.Env, &exp.Sym{Sym: j.Ref})
 	if err != nil {
@@ -43,16 +43,30 @@ func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
 type MemBackend struct {
 	*lit.Reg
 	*dom.Project
+	*mig.Version
 	Data map[string]*lit.List
 }
 
 // NewMemBackend returns a new memory backend for the given project.
-func NewMemBackend(reg *lit.Reg, pr *dom.Project) *MemBackend {
-	return &MemBackend{reg, pr, make(map[string]*lit.List)}
+func NewMemBackend(reg *lit.Reg, pr *dom.Project, v *mig.Version) *MemBackend {
+	return &MemBackend{reg, pr, v, make(map[string]*lit.List)}
 }
 
 func (b *MemBackend) Proj() *dom.Project { return b.Project }
-
+func (b *MemBackend) Vers() *mig.Version { return b.Version }
+func (b *MemBackend) Keys() (res []string) {
+	for key := range b.Data {
+		res = append(res, key)
+	}
+	return res
+}
+func (b *MemBackend) Close() error { return nil }
+func (b *MemBackend) Stream(key string) (mig.Stream, error) {
+	if l, ok := b.Data[key]; !ok {
+		return mig.NewLitStream(l), nil
+	}
+	return nil, fmt.Errorf("stream %s not found", key)
+}
 func (b *MemBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
 	key := j.Model.Qualified()
 	list := b.Data[key]
@@ -77,6 +91,7 @@ func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
 	return nil
 }
 
+var _ mig.Dataset = (*MemBackend)(nil)
 var andSpec = lib.And
 
 func execListQry(p *exp.Prog, j *Job, list *lit.List) (lit.Val, error) {

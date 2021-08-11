@@ -16,7 +16,7 @@ import (
 
 func getBackend(reg *lit.Reg) Backend {
 	f := domtest.Must(domtest.ProdFixture())
-	b := NewMemBackend(reg, &f.Project)
+	b := NewMemBackend(reg, &f.Project, f.Version)
 	s := f.Schema("prod")
 	for _, kv := range f.Fix.Keyed {
 		err := b.Add(s.Model(kv.Key), kv.Val.(*lit.List))
