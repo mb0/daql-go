@@ -146,7 +146,7 @@ func gogen(pr *cmd.Project, ss []*dom.Schema) error {
 		return err
 	}
 	pkgs := gengo.DefaultPkgs()
-	for _, s := range pr.Schemas {
+	for _, s := range ss {
 		if nogen(s) {
 			continue
 		}

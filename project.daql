@@ -1,4 +1,5 @@
 (project daql hist:'.hist'
 	(load 'dom')
 	(load 'mig')
+	(load 'evt')
 )

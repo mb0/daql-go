@@ -1,0 +1,66 @@
+(schema evt
+
+(Audit; doc:`holds detailed information for a published revision.`
+	backup;
+	(Rev:time pk;)
+	Created?:time
+	Arrived?:time
+	Acct?:uuid
+	Extra?:dict
+)
+
+(Sig; doc:`is the event signature.`
+	Top:str
+	Key:str
+)
+
+(Action; doc:`is an unpublished event represented by a command string and argument map.
+   It usually is a data operation on a record identified by a topic and primary key.`
+	@evt.Sig
+	Cmd:str
+	Arg?:dict
+)
+
+(Event; doc:`is an action published to a ledger with revision and unique id.`
+	backup;
+	(ID:int pk; auto;)
+	(Rev:time idx;)
+	@evt.Action
+	idx: ['top' 'key']
+)
+
+(Trans; doc:`is an request to publish a list of actions for a base revision.`
+	backup;
+	(ID:int pk; auto;)
+	Base:time
+	@evt.Audit
+	Acts:list|@evt.Action
+)
+
+(Watch; doc:`is topic name and list of keys to monitor.`
+	Top:str
+	Keys:list|str
+)
+
+(Note;
+	Mon:int
+	Watch:list|@evt.Watch
+)
+
+(Update; doc:`holds a list of events and notes`
+	Rev:time
+	Evs?:list|@evt.Event?
+	Note?:list|@evt.Note
+)
+(Status; doc:`holds the current ledger revision migration information.`
+	Rev:time
+	Mig:@mig.Migration
+)
+(Stat:func  @evt.Status)
+(Pub:func   @evt.Trans @evt.Update?)
+(Sub:func   Rev:time Tops:list|str @evt.Update?)
+(Sat:func   Rev:time Trans:list|@evt.Trans Tops:list|str @evt.Update?)
+(Unsub:func Tops:list|str bool)
+(Mon:func   Rev:time Watch:list|@evt.Watch int)
+(Unmon:func Mon:int bool)
+)
