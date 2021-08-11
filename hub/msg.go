@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"xelf.org/xelf/bfr"
@@ -74,4 +75,42 @@ func (m *Msg) ReplyErr(err error) *Msg       { return m.Reply(resData{Err: err})
 type resData struct {
 	Res interface{} `json:"res,omitempty"`
 	Err error       `json:"err,omitempty"`
+}
+
+type TokMap struct {
+	last int64
+	m    map[int64]req
+}
+
+func (r *TokMap) Add(m *Msg) string {
+	if r.m == nil {
+		r.m = make(map[int64]req)
+	}
+	r.last++
+	r.m[r.last] = req{m.From, m.Tok}
+	return strconv.FormatInt(r.last, 16)
+}
+
+func (r *TokMap) Respond(m *Msg) error {
+	if len(m.Tok) == 0 {
+		return fmt.Errorf("empty response token %s", m.Subj)
+	}
+	id, err := strconv.ParseInt(m.Tok, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid response token %s: %v", m.Tok, err)
+	}
+	req, ok := r.m[id]
+	if !ok {
+		return fmt.Errorf("no request with token %s", m.Tok)
+	}
+	n := *m
+	n.Tok = req.tok
+	req.Chan() <- &n
+	delete(r.m, id)
+	return nil
+}
+
+type req struct {
+	Conn
+	tok string
 }

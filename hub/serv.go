@@ -26,3 +26,10 @@ func (s Services) Handle(m *Msg) bool {
 	}
 	return true
 }
+
+func (s Services) Merge(o Services) Services {
+	for k, v := range o {
+		s[k] = v
+	}
+	return s
+}
