@@ -7,6 +7,7 @@ import (
 	"xelf.org/daql/hub"
 )
 
+// Server provides hub services to subscribe and publish to a ledger.
 type Server struct {
 	Publisher
 	*Ctrl

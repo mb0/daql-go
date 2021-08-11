@@ -1,3 +1,4 @@
+// Package evt provides servers and tools for event sourcing.
 package evt
 
 const (

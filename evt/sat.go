@@ -10,6 +10,8 @@ import (
 
 type ModelAuthority = func(evs []Action) bool
 
+// Satellite connects to a server hub, replicates events, and manages local subscriptions.
+// Satellites can publish authoritative events locally to support offline use to some extent.
 type Satellite struct {
 	LocalPublisher
 	*Ctrl
