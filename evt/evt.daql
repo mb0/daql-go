@@ -5,7 +5,7 @@
 	(Rev:time pk;)
 	Created?:time
 	Arrived?:time
-	Acct?:uuid
+	User?:str
 	Extra?:dict
 )
 
@@ -55,6 +55,8 @@
 (Status; doc:`holds the current ledger revision migration information.`
 	Rev:time
 	Mig:@mig.Migration
+	On?:time
+	Off?:time
 )
 (Stat:func  @evt.Status)
 (Pub:func   @evt.Trans @evt.Update?)

@@ -15,7 +15,7 @@ type Audit struct {
 	Rev     time.Time          `json:"rev"`
 	Created time.Time          `json:"created,omitempty"`
 	Arrived time.Time          `json:"arrived,omitempty"`
-	Acct    [16]byte           `json:"acct,omitempty"`
+	User    string             `json:"user,omitempty"`
 	Extra   map[string]lit.Val `json:"extra,omitempty"`
 }
 
@@ -70,6 +70,8 @@ type Update struct {
 type Status struct {
 	Rev time.Time     `json:"rev"`
 	Mig mig.Migration `json:"mig"`
+	On  time.Time     `json:"on,omitempty"`
+	Off time.Time     `json:"off,omitempty"`
 }
 
 type StatRes struct {

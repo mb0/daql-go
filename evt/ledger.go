@@ -40,8 +40,8 @@ type Replicator interface {
 	Replicate([]*Event) error
 }
 
-// Satellite is a replicator that can publish events locally.
-type Satellite interface {
+// LocalPublisher is a replicator that can publish events locally.
+type LocalPublisher interface {
 	Replicator
 	PublishLocal(Trans) ([]*Event, error)
 	Locals() []Trans
