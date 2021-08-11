@@ -43,6 +43,22 @@ func NewFileStream(f io.ReadCloser, name string, gzipped bool) (Stream, error) {
 	return &fileStream{f: f, gz: gz, lex: ast.NewLexer(gz, name)}, nil
 }
 
+// NewLitStream creates and returns a new stream for the idxr literal or an error.
+func NewLitStream(l lit.Idxr) Stream { return &litStream{Idxr: l} }
+
+type litStream struct {
+	lit.Idxr
+	idx int
+}
+
+func (it *litStream) Close() error { return nil }
+
+func (it *litStream) Scan() (lit.Val, error) {
+	v, err := it.Idx(it.idx)
+	it.idx++
+	return v, err
+}
+
 // WriteStream writes stream to writer w or returns an error.
 func WriteStream(it Stream, w io.Writer) error {
 	enc := json.NewEncoder(w)
