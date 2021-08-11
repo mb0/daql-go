@@ -1,3 +1,4 @@
 (project daql
 	(load 'dom')
+	(load 'mig')
 )
