@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strconv"
 	"strings"
 
+	"xelf.org/daql/dom"
 	"xelf.org/daql/log"
 )
+
+var NoVers = Vers{}
 
 // ReadVersion returns a version read from r or and error.
 func ReadVersion(r io.Reader) (v Version, err error) {
@@ -27,10 +31,12 @@ func (v Version) WriteTo(w io.Writer) (int64, error) {
 	return b.WriteTo(w)
 }
 
+// Vers represents a parsed version string with int fields for major, minor and patch versions.
 type Vers struct {
 	Major, Minor, Patch int
 }
 
+// ParseVers parses str and returns the result or an error.
 func ParseVers(str string) (v Vers, err error) {
 	if str[0] == 'v' {
 		str = str[1:]
@@ -55,3 +61,35 @@ func ParseVers(str string) (v Vers, err error) {
 }
 
 func (v Vers) String() string { return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch) }
+
+// Record consists of a project definition and its manifest at one point in time.
+// A record's path can be used to look up migration rules and scripts.
+type Record struct {
+	Path string // record path relative to history folder
+	*dom.Project
+	Manifest
+}
+
+// ReadProject reads the current project's unrecorded definition and manifest or an error.
+//
+// The returned record represent the current malleable project state, and may contain unrecorded
+// changes and preliminary versions, not representing the eventually recorded version definition.
+func ReadRecord(path string) (res Record, err error) {
+	res.Project, err = dom.OpenProject(path)
+	if err != nil {
+		return res, err
+	}
+	hdir := historyPath(res.Project, path)
+	err = readFile(filepath.Join(hdir, "manifest.json"),
+		func(r io.Reader) (err error) {
+			res.Manifest, err = ReadManifest(r)
+			return err
+		})
+	if err != nil {
+		return res, err
+	}
+	res.Manifest, err = res.Update(res.Project)
+	return res, err
+}
+
+func (r *Record) Version() Version { return *r.First() }
