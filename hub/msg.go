@@ -60,3 +60,18 @@ func Read(r io.Reader) (*Msg, error) {
 	}
 	return &Msg{Subj: string(subj), Tok: string(tok), Raw: raw}, nil
 }
+func (m *Msg) Reply(data interface{}) *Msg {
+	raw, err := json.Marshal(data)
+	if err != nil {
+		return m.ReplyErr(err)
+	}
+	return &Msg{Subj: m.Subj, Tok: m.Tok, Raw: raw}
+}
+
+func (m *Msg) ReplyRes(res interface{}) *Msg { return m.Reply(resData{Res: res}) }
+func (m *Msg) ReplyErr(err error) *Msg       { return m.Reply(resData{Err: err}) }
+
+type resData struct {
+	Res interface{} `json:"res,omitempty"`
+	Err error       `json:"err,omitempty"`
+}

@@ -133,29 +133,29 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 			g.Fmt(`
 type %[1]sFunc func(*hub.Msg, %[1]sReq) (%[2]s, error)
 
-func (f %[1]sFunc) Serve(m *hub.Msg) interface{} {
+func (f %[1]sFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req %[1]sReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return %[1]sRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return %[1]sRes{Err: err.Error()}
+		return nil, err
 	}
-	return %[1]sRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 `, m.Name, tmp.String())
 		} else {
 			g.Fmt(`
 type %[1]sFunc func(*hub.Msg) (%[2]s, error)
 
-func (f %[1]sFunc) Serve(m *hub.Msg) interface{} {
+func (f %[1]sFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	res, err := f(m)
 	if err != nil {
-		return %[1]sRes{Err: err.Error()}
+		return nil, err
 	}
-	return %[1]sRes{Res: res}
+	return m.ReplyRes(res), nil
 }`, m.Name, tmp.String())
 		}
 	default:

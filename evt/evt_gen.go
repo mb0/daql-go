@@ -79,12 +79,12 @@ type StatRes struct {
 
 type StatFunc func(*hub.Msg) (Status, error)
 
-func (f StatFunc) Serve(m *hub.Msg) interface{} {
+func (f StatFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	res, err := f(m)
 	if err != nil {
-		return StatRes{Err: err.Error()}
+		return nil, err
 	}
-	return StatRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type PubReq struct {
@@ -98,17 +98,17 @@ type PubRes struct {
 
 type PubFunc func(*hub.Msg, PubReq) (*Update, error)
 
-func (f PubFunc) Serve(m *hub.Msg) interface{} {
+func (f PubFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req PubReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return PubRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return PubRes{Err: err.Error()}
+		return nil, err
 	}
-	return PubRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type SubReq struct {
@@ -123,17 +123,17 @@ type SubRes struct {
 
 type SubFunc func(*hub.Msg, SubReq) (*Update, error)
 
-func (f SubFunc) Serve(m *hub.Msg) interface{} {
+func (f SubFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req SubReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return SubRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return SubRes{Err: err.Error()}
+		return nil, err
 	}
-	return SubRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type SatReq struct {
@@ -149,17 +149,17 @@ type SatRes struct {
 
 type SatFunc func(*hub.Msg, SatReq) (*Update, error)
 
-func (f SatFunc) Serve(m *hub.Msg) interface{} {
+func (f SatFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req SatReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return SatRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return SatRes{Err: err.Error()}
+		return nil, err
 	}
-	return SatRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type UnsubReq struct {
@@ -173,17 +173,17 @@ type UnsubRes struct {
 
 type UnsubFunc func(*hub.Msg, UnsubReq) (bool, error)
 
-func (f UnsubFunc) Serve(m *hub.Msg) interface{} {
+func (f UnsubFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req UnsubReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return UnsubRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return UnsubRes{Err: err.Error()}
+		return nil, err
 	}
-	return UnsubRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type MonReq struct {
@@ -198,17 +198,17 @@ type MonRes struct {
 
 type MonFunc func(*hub.Msg, MonReq) (int64, error)
 
-func (f MonFunc) Serve(m *hub.Msg) interface{} {
+func (f MonFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req MonReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return MonRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return MonRes{Err: err.Error()}
+		return nil, err
 	}
-	return MonRes{Res: res}
+	return m.ReplyRes(res), nil
 }
 
 type UnmonReq struct {
@@ -222,15 +222,15 @@ type UnmonRes struct {
 
 type UnmonFunc func(*hub.Msg, UnmonReq) (bool, error)
 
-func (f UnmonFunc) Serve(m *hub.Msg) interface{} {
+func (f UnmonFunc) Serve(m *hub.Msg) (*hub.Msg, error) {
 	var req UnmonReq
 	err := json.Unmarshal(m.Raw, &req)
 	if err != nil {
-		return UnmonRes{Err: err.Error()}
+		return nil, err
 	}
 	res, err := f(m, req)
 	if err != nil {
-		return UnmonRes{Err: err.Error()}
+		return nil, err
 	}
-	return UnmonRes{Res: res}
+	return m.ReplyRes(res), nil
 }
