@@ -12,6 +12,7 @@ import (
 	"xelf.org/daql/cmd"
 	"xelf.org/daql/dom"
 	"xelf.org/daql/gen/gengo"
+	"xelf.org/xelf/bfr"
 )
 
 const usage = `usage: daql [-dir=<path>] <command> [<args>]
@@ -22,7 +23,9 @@ Configuration flags:
                If this flag is not set, the current directory and its parents will be searched.
 
 Model versioning commands
-   status      Prints the model version manifest for the current project
+   status      Prints the model version manifest for the current project.
+   graph       Prints a dot graph for the specified schema names. Use graphviz to render:
+               $ daql graph | dot -Tsvg > graph.svg && open graph.svg
 
 Code generation commands
    gengo       Generates go code for specific schemas specified in args.
@@ -52,6 +55,8 @@ func main() {
 	switch cmd := flag.Arg(0); cmd {
 	case "status":
 		err = status(args)
+	case "graph":
+		err = graph(args)
 	case "gengo":
 		err = genGen(cmd, args)
 	case "repl":
@@ -76,8 +81,25 @@ func status(args []string) error {
 		return err
 	}
 	b := bufio.NewWriter(os.Stdout)
-	pr.Status(b)
+	pr.Status(&bfr.P{Writer: b})
 	return b.Flush()
+}
+
+func graph(args []string) error {
+	pr, err := cmd.LoadProject(*dirFlag)
+	if err != nil {
+		return err
+	}
+	ss := pr.Schemas
+	if len(args) > 0 {
+		ss, err = pr.FilterSchemas(args...)
+		if err != nil {
+			return err
+		}
+	}
+	b := bufio.NewWriter(os.Stdout)
+	defer b.Flush()
+	return cmd.GraphSchemas(&bfr.P{Writer: b}, pr, ss)
 }
 
 func genGen(gen string, args []string) error {

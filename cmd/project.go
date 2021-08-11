@@ -44,8 +44,7 @@ func (pr *Project) FilterSchemas(names ...string) ([]*dom.Schema, error) {
 	return ss, nil
 }
 
-func (pr *Project) Status(b bfr.Writer) {
-	p := &bfr.P{Writer: b}
+func (pr *Project) Status(p *bfr.P) {
 	cv := pr.First()
 	last := pr.Last()
 	lv := last.First()
