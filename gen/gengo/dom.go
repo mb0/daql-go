@@ -127,7 +127,7 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 		if err != nil {
 			break
 		}
-		g.Imports.Add("github.com/mb0/daql/hub")
+		g.Imports.Add("xelf.org/daql/hub")
 		if last > 0 {
 			g.Imports.Add("encoding/json")
 			g.Fmt(`
