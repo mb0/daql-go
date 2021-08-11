@@ -37,12 +37,13 @@ type Publisher interface {
 // Replicator is a ledger that can replicate events.
 type Replicator interface {
 	Ledger
-	Replicate([]*Event) error
+	Replicate(rev time.Time, evs []*Event) error
 }
 
 // LocalPublisher is a replicator that can publish events locally.
 type LocalPublisher interface {
 	Replicator
-	PublishLocal(Trans) ([]*Event, error)
+	LocalRev() time.Time
+	PublishLocal(Trans) (time.Time, []*Event, error)
 	Locals() []Trans
 }
