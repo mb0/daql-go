@@ -1,2 +1,4 @@
+github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
+github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 xelf.org/xelf v0.0.0-20210810171413-c955a8c198be h1:A0b9rzhgAMwvxhSOY/VC15urnD7a6A4acvhCzVMtor0=
 xelf.org/xelf v0.0.0-20210810171413-c955a8c198be/go.mod h1:R1+C/jFy1ky7OVyHKejRI/9cL1Z9IVd+5rlX3+E58Hc=
