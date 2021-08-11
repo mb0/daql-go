@@ -1,4 +1,4 @@
-(project daql
+(project daql hist:'.hist'
 	(load 'dom')
 	(load 'mig')
 )

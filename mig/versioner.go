@@ -58,7 +58,7 @@ func (mv Versioner) Version(n dom.Node) (res Version, err error) {
 	e := mv[key]
 	var resv Vers
 	if e == nil {
-		// use empty version?
+		resv.Patch = 1
 	} else if e.cur.Vers != "" { // we already did the work
 		return e.cur, nil
 	} else if e.old.Vers != "" {
@@ -148,7 +148,7 @@ func hashExtra(hm, hp io.Writer, d map[string]lit.Val) {
 	}
 	for k, v := range d {
 		switch k {
-		case "doc":
+		case "doc", "file", "hist":
 			continue
 		case "backup":
 			fmt.Fprintf(hm, "    %s:%s\n", k, v)

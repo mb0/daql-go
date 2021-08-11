@@ -28,7 +28,7 @@ type History interface {
 	Versions() []Version
 	Manifest(vers string) (Manifest, error)
 	Record(vers string) (Record, error)
-	Commit(string) error
+	Commit(slug string) error
 }
 
 // ReadHistory returns the prepared project history based on a project path or an error.
@@ -192,7 +192,7 @@ func (h *hist) Commit(slug string) error {
 	c := h.curr.First()
 	last := h.Last()
 	l := last.First()
-	if c.Vers == l.Vers {
+	if l != nil && c.Vers == l.Vers {
 		return ErrNoChanges
 	}
 	err := os.MkdirAll(h.hdir, 0755)
