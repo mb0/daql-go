@@ -19,7 +19,7 @@ func (b *LitBackend) Proj() *dom.Project { return nil }
 func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
 	a, err := p.Eval(j.Env, &exp.Sym{Sym: j.Ref})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lit backend: %w", err)
 	}
 	var list *lit.List
 	switch v := a.Val.(type) {

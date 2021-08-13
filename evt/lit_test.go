@@ -69,12 +69,13 @@ func TestLedger(t *testing.T) {
 }
 
 func testLedger() (*evt.MemLedger, error) {
+	reg := &lit.Reg{}
 	p := &dom.Project{}
-	ev, err := dom.OpenSchema("evt.daql", p)
+	ev, err := dom.OpenSchema(reg, "evt.daql", p)
 	if err != nil {
 		return nil, err
 	}
-	pr, err := dom.ReadSchema(strings.NewReader(domtest.ProdRaw), "prod.daql", p)
+	pr, err := dom.ReadSchema(reg, strings.NewReader(domtest.ProdRaw), "prod.daql", p)
 	if err != nil {
 		return nil, err
 	}

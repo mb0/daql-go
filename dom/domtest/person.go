@@ -1,6 +1,10 @@
 package domtest
 
-import "time"
+import (
+	"time"
+
+	"xelf.org/xelf/lit"
+)
 
 const PersonRaw = `(schema person
 (Group;
@@ -62,4 +66,4 @@ const PersonFixRaw = `{
 	]
 }`
 
-func PersonFixture() (*Fixture, error) { return New(PersonRaw, PersonFixRaw) }
+func PersonFixture(reg *lit.Reg) (*Fixture, error) { return New(reg, PersonRaw, PersonFixRaw) }

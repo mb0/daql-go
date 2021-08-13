@@ -41,13 +41,13 @@ type History interface {
 // Record folders can have any name starting with a 'v', the daql tool uses the padded version
 // number and an optional record note that only acts as memory aid. The actual record version should
 // always be read from the included manifest file.
-func ReadHistory(path string) (_ History, err error) {
-	h := &hist{}
+func ReadHistory(reg *lit.Reg, path string) (_ History, err error) {
+	h := &hist{reg: reg}
 	h.path, err = dom.DiscoverProject(path)
 	if err != nil {
 		return nil, fmt.Errorf("no project file found for %q: %v", path, err)
 	}
-	h.curr.Project, err = dom.OpenProject(h.path)
+	h.curr.Project, err = dom.OpenProject(reg, h.path)
 	if err != nil {
 		return nil, fmt.Errorf("resolve project %q: %v", h.path, err)
 	}
@@ -131,6 +131,7 @@ func isJsonStream(path string) bool {
 }
 
 type hist struct {
+	reg  *lit.Reg
 	path string
 	hdir string
 	curr Record
@@ -181,7 +182,7 @@ func (h *hist) Record(vers string) (null Record, _ error) {
 		return null, fmt.Errorf("version not found")
 	}
 	ppath := filepath.Join(h.hdir, r.Path, "project.json")
-	pr, err := dom.OpenProject(ppath)
+	pr, err := dom.OpenProject(h.reg, ppath)
 	if err != nil {
 		return null, err
 	}

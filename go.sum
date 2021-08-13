@@ -2,7 +2,5 @@ github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0U
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d h1:eAS2t2Vy+6psf9LZ4T5WXWsbkBt3Tu5PWekJy5AGyEU=
 github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d/go.mod h1:3YMHqrw2Qu3Liy82v4QdAG17e9k91HZ7w3hqlpWqhDo=
-xelf.org/xelf v0.0.0-20210813005659-fbfa47700c58 h1:5STxGrzrfaAZ8Rg+QJsj2fcLoaBnEKxxeudW7Qmuuns=
-xelf.org/xelf v0.0.0-20210813005659-fbfa47700c58/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
-xelf.org/xelf v0.0.0-20210813012057-ecfc9dc2bd01 h1:3kuaGxUbD8jdkWolI5WFiUDiwXEoxwOI2ZIUP5ZS4eo=
-xelf.org/xelf v0.0.0-20210813012057-ecfc9dc2bd01/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
+xelf.org/xelf v0.0.0-20210813204457-10de86bf294e h1:EW2yLyduHRgsQcjhtv3cAB3TnVLZxTnJPneoclXJ7B0=
+xelf.org/xelf v0.0.0-20210813204457-10de86bf294e/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=

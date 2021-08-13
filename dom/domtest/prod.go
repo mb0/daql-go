@@ -1,5 +1,7 @@
 package domtest
 
+import "xelf.org/xelf/lit"
+
 const ProdRaw = `(schema prod
 (Cat;
 	(ID:int pk;)
@@ -60,4 +62,4 @@ const ProdFixRaw = `{
 	]
 }`
 
-func ProdFixture() (*Fixture, error) { return New(ProdRaw, ProdFixRaw) }
+func ProdFixture(reg *lit.Reg) (*Fixture, error) { return New(reg, ProdRaw, ProdFixRaw) }

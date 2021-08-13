@@ -64,9 +64,6 @@ func (q *Qry) Exec(str string, arg lit.Val) (lit.Val, error) {
 
 // ExecExp executes the given query expr with arg and returns a value or an error.
 func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
-	if arg == nil {
-		arg = lit.Null{}
-	}
 	var env exp.Env = &Doc{Qry: q}
 	if arg != nil && !arg.Nil() {
 		env = &exp.ArgEnv{Par: env, Typ: arg.Type(), Val: arg}

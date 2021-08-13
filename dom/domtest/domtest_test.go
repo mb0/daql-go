@@ -1,13 +1,18 @@
 package domtest
 
-import "testing"
+import (
+	"testing"
+
+	"xelf.org/xelf/lit"
+)
 
 func TestDomtest(t *testing.T) {
-	_, err := ProdFixture()
+	reg := &lit.Reg{}
+	_, err := ProdFixture(reg)
 	if err != nil {
 		t.Fatalf("prod fixture error: %v", err)
 	}
-	_, err = PersonFixture()
+	_, err = PersonFixture(reg)
 	if err != nil {
 		t.Fatalf("person fixture error: %v", err)
 	}

@@ -11,15 +11,15 @@ import (
 )
 
 type Fixture struct {
+	Reg *lit.Reg
 	dom.Project
 	*mig.Version
 	Fix *lit.Dict
-	reg lit.Reg
 }
 
-func New(raw, fix string) (*Fixture, error) {
-	res := &Fixture{}
-	s, err := dom.ReadSchema(strings.NewReader(raw), "", nil)
+func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
+	res := &Fixture{Reg: reg}
+	s, err := dom.ReadSchema(reg, strings.NewReader(raw), "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
@@ -29,7 +29,7 @@ func New(raw, fix string) (*Fixture, error) {
 		return nil, fmt.Errorf("manifest: %w", err)
 	}
 	res.Version = mani.First()
-	val, err := lit.Read(&lit.Reg{}, strings.NewReader(fix), "")
+	val, err := lit.Read(reg, strings.NewReader(fix), "")
 	if err != nil {
 		return nil, fmt.Errorf("fixture: %w", err)
 	}

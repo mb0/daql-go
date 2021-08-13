@@ -43,17 +43,16 @@ func DiscoverProject(path string) (string, error) {
 	return DiscoverProject(dir)
 }
 
-func OpenProject(path string) (*Project, error) {
+func OpenProject(reg *lit.Reg, path string) (*Project, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	return ReadProject(f, path)
+	return ReadProject(reg, f, path)
 }
 
-func ReadProject(r io.Reader, path string) (p *Project, _ error) {
-	reg := &lit.Reg{}
+func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	reg.AddFrom(domReg)
 	x, err := exp.Read(reg, r, path)
 	if err != nil {
@@ -75,17 +74,16 @@ func ReadProject(r io.Reader, path string) (p *Project, _ error) {
 	return p, nil
 }
 
-func OpenSchema(path string, pro *Project) (s *Schema, _ error) {
+func OpenSchema(reg *lit.Reg, path string, pro *Project) (s *Schema, _ error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	return ReadSchema(f, path, pro)
+	return ReadSchema(reg, f, path, pro)
 }
 
-func ReadSchema(r io.Reader, path string, pro *Project) (s *Schema, _ error) {
-	reg := &lit.Reg{}
+func ReadSchema(reg *lit.Reg, r io.Reader, path string, pro *Project) (s *Schema, _ error) {
 	reg.AddFrom(domReg)
 	if pro == nil {
 		pro = &Project{}

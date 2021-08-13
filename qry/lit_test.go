@@ -15,7 +15,7 @@ import (
 )
 
 func getBackend(reg *lit.Reg) Backend {
-	f := domtest.Must(domtest.ProdFixture())
+	f := domtest.Must(domtest.ProdFixture(reg))
 	b := NewMemBackend(reg, &f.Project, f.Version)
 	s := f.Schema("prod")
 	for _, kv := range f.Fix.Keyed {
@@ -84,7 +84,7 @@ func TestQry(t *testing.T) {
 		el, err := qry.Exec(test.Raw, param)
 		end := time.Now()
 		if err != nil {
-			t.Errorf("qry %s error: %v", test.Raw, err)
+			t.Errorf("%v", err)
 			continue
 		}
 		if el == nil {

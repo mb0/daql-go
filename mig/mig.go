@@ -11,6 +11,7 @@ import (
 
 	"xelf.org/daql/dom"
 	"xelf.org/daql/log"
+	"xelf.org/xelf/lit"
 )
 
 var NoVers = Vers{}
@@ -74,8 +75,8 @@ type Record struct {
 //
 // The returned record represent the current malleable project state, and may contain unrecorded
 // changes and preliminary versions, not representing the eventually recorded version definition.
-func ReadRecord(path string) (res Record, err error) {
-	res.Project, err = dom.OpenProject(path)
+func ReadRecord(reg *lit.Reg, path string) (res Record, err error) {
+	res.Project, err = dom.OpenProject(reg, path)
 	if err != nil {
 		return res, err
 	}
