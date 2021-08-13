@@ -6,8 +6,8 @@ a data model that is based on a sequence of events that can recreate the data mo
 int time.
 
 An `Event` consists of a string topic, a key, command a revision time and optionally an argument.
-Daql uses mostly dumb events where the topic is a model name, the key a primary id and command a
-generic create, update or delete command. It can be used for more specific events, those however
+Daql uses mostly dumb events where the topic is a model name, the key a primary id and command is a
+generic new, mod or del command. It can be used for more specific events, those however
 must resolve to a sequence of generic events, to allow a clean interface for backends.
 
 `Ledger` represents a sequence of events ordered by revision. `Publisher` is a ledger that publishes

@@ -2,9 +2,9 @@
 package evt
 
 const (
-	CmdCreate = "+"
-	CmdUpdate = "*"
-	CmdDelete = "-"
+	CmdNew = "new"
+	CmdMod = "mod"
+	CmdDel = "del"
 )
 
 func Collect(evs []*Event, s Sig) (res []*Event) {

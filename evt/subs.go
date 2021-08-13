@@ -80,8 +80,8 @@ func (subs *Subscribers) Show(from hub.Conn, evs []*Event) (sub *Subscriber, tri
 			m.Sub.Note = true
 			m.Bufr = append(m.Bufr, ev.Sig)
 		}
-		if ev.Cmd == CmdCreate {
-			for _, m := range subs.mmap[Sig{ev.Top, CmdCreate}] {
+		if ev.Cmd == CmdNew {
+			for _, m := range subs.mmap[Sig{ev.Top, CmdNew}] {
 				trig = true
 				m.Sub.Note = true
 				m.Bufr = append(m.Bufr, ev.Sig)
