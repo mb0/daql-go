@@ -116,7 +116,7 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 		if mut, ok := v.(lit.Mut); ok {
 			m := mut.Ptr().(*Model)
 			m.Schema = s.Name
-			p.Reg.SetRef(m.Qualified(), m.Type(), mut)
+			p.Reg.SetRef(m.Qualified(), m.Type(), nil)
 			s.Models = append(s.Models, m)
 		}
 	}
