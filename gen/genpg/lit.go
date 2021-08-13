@@ -55,35 +55,35 @@ func WriteVal(b *Writer, t typ.Type, l lit.Val) error {
 		return b.Fmt("NULL")
 	}
 	l = l.Value()
-	switch t.Kind & knd.Any {
-	case knd.Any:
+	switch k := t.Kind & knd.Data; true {
+	case k == knd.Data:
 		return writeJSONB(b, l)
-	case knd.Bool:
+	case k == knd.Bool:
 		if l.Zero() {
 			return b.Fmt("FALSE")
 		}
 		return b.Fmt("TRUE")
-	case knd.Num, knd.Int, knd.Real, knd.Bits:
+	case k&knd.Num != 0:
 		return l.Print(&b.P)
-	case knd.Str:
-		return l.Print(&b.P)
-	case knd.Enum:
-		// TODO write string and cast with qualified enum name
-	case knd.Raw:
+	case k == knd.Raw:
 		return writeSuffix(b, l, "::bytea")
-	case knd.UUID:
+	case k == knd.UUID:
 		return writeSuffix(b, l, "::uuid")
-	case knd.Time:
+	case k == knd.Time:
 		return writeSuffix(b, l, "::timestamptz")
-	case knd.Span:
+	case k == knd.Span:
 		return writeSuffix(b, l, "::interval")
-	case knd.List:
+	case k&knd.Char != 0:
+		return l.Print(&b.P)
+	case k == knd.Enum:
+		// TODO write string and cast with qualified enum name
+	case k == knd.List:
 		if e := typ.El(t); e.Kind != knd.Void && e.Kind&knd.Prim == e.Kind&knd.Any {
 			// use postgres array for one dimensional primitive arrays
 			return writeArray(b, l.(lit.Idxr))
 		}
 		return writeJSONB(b, l) // otherwise use jsonb
-	case knd.Dict, knd.Rec, knd.Obj:
+	case k&knd.Keyr != 0:
 		return writeJSONB(b, l)
 	}
 	return fmt.Errorf("unexpected lit %s", l)
