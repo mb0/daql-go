@@ -22,7 +22,8 @@ func LoadProject(dir string) (*Project, error) {
 	if err != nil {
 		return nil, fmt.Errorf("discover project: %v", err)
 	}
-	h, err := mig.ReadHistory(path)
+	reg := &lit.Reg{}
+	h, err := mig.ReadHistory(reg, path)
 	if err != nil && err != mig.ErrNoHistory {
 		return nil, fmt.Errorf("read history: %v", err)
 	}

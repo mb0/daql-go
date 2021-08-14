@@ -12,7 +12,7 @@ import (
 func repl(args []string) error {
 	reg := &lit.Reg{}
 	// use fixture and memory backend for now
-	fix, err := domtest.ProdFixture()
+	fix, err := domtest.ProdFixture(reg)
 	if err != nil {
 		return fmt.Errorf("parse fixture: %v", err)
 	}

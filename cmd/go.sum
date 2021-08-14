@@ -1,6 +1,9 @@
+github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/mattn/go-runewidth v0.0.3 h1:a+kO+98RDGEfo6asOGMmpodZq4FNtnGP54yps8BzLR4=
 github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d h1:eAS2t2Vy+6psf9LZ4T5WXWsbkBt3Tu5PWekJy5AGyEU=
+github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d/go.mod h1:3YMHqrw2Qu3Liy82v4QdAG17e9k91HZ7w3hqlpWqhDo=
 github.com/peterh/liner v1.2.1 h1:O4BlKaq/LWu6VRWmol4ByWfzx6MfXc5Op5HETyIy5yg=
 github.com/peterh/liner v1.2.1/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
-xelf.org/xelf v0.0.0-20210810171413-c955a8c198be h1:A0b9rzhgAMwvxhSOY/VC15urnD7a6A4acvhCzVMtor0=
-xelf.org/xelf v0.0.0-20210810171413-c955a8c198be/go.mod h1:R1+C/jFy1ky7OVyHKejRI/9cL1Z9IVd+5rlX3+E58Hc=
+xelf.org/xelf v0.0.0-20210814090427-fa5fc4a207ab h1:SR9hwdb37+27Vv/w5Q6RaumT2SkZxOmy9XQJzMBoZlI=
+xelf.org/xelf v0.0.0-20210814090427-fa5fc4a207ab/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
