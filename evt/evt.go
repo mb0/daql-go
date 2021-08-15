@@ -51,9 +51,9 @@ func Merge(reg *lit.Reg, a, b Action) (_ Action, err error) {
 			return a, fmt.Errorf("new action for existing %v", a.Sig)
 		case CmdMod:
 			if a.Cmd == CmdNew {
-				return a, lit.Apply(reg, &lit.Map{M: a.Arg}, b.Arg)
+				return a, lit.Apply(reg, a.Arg, b.Arg.Keyed)
 			}
-			return a, MergeDeltas(reg, a.Arg, b.Arg)
+			return a, MergeDeltas(reg, a.Arg.Keyed, b.Arg.Keyed)
 		case CmdDel:
 			return b, nil
 		}
@@ -63,7 +63,7 @@ func Merge(reg *lit.Reg, a, b Action) (_ Action, err error) {
 	return a, fmt.Errorf("unresolved action %s", b.Cmd)
 }
 
-func MergeDeltas(reg *lit.Reg, a, b map[string]lit.Val) error {
+func MergeDeltas(reg *lit.Reg, a, b lit.Delta) error {
 	for k, v := range b {
 		// TODO check for common prefix, but we use flat updates for now
 		a[k] = v

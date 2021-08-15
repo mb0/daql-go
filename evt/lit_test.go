@@ -28,13 +28,13 @@ func TestLedger(t *testing.T) {
 		t.Fatalf("initial events not empty")
 	}
 	rev, evs, err := l.Publish(evt.Trans{Acts: []evt.Action{
-		{evt.Sig{"prod.cat", "1"}, evt.CmdNew, map[string]lit.Val{
-			"name": lit.Str("a"),
-		}},
-		{evt.Sig{"prod.prod", "25"}, evt.CmdNew, map[string]lit.Val{
-			"name": lit.Str("Y"),
-			"cat":  lit.Int(1),
-		}},
+		{evt.Sig{"prod.cat", "1"}, evt.CmdNew, &lit.Dict{Keyed: []lit.KeyVal{
+			{Key: "name", Val: lit.Str("a")},
+		}}},
+		{evt.Sig{"prod.prod", "25"}, evt.CmdNew, &lit.Dict{Keyed: []lit.KeyVal{
+			{Key: "name", Val: lit.Str("Y")},
+			{Key: "cat", Val: lit.Int(1)},
+		}}},
 	}})
 	if err != nil {
 		t.Fatalf("first %v", err)

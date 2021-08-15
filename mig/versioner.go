@@ -142,18 +142,18 @@ func (mv Versioner) hashNode(hm, hp io.Writer, n dom.Node) error {
 	return nil
 }
 
-func hashExtra(hm, hp io.Writer, d map[string]lit.Val) {
-	if len(d) == 0 {
+func hashExtra(hm, hp io.Writer, d *lit.Dict) {
+	if d == nil || d.Len() == 0 {
 		return
 	}
-	for k, v := range d {
-		switch k {
+	for _, kv := range d.Keyed {
+		switch kv.Key {
 		case "doc", "file", "hist":
 			continue
 		case "backup":
-			fmt.Fprintf(hm, "    %s:%s\n", k, v)
+			fmt.Fprintf(hm, "    %s:%s\n", kv.Key, kv.Val)
 		default:
-			fmt.Fprintf(hp, "    %s:%s\n", k, v)
+			fmt.Fprintf(hp, "    %s:%s\n", kv.Key, kv.Val)
 		}
 	}
 }

@@ -162,6 +162,6 @@ func gogen(pr *cmd.Project, ss []*dom.Schema) error {
 }
 
 func nogen(s *dom.Schema) bool {
-	l, ok := s.Extra["nogen"]
-	return ok && !l.Nil()
+	l, err := s.Extra.Key("nogen")
+	return err == nil && !l.Nil()
 }

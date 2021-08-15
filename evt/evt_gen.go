@@ -12,11 +12,11 @@ import (
 
 // Audit holds detailed information for a published revision.
 type Audit struct {
-	Rev     time.Time          `json:"rev"`
-	Created time.Time          `json:"created,omitempty"`
-	Arrived time.Time          `json:"arrived,omitempty"`
-	User    string             `json:"user,omitempty"`
-	Extra   map[string]lit.Val `json:"extra,omitempty"`
+	Rev     time.Time `json:"rev"`
+	Created time.Time `json:"created,omitempty"`
+	Arrived time.Time `json:"arrived,omitempty"`
+	User    string    `json:"user,omitempty"`
+	Extra   *lit.Dict `json:"extra,omitempty"`
 }
 
 // Sig is the event signature.
@@ -29,8 +29,8 @@ type Sig struct {
 // It usually is a data operation on a record identified by a topic and primary key.
 type Action struct {
 	Sig
-	Cmd string             `json:"cmd"`
-	Arg map[string]lit.Val `json:"arg,omitempty"`
+	Cmd string    `json:"cmd"`
+	Arg *lit.Dict `json:"arg,omitempty"`
 }
 
 // Event is an action published to a ledger with revision and unique id.

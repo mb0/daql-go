@@ -19,7 +19,7 @@ func TestWriteType(t *testing.T) {
 		{typ.Any, "lit.Val", []string{"xelf/lit"}},
 		{typ.ListOf(typ.Any), "[]lit.Val", []string{"xelf/lit"}},
 		{typ.ListOf(typ.Time), "[]time.Time", []string{"time"}},
-		{typ.DictOf(typ.Any), "map[string]lit.Val", []string{"xelf/lit"}},
+		{typ.DictOf(typ.Any), "*lit.Dict", []string{"xelf/lit"}},
 		{typ.DictOf(typ.Time), "map[string]time.Time", []string{"time"}},
 		{typ.Bool, "bool", nil},
 		{typ.Span, "time.Duration", []string{"time"}},

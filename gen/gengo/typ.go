@@ -44,8 +44,11 @@ func WriteType(g *gen.Gen, t typ.Type) error {
 		g.Fmt("[]")
 		return WriteType(g, typ.ContEl(t))
 	case knd.Dict:
-		g.Fmt("map[string]")
-		return WriteType(g, typ.ContEl(t))
+		if el := typ.ContEl(t); el != typ.Any {
+			g.Fmt("map[string]")
+			return WriteType(g, el)
+		}
+		return g.Fmt(Import(g, "*lit.Dict"))
 	case knd.Rec:
 		opt := t.Kind&knd.None != 0
 		if opt {

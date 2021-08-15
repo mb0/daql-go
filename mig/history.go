@@ -118,7 +118,7 @@ func ReadHistory(reg *lit.Reg, path string) (_ History, err error) {
 
 func historyPath(pr *dom.Project, path string) string {
 	rel := "hist"
-	if v, ok := pr.Extra["hist"]; ok {
+	if v, err := pr.Extra.Key("hist"); err == nil {
 		if c, err := lit.ToStr(v); err == nil {
 			rel = string(c)
 		}

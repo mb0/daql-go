@@ -89,7 +89,7 @@ func (pr *Project) Status(p *bfr.P) {
 }
 
 func SchemaPath(pr *Project, s *dom.Schema) string {
-	v, _ := s.Extra["file"]
+	v, _ := s.Extra.Key("file")
 	path, _ := lit.ToStr(v)
 	if path != "" {
 		return filepath.Join(pr.Dir, filepath.Dir(string(path)))

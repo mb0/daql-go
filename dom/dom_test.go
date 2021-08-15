@@ -40,7 +40,7 @@ func TestDom(t *testing.T) {
 		},
 		{`(schema test (Named:obj prop:true doc:"something" Name:str))`,
 			`{name:'test' models:[{kind:<obj> name:'Named' schema:'test' ` +
-				`extra:{doc:'something' prop:true} ` +
+				`extra:{prop:true doc:'something'} ` +
 				`elems:[{name:'Name' type:<str>}]` +
 				`}]}`,
 		},

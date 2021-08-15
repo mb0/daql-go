@@ -79,8 +79,8 @@ func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 // WriteModel writes a type declaration for bits, enum and rec types.
 // For bits and enum types the declaration includes the constant declarations.
 func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
-	doc, ok := m.Extra["doc"]
-	if ok {
+	doc, err := m.Extra.Key("doc")
+	if err == nil {
 		ch, err := lit.ToStr(doc)
 		if ch != "" && err == nil {
 			g.Prepend(fmt.Sprintf("%s %s", m.Name, ch), "// ")

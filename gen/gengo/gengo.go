@@ -13,6 +13,8 @@ func DefaultPkgs() map[string]string {
 		"lit": "xelf.org/xelf/lit",
 		"typ": "xelf.org/xelf/typ",
 		"exp": "xelf.org/xelf/exp",
+		"dom": "xelf.org/daql/dom",
+		"mig": "xelf.org/daql/mig",
 	}
 }
 

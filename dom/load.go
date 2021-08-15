@@ -98,8 +98,8 @@ func (s *loadSpec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
 	}
 	sch := res.Val.(lit.Mut).Ptr().(*Schema)
 	if sch.Extra == nil {
-		sch.Extra = make(map[string]lit.Val)
+		sch.Extra = &lit.Dict{}
 	}
-	sch.Extra["file"] = lit.Str(path)
+	sch.Extra.SetKey("file", lit.Str(path))
 	return res, nil
 }
