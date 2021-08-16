@@ -17,7 +17,7 @@ import (
 func WriteSchemaFile(fname string, prog *exp.Prog, p *dom.Project, s *dom.Schema) error {
 	b := bfr.Get()
 	defer bfr.Put(b)
-	w := NewWriter(b, prog, nil)
+	w := NewWriter(b, p, prog, nil)
 	w.Project = p
 	w.WriteString(w.Header)
 	w.WriteString("BEGIN;\n\n")
@@ -134,7 +134,7 @@ func (w *Writer) writeField(p typ.Param, el *dom.Elem) error {
 func (w *Writer) writerEmbed(t typ.Type) error {
 	m := w.Project.Model(typ.Name(t))
 	if m == nil {
-		return fmt.Errorf("no model for %s in %v", typ.Name(t), m)
+		return fmt.Errorf("no model for %s", typ.Name(t))
 	}
 	for i, p := range m.Params() {
 		if i > 0 {

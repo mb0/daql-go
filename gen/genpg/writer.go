@@ -3,6 +3,7 @@ package genpg
 import (
 	"fmt"
 
+	"xelf.org/daql/dom"
 	"xelf.org/daql/gen"
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/cor"
@@ -26,10 +27,11 @@ type Param struct {
 	Value lit.Val
 }
 
-func NewWriter(b bfr.Writer, p *exp.Prog, t Translator) *Writer {
+func NewWriter(b bfr.Writer, pr *dom.Project, p *exp.Prog, t Translator) *Writer {
 	return &Writer{gen.Gen{
-		P:      bfr.P{Writer: b, Tab: "\t"},
-		Header: "-- generated code\n\n",
+		P:       bfr.P{Writer: b, Tab: "\t"},
+		Project: pr,
+		Header:  "-- generated code\n\n",
 	}, p, t, nil}
 }
 func (w *Writer) Translate(p *exp.Prog, env exp.Env, s *exp.Sym) (string, lit.Val, error) {
