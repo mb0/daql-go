@@ -1,4 +1,4 @@
-(schema mig
+(schema mig embed;
 
 (Migration; doc:`contains migration information of a data source.` backup;
 

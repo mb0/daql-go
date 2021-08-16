@@ -3,9 +3,16 @@
 package dom
 
 import (
+	_ "embed"
+
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
 )
+
+//go:embed dom.daql
+var rawSchema string
+
+func RawSchema() string { return rawSchema }
 
 // Bit is a bit set used for a number of field options.
 type Bit uint32

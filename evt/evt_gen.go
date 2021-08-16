@@ -3,12 +3,19 @@
 package evt
 
 import (
+	_ "embed"
+
 	"encoding/json"
 	"time"
 	"xelf.org/daql/hub"
 	"xelf.org/daql/mig"
 	"xelf.org/xelf/lit"
 )
+
+//go:embed evt.daql
+var rawSchema string
+
+func RawSchema() string { return rawSchema }
 
 // Audit holds detailed information for a published revision.
 type Audit struct {

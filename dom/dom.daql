@@ -1,4 +1,4 @@
-(schema dom
+(schema dom embed;
 
 (Bit:bits doc:`is a bit set used for a number of field options.`
 	Opt;

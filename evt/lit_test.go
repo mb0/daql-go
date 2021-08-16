@@ -80,5 +80,5 @@ func testLedger() (*evt.MemLedger, error) {
 		return nil, err
 	}
 	p.Schemas = append(p.Schemas, ev, pr)
-	return evt.NewMemLedger(qry.NewMemBackend(&lit.Reg{}, p, nil))
+	return evt.NewMemLedger(qry.NewMemBackend(reg, p, nil))
 }

@@ -5,6 +5,7 @@ import (
 	"go/format"
 	"io/ioutil"
 	"math/bits"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -34,6 +35,13 @@ func WriteSchemaFile(g *gen.Gen, name string, s *dom.Schema) error {
 
 // WriteSchame writes the models with package and import declarations.
 func WriteSchema(g *gen.Gen, s *dom.Schema) error {
+	var embed string
+	if emv, err := s.Extra.Key("embed"); err == nil && !emv.Nil() {
+		if fn, err := s.Extra.Key("file"); err == nil {
+			str, _ := lit.ToStr(fn)
+			embed = filepath.Base(string(str))
+		}
+	}
 	b := bfr.Get()
 	defer bfr.Put(b)
 	// swap new buffer with context buffer
@@ -51,6 +59,9 @@ func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 	g.Fmt("%spackage %s\n", g.Header, pkgName(g.Pkg))
 	if len(g.Imports.List) > 0 {
 		g.Fmt("\nimport (\n")
+		if embed != "" {
+			g.Fmt("\t_ \"embed\"\n\n")
+		}
 		groups := groupImports(g.Imports.List, "github")
 		for i, gr := range groups {
 			if i != 0 {
@@ -61,6 +72,12 @@ func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 			}
 		}
 		g.Fmt(")\n")
+	} else if embed != "" {
+		g.Fmt("import _ \"embed\"\n")
+	}
+	if embed != "" {
+		g.Fmt("\n//go:embed %s\nvar rawSchema string\n", embed)
+		g.Fmt("\nfunc RawSchema() string { return rawSchema }\n")
 	}
 	res, err := format.Source(b.Bytes())
 	if err != nil {

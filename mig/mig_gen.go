@@ -3,8 +3,15 @@
 package mig
 
 import (
+	_ "embed"
+
 	"time"
 )
+
+//go:embed mig.daql
+var rawSchema string
+
+func RawSchema() string { return rawSchema }
 
 // Migration contains migration information of a data source.
 type Migration struct {

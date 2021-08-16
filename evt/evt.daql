@@ -1,4 +1,4 @@
-(schema evt
+(schema evt embed;
 
 (Audit; doc:`holds detailed information for a published revision.`
 	backup;
