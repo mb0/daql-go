@@ -1,6 +1,8 @@
 package dom
 
 import (
+	"strings"
+
 	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
@@ -176,6 +178,9 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			case typ.Type:
 				el.Type = tv
 			}
+		}
+		if strings.HasSuffix(el.Name, "?") {
+			el.Bits |= BitOpt
 		}
 	}
 	m.Elems = append(m.Elems, el)
