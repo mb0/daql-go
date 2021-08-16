@@ -60,8 +60,8 @@ func (srv *Server) pub(m *hub.Msg, req PubReq) (*Update, error) {
 	if len(req.Acts) == 0 {
 		return nil, fmt.Errorf("no actions")
 	}
-	if req.User == "" {
-		req.User = m.From.User()
+	if req.Usr == "" {
+		req.Usr = m.From.User()
 	}
 	oldrev := srv.Rev()
 	req.Trans.Arrived = time.Now()

@@ -22,7 +22,7 @@ type Audit struct {
 	Rev     time.Time `json:"rev"`
 	Created time.Time `json:"created,omitempty"`
 	Arrived time.Time `json:"arrived,omitempty"`
-	User    string    `json:"user,omitempty"`
+	Usr     string    `json:"usr,omitempty"`
 	Extra   *lit.Dict `json:"extra,omitempty"`
 }
 

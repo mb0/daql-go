@@ -79,8 +79,8 @@ func (sat *Satellite) pub(m *hub.Msg, req PubReq) (*Update, error) {
 	if len(req.Acts) == 0 {
 		return nil, fmt.Errorf("no actions")
 	}
-	if req.User == "" {
-		req.User = m.From.User()
+	if req.Usr == "" {
+		req.Usr = m.From.User()
 	}
 	req.Trans.Arrived = time.Now()
 	// call the server and forward the reply if publish contains none-authoritative models

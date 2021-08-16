@@ -5,7 +5,7 @@
 	(Rev:time pk;)
 	Created?:time
 	Arrived?:time
-	User?:str
+	Usr?:str
 	Extra?:dict
 )
 
