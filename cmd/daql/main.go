@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"xelf.org/dapgx"
+	"xelf.org/dapgx/dompgx"
 	"xelf.org/daql/cmd"
 	"xelf.org/daql/dom"
 	"xelf.org/daql/gen/gengo"
@@ -22,7 +24,7 @@ const usage = `usage: daql [-dir=<path>] <command> [<args>]
 Configuration flags:
 
    -dir        The project directory where the project file can be found.
-               If this flag is not set, the current directory and its parents will be searched.
+               If not set, the current directory and its parents will be searched.
 
 Model versioning commands
    status      Prints the model version manifest for the current project.
@@ -31,7 +33,8 @@ Model versioning commands
                $ daql graph | dot -Tsvg > graph.svg && open graph.svg
 
 Code generation commands
-   gengo       Generates go code for specific schemas specified in args.
+   gengo       Generates go code for specific schemas specified in args alongside the schema files.
+   genpg       Generates postgresql schema definition for schemas specified in args to stdout.
 
 Other commands
    help        Displays this help message.
@@ -62,7 +65,7 @@ func main() {
 		err = commit(args)
 	case "graph":
 		err = graph(args)
-	case "gengo":
+	case "gengo", "genpg":
 		err = genGen(cmd, args)
 	case "repl":
 		err = repl(args)
@@ -136,6 +139,8 @@ func genGen(gen string, args []string) error {
 	switch gen {
 	case "gengo":
 		return gogen(pr, ss)
+	case "genpg":
+		return pggen(pr, ss)
 	}
 	return fmt.Errorf("no generator found for %s", gen)
 }
@@ -159,6 +164,25 @@ func gogen(pr *cmd.Project, ss []*dom.Schema) error {
 		fmt.Println(out)
 	}
 	return nil
+}
+
+func pggen(pr *cmd.Project, ss []*dom.Schema) error {
+	b := bufio.NewWriter(os.Stdout)
+	defer b.Flush()
+	w := dapgx.NewWriter(b, pr.Project, nil, nil)
+	w.WriteString(w.Header)
+	w.WriteString("BEGIN;\n\n")
+	for _, s := range ss {
+		if nogen(s) {
+			continue
+		}
+		err := dompgx.WriteSchema(w, s)
+		if err != nil {
+			return err
+		}
+	}
+	w.WriteString("COMMIT;\n")
+	return b.Flush()
 }
 
 func nogen(s *dom.Schema) bool {
