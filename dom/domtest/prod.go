@@ -3,16 +3,16 @@ package domtest
 import "xelf.org/xelf/lit"
 
 const ProdRaw = `(schema prod
-(Cat;
+(Cat; topic;
 	(ID:int pk;)
 	Name:str
 )
-(Prod;
+(Prod; topic;
 	(ID:int pk;)
 	Name:str
 	(Cat:int ref:'..Cat')
 )
-(Label;
+(Label; topic;
 	(ID:int pk;)
 	Name:str
 	Tmpl:raw
