@@ -6,8 +6,8 @@ import (
 )
 
 func GraphSchemas(p *bfr.P, pr *Project, ss []*dom.Schema) error {
-	p.Fmt("// install graphviz to turn the output into an image. for example:")
-	p.Fmt("// $ daql graph | dot -Tsvg > graph.svg && open graph.svg")
+	p.Fmt("// install graphviz to turn the output into an image. for example:\n")
+	p.Fmt("// $ daql graph | dot -Tsvg > graph.svg && open graph.svg\n")
 	p.Fmt("digraph %s {\ngraph [rankdir=LR]\n", pr.Name)
 	for _, s := range ss {
 		p.Fmt("subgraph cluster_%s {\n", s.Name)
