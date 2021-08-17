@@ -30,10 +30,32 @@ func (m *Model) Type() typ.Type {
 	switch t.Kind {
 	case knd.Bits, knd.Enum:
 		t.Body = &typ.ConstBody{Name: m.Qualified(), Consts: m.Consts()}
-	case knd.Obj, knd.Func:
+	case knd.Func:
 		t.Body = &typ.ParamBody{Name: m.Qualified(), Params: m.Params()}
+	case knd.Obj:
+		res := make([]typ.Param, 0, len(m.Elems)+8)
+		for _, el := range m.Elems {
+			if el.Name == "" && el.Type.Kind&knd.Strc != 0 {
+				res = flatParams(el.Type, res)
+			} else {
+				res = append(res, typ.P(el.Name, el.Type))
+			}
+		}
+		t.Body = &typ.ParamBody{Name: m.Qualified(), Params: res}
 	}
 	return t
+}
+
+func flatParams(strc typ.Type, ps []typ.Param) []typ.Param {
+	b := strc.Body.(*typ.ParamBody)
+	for _, p := range b.Params {
+		if p.Key != "" {
+			ps = append(ps, p)
+		} else {
+			ps = flatParams(p.Type, ps)
+		}
+	}
+	return ps
 }
 
 type Node interface {
