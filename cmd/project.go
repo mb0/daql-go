@@ -13,6 +13,7 @@ import (
 
 type Project struct {
 	Dir string
+	Reg *lit.Reg
 	mig.History
 	mig.Record
 }
@@ -27,7 +28,7 @@ func LoadProject(dir string) (*Project, error) {
 	if err != nil && err != mig.ErrNoHistory {
 		return nil, fmt.Errorf("read history: %v", err)
 	}
-	return &Project{filepath.Dir(path), h, h.Curr()}, nil
+	return &Project{filepath.Dir(path), reg, h, h.Curr()}, nil
 }
 
 func (pr *Project) FilterSchemas(names ...string) ([]*dom.Schema, error) {

@@ -26,6 +26,9 @@ Configuration flags:
    -dir        The project directory where the project file can be found.
                If not set, the current directory and its parents will be searched.
 
+   -data       The dataset to use. Either a path to a backup or a connection string to a database.
+               If not set the DAQL_DATA environment variable is tried.
+
 Model versioning commands
    status      Prints the model version manifest for the current project.
    commit      Writes the current project changes to the project history.
@@ -39,12 +42,13 @@ Code generation commands
 Other commands
    help        Displays this help message.
    repl        Runs a read-eval-print-loop to explore xelf and daql.
-               Repl currently only uses a test data model for queries.
+               Repl uses the project and specified dataset or falls back on a test fixture.
 
 `
 
 var (
-	dirFlag = flag.String("dir", ".", "project directory path")
+	dirFlag  = flag.String("dir", ".", "project directory path")
+	dataFlag = flag.String("data", "", "dataset either db uri or path to backup zig or folder")
 )
 
 func main() {

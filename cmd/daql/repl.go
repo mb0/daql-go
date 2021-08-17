@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"xelf.org/daql/cmd"
 	"xelf.org/daql/dom/domtest"
@@ -10,23 +12,38 @@ import (
 )
 
 func repl(args []string) error {
-	reg := &lit.Reg{}
-	// use fixture and memory backend for now
-	fix, err := domtest.ProdFixture(reg)
+	pr, err := cmd.LoadProject(*dirFlag)
 	if err != nil {
-		return fmt.Errorf("parse fixture: %v", err)
+		return err
 	}
-	membed := &qry.MemBackend{Reg: reg, Project: &fix.Project}
-	prodsch := fix.Schema("prod")
-	for _, kv := range fix.Fix.Keyed {
-		err = membed.Add(prodsch.Model(kv.Key), kv.Val.(*lit.List))
+	uri := *dataFlag
+	if uri == "" {
+		uri = os.Getenv("DAQL_DATA")
+	}
+	var bend qry.Backend
+	if uri == "" {
+		log.Printf("no -data specified using prod fixture")
+		fix, err := domtest.ProdFixture(pr.Reg)
 		if err != nil {
-			return fmt.Errorf("prepare backend, add %s: %v", kv.Key, err)
+			return fmt.Errorf("parse fixture: %v", err)
 		}
+		membed := &qry.MemBackend{Reg: pr.Reg, Project: pr.Project}
+		prodsch := fix.Schema("prod")
+		for _, kv := range fix.Fix.Keyed {
+			err = membed.Add(prodsch.Model(kv.Key), kv.Val.(*lit.List))
+			if err != nil {
+				return fmt.Errorf("prepare backend, add %s: %v", kv.Key, err)
+			}
+		}
+		bend = membed
+	} else {
+		data, err := cmd.OpenData(pr, uri)
+		if err != nil {
+			return fmt.Errorf("open data: %v", err)
+		}
+		bend = data.Backend
 	}
-	// TODO use the backup and a temporary database if we have a dataset argument
-	// otherwise try the configured db
-	r := cmd.NewRepl(reg, membed, cmd.ReplHistoryPath())
+	r := cmd.NewRepl(pr.Reg, bend, cmd.ReplHistoryPath())
 	r.Run()
 	return nil
 }

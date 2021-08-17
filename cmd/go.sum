@@ -183,5 +183,6 @@ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
 xelf.org/dapgx v0.0.0-20210816215016-49789a0c496b h1:3glQyn6b4CcBIeji786PvLI7PEtEXaI1fOPzImXO49g=
 xelf.org/dapgx v0.0.0-20210816215016-49789a0c496b/go.mod h1:Id/8y53qZ1w2dTibwuremkIwERnZg96w35rg7yQsDdY=
-xelf.org/xelf v0.0.0-20210815160750-74f347db9fb0 h1:uoElFrVZEVGPkzGL6cuRYtaiy8hCAzrALqkB5BfAvHk=
 xelf.org/xelf v0.0.0-20210815160750-74f347db9fb0/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
+xelf.org/xelf v0.0.0-20210817125434-f20426b80f87 h1:ND0ERLWYEFanY3yIplf6wTkdWO9rC1MZ40DeGtd/aFc=
+xelf.org/xelf v0.0.0-20210817125434-f20426b80f87/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
