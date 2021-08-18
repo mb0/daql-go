@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -49,7 +50,11 @@ func (c *conn) readAll(route chan<- *hub.Msg) error {
 		if op != websocket.TextMessage {
 			continue
 		}
-		m, err := hub.Read(r)
+		raw, err := ioutil.ReadAll(r)
+		if err != nil {
+			return fmt.Errorf("wshub read bytes failed: %w", err)
+		}
+		m, err := hub.Read(raw)
 		if err != nil {
 			return fmt.Errorf("wshub msg read failed: %w", err)
 		}
@@ -100,7 +105,7 @@ func (c *conn) write(kind int, data []byte, timeout time.Duration) error {
 func (c *conn) writeMsg(msg *hub.Msg, timeout time.Duration, log log.Logger) error {
 	b := bfr.Get()
 	defer bfr.Put(b)
-	if err := writeMsgTo(&bfr.P{Writer: b}, msg); err != nil {
+	if err := writeMsgTo(&bfr.P{Writer: b, JSON: true}, msg); err != nil {
 		log.Error("write msg", "err", err)
 		return err
 	}
