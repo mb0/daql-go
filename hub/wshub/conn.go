@@ -115,13 +115,13 @@ func (c *conn) writeMsg(msg *hub.Msg, timeout time.Duration, log log.Logger) err
 func writeMsgTo(b *bfr.P, m *hub.Msg) error {
 	b.Fmt(m.Subj)
 	if len(m.Tok) != 0 {
-		b.Fmt("#%s", m.Tok)
+		b.Byte('#')
+		b.Fmt(m.Tok)
 	}
+	b.Byte('\n')
 	if len(m.Raw) != 0 {
-		b.Byte('\n')
 		b.Write(m.Raw)
 	} else if m.Data != nil {
-		b.Byte('\n')
 		if w, ok := m.Data.(bfr.Printer); ok {
 			return w.Print(b)
 		}

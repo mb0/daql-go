@@ -29,8 +29,12 @@ func (h *Hub) ID() int64         { return 0 }
 func (h *Hub) Chan() chan<- *Msg { return h.msgs }
 func (h *Hub) User() string      { return "hub" }
 
-// Run starts routing received messages with the given router. It is usually run as go routine.
-func (h *Hub) Run(r Router) {
+// Run starts routing received messages with the given routers. It is usually run as go routine.
+func (h *Hub) Run(rs ...Router) {
+	var r Router = Routers(rs)
+	if len(rs) == 1 {
+		r = rs[0]
+	}
 	for m := range h.msgs {
 		if m == nil {
 			break

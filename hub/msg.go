@@ -44,6 +44,16 @@ func Read(input []byte) (*Msg, error) {
 	return &Msg{Subj: string(subj), Tok: string(tok), Raw: raw}, nil
 }
 
+// RawMsg returns a new message with subj and v encoded as JSON or an error.
+// This is helpful encode the message body immediately to not hand off ownership of v.
+func RawMsg(subj string, v interface{}) (m *Msg, err error) {
+	m = &Msg{Subj: subj}
+	if v != nil {
+		m.Raw, err = json.Marshal(v)
+	}
+	return m, err
+}
+
 // String returns the default string format of this message.
 func (m *Msg) String() string {
 	r := m.Raw
@@ -53,6 +63,7 @@ func (m *Msg) String() string {
 	return fmt.Sprintf("%s#%s\n%s", m.Subj, m.Tok, r)
 }
 
+// Unmarshal reads a JSON message body into v and sets it as message data or returns an error.
 func (m *Msg) Unmarshal(v interface{}) error {
 	if m.Raw == nil {
 		return fmt.Errorf("no data for msg %s", m.Subj)
@@ -65,6 +76,8 @@ func (m *Msg) Unmarshal(v interface{}) error {
 	return nil
 }
 
+// Reply returns a new message with the same subj and tok and a new data.
+// The message body will be encoded directly and data will not set.
 func (m *Msg) Reply(data interface{}) *Msg {
 	raw, err := json.Marshal(data)
 	if err != nil {
@@ -73,8 +86,11 @@ func (m *Msg) Reply(data interface{}) *Msg {
 	return &Msg{Subj: m.Subj, Tok: m.Tok, Raw: raw}
 }
 
-func (m *Msg) ReplyRes(res interface{}) *Msg { return m.Reply(resData{Res: res}) }
-func (m *Msg) ReplyErr(err error) *Msg       { return m.Reply(resData{Err: err}) }
+// ReplyRes returns a new reply with result encoded as the single json object field res
+func (m *Msg) ReplyRes(result interface{}) *Msg { return m.Reply(resData{Res: result}) }
+
+// ReplyErr returns a new reply with the error encoded as the single json object field err
+func (m *Msg) ReplyErr(err error) *Msg { return m.Reply(resData{Err: err}) }
 
 type resData struct {
 	Res interface{} `json:"res,omitempty"`
