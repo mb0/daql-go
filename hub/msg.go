@@ -90,11 +90,11 @@ func (m *Msg) Reply(data interface{}) *Msg {
 func (m *Msg) ReplyRes(result interface{}) *Msg { return m.Reply(resData{Res: result}) }
 
 // ReplyErr returns a new reply with the error encoded as the single json object field err
-func (m *Msg) ReplyErr(err error) *Msg { return m.Reply(resData{Err: err}) }
+func (m *Msg) ReplyErr(err error) *Msg { return m.Reply(resData{Err: fmt.Sprint(err)}) }
 
 type resData struct {
 	Res interface{} `json:"res,omitempty"`
-	Err error       `json:"err,omitempty"`
+	Err string      `json:"err,omitempty"`
 }
 
 type TokMap struct {

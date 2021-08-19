@@ -86,7 +86,7 @@ func (c *Client) connect() (*websocket.Conn, error) {
 		c.ClearToken(c.URL)
 		return nil, err
 	}
-	c.Log.Debug("evcli connected", "url", c.URL)
+	c.Log.Debug("wshub client connected", "url", c.URL)
 	return wc, nil
 }
 

@@ -67,13 +67,7 @@ func (c *conn) readAll(route chan<- *hub.Msg) error {
 	}
 }
 
-func privateSubj(subj string) bool {
-	switch subj {
-	case "", "+", "-":
-		return true
-	}
-	return subj[0] == '_'
-}
+func privateSubj(subj string) bool { return subj == "" || subj[0] == '_' }
 
 func (c *conn) writeAll(id int64, log log.Logger) {
 	defer c.wc.Close()
@@ -106,7 +100,6 @@ func (c *conn) writeMsg(msg *hub.Msg, timeout time.Duration, log log.Logger) err
 	b := bfr.Get()
 	defer bfr.Put(b)
 	if err := writeMsgTo(&bfr.P{Writer: b, JSON: true}, msg); err != nil {
-		log.Error("write msg", "err", err)
 		return err
 	}
 	return c.write(websocket.TextMessage, b.Bytes(), timeout)
