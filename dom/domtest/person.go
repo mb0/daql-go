@@ -17,13 +17,13 @@ const PersonRaw = `(schema person
 (Person;
 	(ID:int pk;)
 	Name:str
-	(Family:int ref:'..Group')
+	(Family:@Group.ID)
 	@Contact?
 )
 (Member;
 	(ID:int pk;)
-	(Person:int ref:'..Person')
-	(Group:int ref:'..Group')
+	@Person.ID
+	@Group.ID
 	Joined:time
 ))`
 

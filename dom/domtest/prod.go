@@ -10,7 +10,7 @@ const ProdRaw = `(schema prod
 (Prod; topic;
 	(ID:int pk;)
 	Name:str
-	(Cat:int ref:'..Cat')
+	@Cat.ID
 )
 (Label; topic;
 	(ID:int pk;)

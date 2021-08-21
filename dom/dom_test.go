@@ -64,6 +64,22 @@ func TestDom(t *testing.T) {
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
 			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'B' type:<obj test.foo>}]}]}`,
 		},
+		{`(schema test (Foo; A:str) (Bar; @test.Foo;))`, `{name:'test' models:[` +
+			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<obj test.foo>}]}]}`,
+		},
+		{`(schema test (Foo; A:str) (Bar; @test.Foo))`, `{name:'test' models:[` +
+			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{type:<obj test.foo>}]}]}`,
+		},
+		{`(schema test (Foo:enum A;) (Bar; @test.Foo))`, `{name:'test' models:[` +
+			`{kind:<enum> name:'Foo' schema:'test' elems:[{name:'A' val:1}]} ` +
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum test.foo>}]}]}`,
+		},
+		{`(schema test (Foo:enum A;) (Bar; @test.Foo;))`, `{name:'test' models:[` +
+			`{kind:<enum> name:'Foo' schema:'test' elems:[{name:'A' val:1}]} ` +
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum test.foo>}]}]}`,
+		},
 		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) (Group:str ref:'..group')))`,
 			`{name:'test' models:[` +
 				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
@@ -71,12 +87,38 @@ func TestDom(t *testing.T) {
 				`{name:'ID' type:<int> bits:2} ` +
 				`{name:'Group' type:<str> ref:'..group'}]}]}`,
 		},
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @test.Group.ID;)))`,
+			`{name:'test' models:[` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
+				`{name:'ID' type:<int> bits:2} ` +
+				`{name:'Group' type:<str> ref:'test.group'}]}]}`,
+		},
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @test.Group.ID)))`,
+			`{name:'test' models:[` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
+				`{name:'ID' type:<int> bits:2} ` +
+				`{name:'Group' type:<str> ref:'test.group'}]}]}`,
+		},
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) Groups:list|@test.Group.ID)))`,
+			`{name:'test' models:[` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
+				`{name:'ID' type:<int> bits:2} ` +
+				`{name:'Groups' type:<list|str> ref:'test.group'}]}]}`,
+		},
+		{`(schema tree (Node; (ID:str pk;) Par:@.ID))`,
+			`{name:'tree' models:[` +
+				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str> bits:2} ` +
+				`{name:'Par' type:<str> ref:'tree.node'}]}]}`,
+		},
 		{`(schema test (Spam:func Egg:str bool))`, "{name:'test' models:[" +
 			`{kind:<func> name:'Spam' schema:'test' elems:[{name:'Egg' type:<str>} {type:<bool>}]}]}`,
 		},
 	}
-	reg := &lit.Reg{}
 	for _, test := range tests {
+		reg := &lit.Reg{}
 		s, err := exp.Eval(reg, NewEnv(nil), test.raw)
 		if err != nil {
 			t.Errorf("execute %s got error: %+v", test.raw, err)
