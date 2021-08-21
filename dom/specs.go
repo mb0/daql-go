@@ -252,7 +252,7 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 			m = s.Model(cor.Keyed(ps[1]))
 			return reslRefType(m, el)
 		}
-		m := s.Model(ps[0])
+		m := s.Model(cor.Keyed(ps[0]))
 		if m != nil {
 			return reslRefField(m, ps[1], el)
 		}

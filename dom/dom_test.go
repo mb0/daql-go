@@ -87,21 +87,21 @@ func TestDom(t *testing.T) {
 				`{name:'ID' type:<int> bits:2} ` +
 				`{name:'Group' type:<str> ref:'..group'}]}]}`,
 		},
-		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @test.Group.ID;)))`,
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @Group.ID;)))`,
 			`{name:'test' models:[` +
 				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
 				`{name:'ID' type:<int> bits:2} ` +
 				`{name:'Group' type:<str> ref:'test.group'}]}]}`,
 		},
-		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @test.Group.ID)))`,
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) @Group.ID)))`,
 			`{name:'test' models:[` +
 				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
 				`{name:'ID' type:<int> bits:2} ` +
 				`{name:'Group' type:<str> ref:'test.group'}]}]}`,
 		},
-		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) Groups:list|@test.Group.ID)))`,
+		{`(schema test (Group; (ID:str pk;)) (Entry; (ID:int pk;) Groups:list|@Group.ID)))`,
 			`{name:'test' models:[` +
 				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
