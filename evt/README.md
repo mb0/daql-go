@@ -3,7 +3,7 @@ evt
 
 Package evt provides servers and tools for event sourcing. Event sourcing in this context means
 a data model that is based on a sequence of events that can recreate the data model at any point
-int time.
+in time.
 
 An `Event` consists of a string topic, a key, command a revision time and optionally an argument.
 Daql uses mostly dumb events where the topic is a model name, the key a primary id and command is a
@@ -20,7 +20,7 @@ time of the event but must be greater than the last revision in the persisted le
 Every transaction generates an audit log entry that has extra information. Backup and restore
 require both audit and event logs, as well as other data not covered by the event sourcing.
 
-`Server` provides hub services to subscribe and publish to a ledger. Servers usually uses a ledger
+`Server` provides hub services to subscribe and publish to a ledger. Servers usually use a ledger
 implementation that updates the latest model state to support queries without event aggregation for
 most operations. We might at some point introduce stateless topics, that have their only persistent
 representation in the ledger.
