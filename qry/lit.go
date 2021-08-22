@@ -62,18 +62,20 @@ func (b *MemBackend) Keys() (res []string) {
 }
 func (b *MemBackend) Close() error { return nil }
 func (b *MemBackend) Stream(key string) (mig.Stream, error) {
-	if l, ok := b.Data[key]; !ok {
-		return mig.NewLitStream(l), nil
+	m := b.Project.Model(key)
+	if m == nil {
+		return nil, fmt.Errorf("stream %s not found", key)
 	}
-	return nil, fmt.Errorf("stream %s not found", key)
+	return mig.NewLitStream(b.list(m)), nil
 }
 func (b *MemBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
-	key := j.Model.Qualified()
-	list := b.Data[key]
-	if list == nil {
-		return nil, fmt.Errorf("lit backend query data %q not found", key)
+	return execListQry(p, j, b.list(j.Model))
+}
+func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
+	if list = b.Data[m.Qualified()]; list == nil {
+		list = &lit.List{El: m.Type()}
 	}
-	return execListQry(p, j, list)
+	return list
 }
 
 // Add converts a list of list of valies to a list of model strc and sets it to this backend.
