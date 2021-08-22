@@ -134,7 +134,7 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	if err != nil {
 		return nil, err
 	}
-	p.Reg.SetRef(m.Qualified(), m.Type(), nil)
+	p.Reg.SetRef(strings.ToLower(m.Qualified()), m.Type(), nil)
 	return nil, nil
 }
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (_ lit.Val, err error) {
@@ -175,10 +175,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 		}
 	case knd.Obj, knd.Func:
 		if key != "" && key[0] == '@' {
-			el, err = prepRefElem(key)
-			if err != nil {
-				return nil, err
-			}
+			prepRefElem(el)
 			if arg != nil {
 				ta, err := p.Eval(env, arg)
 				if err != nil {
@@ -187,6 +184,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 				switch tv := ta.Val.(type) {
 				case lit.Mut:
 					n := tv.Ptr().(*Elem)
+					n.Name = el.Name
 					n.Type = el.Type
 					el = n
 				}
@@ -213,7 +211,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 					if idx := strings.LastIndexByte(name, '.'); idx >= 0 {
 						name = name[idx+1:]
 					}
-					el.Name = cor.Cased(name)
+					el.Name = name
 				}
 			}
 		}
@@ -257,7 +255,7 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 			return reslRefField(m, ps[1], el)
 		}
 		if p != nil {
-			m = p.Model(cor.Keyed(name))
+			m = p.Schema(ps[0]).Model(cor.Keyed(ps[1]))
 			return reslRefType(m, el)
 		}
 		return nil
@@ -271,7 +269,7 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 			if ps[0] == s.Name {
 				m = s.Model(cor.Keyed(ps[1]))
 			} else {
-				m = p.Model(cor.Keyed(name[:1+len(ps[0])+len(ps[1])]))
+				m = p.Schema(ps[0]).Model(cor.Keyed(ps[1]))
 			}
 			return reslRefField(m, ps[2], el)
 		} else {
@@ -285,14 +283,14 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 	}
 	return fmt.Errorf("unsupported dom reference %s", name)
 }
-func prepRefElem(key string) (*Elem, error) {
-	ref := key[1:]
-	var bits Bit
+func prepRefElem(el *Elem) {
+	ref := el.Name[1:]
 	if ref[len(ref)-1] == '?' {
-		bits |= BitOpt
+		el.Bits |= BitOpt
 		ref = ref[:len(ref)-1]
 	}
-	return &Elem{Type: typ.Ref(ref), Bits: bits}, nil
+	el.Name = "@"
+	el.Type = typ.Ref(ref)
 }
 func reslRefType(m *Model, el *Elem) error {
 	if m == nil {
@@ -305,7 +303,7 @@ func reslRefType(m *Model, el *Elem) error {
 		}
 		return e.Type, nil
 	})
-	if el.Name == "" {
+	if el.Name == "@" {
 		el.Name = m.Name
 	}
 	return nil
@@ -321,7 +319,7 @@ func reslRefField(m *Model, key string, el *Elem) error {
 		return fmt.Errorf("key %s not found in %s", key, mt)
 	}
 	p := pb.Params[idx]
-	if el.Name == "" {
+	if el.Name == "@" {
 		el.Name = m.Name
 	}
 	el.Ref = m.Qualified()

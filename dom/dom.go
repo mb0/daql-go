@@ -63,7 +63,7 @@ type Node interface {
 }
 
 func (m *Model) Qual() string      { return m.Schema }
-func (m *Model) Qualified() string { return fmt.Sprintf("%s.%s", m.Schema, m.Key()) }
+func (m *Model) Qualified() string { return fmt.Sprintf("%s.%s", m.Schema, m.Name) }
 
 func (s *Schema) Qualified() string { return s.Key() }
 

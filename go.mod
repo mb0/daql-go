@@ -4,5 +4,5 @@ go 1.16
 
 require (
 	github.com/gorilla/websocket v1.4.2
-	xelf.org/xelf v0.0.0-20210819111359-ed8b8492055d
+	xelf.org/xelf v0.0.0-20210822004056-3ec66da63a21
 )
