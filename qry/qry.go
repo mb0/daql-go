@@ -2,7 +2,6 @@
 package qry
 
 import (
-	"errors"
 	"fmt"
 
 	"xelf.org/daql/dom"
@@ -65,18 +64,10 @@ func (q *Qry) Exec(str string, arg lit.Val) (lit.Val, error) {
 // ExecExp executes the given query expr with arg and returns a value or an error.
 func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
 	var env exp.Env = &Doc{Qry: q}
-	if arg != nil && !arg.Nil() {
+	if arg != nil {
 		env = &exp.ArgEnv{Par: env, Typ: arg.Type(), Val: arg}
 	}
-	p := exp.NewProg(q.Reg, env, expr)
-	for i := 0; i < 16; i++ {
-		expr, err = p.Resl(env, expr, typ.Void)
-		if err != nil && !errors.Is(err, exp.ErrDefer) {
-			return nil, fmt.Errorf("resl qry %s error: %w", expr, err)
-		}
-		break
-	}
-	a, err := p.Eval(env, expr)
+	a, err := exp.EvalExp(q.Reg, env, expr)
 	if err != nil {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
