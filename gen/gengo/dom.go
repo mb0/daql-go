@@ -112,9 +112,9 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 		writeEnumConsts(g, m)
 	case knd.Obj:
 		g.Fmt("type %s ", m.Name)
-		t := m.Type()
-		t.Kind = knd.Rec
-		err = WriteType(g, t)
+		err = WriteType(g, typ.Type{Kind: knd.Rec, Body: &typ.ParamBody{
+			Name: m.Qualified(), Params: m.Params(),
+		}})
 		g.Byte('\n')
 	case knd.Func:
 		ps := m.Params()
