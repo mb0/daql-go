@@ -10,16 +10,16 @@ import (
 	"xelf.org/xelf/typ"
 )
 
-// Backend execute query jobs for the advertises dom schemas.
+// Backend executes query jobs for the advertised dom schemas.
 type Backend interface {
 	Proj() *dom.Project
 	Exec(*exp.Prog, *Job) (lit.Val, error)
 }
 
-// Backends is a list of backends
+// Backends is a list of backends that falls back on a lit backend for path subjects.
 type Backends []Backend
 
-// Subj returns a subject from the first backend provides ref or an error.
+// Subj returns a subject from the first backend that provides ref or an error.
 func (bs Backends) Subj(ref string) (*Subj, error) {
 	switch ref[0] {
 	case '.', '/', '$': // path subj

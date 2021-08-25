@@ -39,7 +39,7 @@ func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
 	return execListQry(p, j, list)
 }
 
-// MemBackend is a query backend evaluates queries using xelf on in-memory literal values.
+// MemBackend is a query backend that evaluates queries using xelf on in-memory literal values.
 type MemBackend struct {
 	*lit.Reg
 	*dom.Project
@@ -78,7 +78,7 @@ func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
 	return list
 }
 
-// Add converts a list of list of valies to a list of model strc and sets it to this backend.
+// Add converts and adds a nested list of values to a to this backend.
 func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
 	if b.Data == nil {
 		b.Data = make(map[string]*lit.List)

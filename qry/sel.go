@@ -30,7 +30,7 @@ type Field struct {
 // Fields is a list of fields with a convenient lookup method.
 type Fields []*Field
 
-// Field returns a fields with key or nil.
+// Field returns the field with key or nil.
 func (fs Fields) Field(key string) *Field {
 	for _, f := range fs {
 		if f.Key == key {

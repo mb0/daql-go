@@ -21,7 +21,7 @@ func Get(r *http.Request) *Session {
 	return s
 }
 
-// Provide returns adds a http middleware that injects a session provider.
+// Provide returns a http middleware that injects a session provider.
 func Provide(m *Manager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return Provider{m, next}
