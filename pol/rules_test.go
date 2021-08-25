@@ -42,6 +42,7 @@ var testRules = `
 # but if your use case requires fine-grained per user permissions it can very well be done 
 @   user          bob
 +x  isyouruncle   bob
++rw isyouruncle   bob
 `
 
 func TestRulePolicy(t *testing.T) {
@@ -56,6 +57,7 @@ func TestRulePolicy(t *testing.T) {
 		{-8, "evt.event", "*"},
 		{0, "user", "bob"},
 		{1, "isyouruncle", "bob"},
+		{6, "isyouruncle", "bob"},
 	}
 	if !reflect.DeepEqual(rs, want) {
 		t.Fatalf("read rules want %v got %v", want, rs)
@@ -76,6 +78,7 @@ func TestRulePolicy(t *testing.T) {
 		{"mb0", []Action{{D, "prod.prod"}}, true},
 		{"bob", []Action{{R, "evt.event"}}, false},
 		{"bob", []Action{{X, "self.profile"}}, true},
+		{"bob", []Action{{R | W, "self.profile"}}, true},
 	}
 	for _, test := range tests {
 		err := p.Police(test.role, test.acts...)

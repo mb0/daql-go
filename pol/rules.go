@@ -54,18 +54,39 @@ func (p *RulePolicy) Add(rs ...Rule) error {
 		}
 		role := p.role(r.Role)
 		if r.Perm == 0 { // add group
-			group := p.role(r.Top)
-			role.roles = append(role.roles, group)
+			if !hasRole(role.roles, r.Top) {
+				role.roles = append(role.roles, p.role(r.Top))
+			}
 		} else { // add permit or deny
 			act := Action{r.Op(), r.Top}
 			if r.Perm < 0 {
-				role.deny = append(role.deny, act)
+				role.deny = addAct(role.deny, act)
 			} else {
-				role.permit = append(role.permit, act)
+				role.permit = addAct(role.permit, act)
 			}
 		}
 	}
 	return nil
+}
+
+func addAct(acts []Action, act Action) []Action {
+	for _, a := range acts {
+		if a.Top != act.Top {
+			continue
+		}
+		a.Op |= act.Op
+		return acts
+	}
+	return append(acts, act)
+}
+
+func hasRole(roles []*role, name string) bool {
+	for _, r := range roles {
+		if r.name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *RulePolicy) role(name string) *role {
