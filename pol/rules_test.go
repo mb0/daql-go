@@ -78,7 +78,7 @@ func TestRulePolicy(t *testing.T) {
 		{"mb0", []Action{{D, "prod.prod"}}, true},
 		{"bob", []Action{{R, "evt.event"}}, false},
 		{"bob", []Action{{X, "self.profile"}}, true},
-		{"bob", []Action{{R | W, "self.profile"}}, true},
+		{"bob", []Action{{R | W, "isyouruncle"}}, true},
 	}
 	for _, test := range tests {
 		err := p.Police(test.role, test.acts...)

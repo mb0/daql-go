@@ -70,11 +70,11 @@ func (p *RulePolicy) Add(rs ...Rule) error {
 }
 
 func addAct(acts []Action, act Action) []Action {
-	for _, a := range acts {
+	for i, a := range acts {
 		if a.Top != act.Top {
 			continue
 		}
-		a.Op |= act.Op
+		acts[i].Op = a.Op | act.Op
 		return acts
 	}
 	return append(acts, act)
