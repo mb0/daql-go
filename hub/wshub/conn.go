@@ -75,15 +75,15 @@ func (c *conn) writeAll(id int64, log log.Logger) {
 		select {
 		case m := <-c.send:
 			if m == nil {
-				c.write(websocket.CloseMessage, []byte{}, time.Second)
+				c.write(websocket.CloseMessage, []byte{}, 100*time.Millisecond)
 				return
 			}
-			err := c.writeMsg(m, 20*time.Second, log)
+			err := c.writeMsg(m, time.Second, log)
 			if err != nil {
 				return
 			}
 		case <-c.tick:
-			err := c.write(websocket.PingMessage, []byte{}, 5*time.Second)
+			err := c.write(websocket.PingMessage, []byte{}, time.Second)
 			if err != nil {
 				return
 			}

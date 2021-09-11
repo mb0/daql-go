@@ -95,6 +95,7 @@ func (c *Client) run(wc *websocket.Conn, r chan<- *hub.Msg) error {
 	r <- &hub.Msg{From: cc, Subj: hub.Signon}
 	go cc.writeAll(c.id, c.Log)
 	err := cc.readAll(r)
+	c.send <- nil
 	r <- &hub.Msg{From: cc, Subj: hub.Signoff}
 	return err
 }
