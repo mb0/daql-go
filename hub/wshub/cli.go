@@ -93,7 +93,7 @@ func (c *Client) connect() (*websocket.Conn, error) {
 func (c *Client) run(wc *websocket.Conn, r chan<- *hub.Msg) error {
 	cc := newConn(c.id, wc, c.send, c.Config.User)
 	r <- &hub.Msg{From: cc, Subj: hub.Signon}
-	go cc.writeAll(c.id, c.Log)
+	go cc.writeAll(c.id, c.Log, 2*time.Second)
 	err := cc.readAll(r)
 	c.send <- nil
 	r <- &hub.Msg{From: cc, Subj: hub.Signoff}

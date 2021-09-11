@@ -69,7 +69,7 @@ func (c *conn) readAll(route chan<- *hub.Msg) error {
 
 func privateSubj(subj string) bool { return subj == "" || subj[0] == '_' }
 
-func (c *conn) writeAll(id int64, log log.Logger) {
+func (c *conn) writeAll(id int64, log log.Logger, msgtimeout time.Duration) {
 	defer c.wc.Close()
 	for {
 		select {
@@ -78,7 +78,7 @@ func (c *conn) writeAll(id int64, log log.Logger) {
 				c.write(websocket.CloseMessage, []byte{}, 100*time.Millisecond)
 				return
 			}
-			err := c.writeMsg(m, time.Second, log)
+			err := c.writeMsg(m, msgtimeout, log)
 			if err != nil {
 				return
 			}

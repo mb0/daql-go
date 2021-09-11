@@ -42,7 +42,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := newConn(hub.NextID(), wc, nil, user)
 	c.tick = t.C
 	route <- &hub.Msg{From: c, Subj: hub.Signon}
-	go c.writeAll(0, s.Log)
+	go c.writeAll(0, s.Log, 20*time.Second)
 	err = c.readAll(route)
 	route <- &hub.Msg{From: c, Subj: hub.Signoff}
 	if err != nil {
