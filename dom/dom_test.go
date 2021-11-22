@@ -109,6 +109,28 @@ func TestDom(t *testing.T) {
 		{`(schema test (Spam:func Egg:str bool))`, "{name:'test' models:[" +
 			`{kind:<func> name:'Spam' schema:'test' elems:[{name:'Egg' type:<str>} {type:<bool>}]}]}`,
 		},
+		{`(schema test (Node; (Egg:str idx;)))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Egg' type:<str> bits:4}]}]}`,
+		},
+		{`(schema test (Node; (Egg:str uniq;)))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Egg' type:<str> bits:8}]}]}`,
+		},
+		{`(schema test (Node; Spam:str Egg:str idx:['spam' 'egg']))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Spam' type:<str>} {name:'Egg' type:<str>}] ` +
+			`object:{indices:[{keys:['spam' 'egg']}]}}]}`,
+		},
+		{`(schema test (Node; Spam:str Egg:str idx:'spam' idx:'egg'))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Spam' type:<str>} {name:'Egg' type:<str>}] ` +
+			`object:{indices:[{keys:['spam']} {keys:['egg']}]}}]}`,
+		},
+		{`(schema test (Node; Spam:str Egg:str uniq:'spam' uniq:'egg'))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Spam' type:<str>} {name:'Egg' type:<str>}] ` +
+			`object:{indices:[{keys:['spam'] unique:true} {keys:['egg'] unique:true}]}}]}`,
+		},
+		{`(schema test (Node; Spam:str Egg:str uniq:['spam' 'egg']))`, "{name:'test' models:[" +
+			`{kind:<obj> name:'Node' schema:'test' elems:[{name:'Spam' type:<str>} {name:'Egg' type:<str>}] ` +
+			`object:{indices:[{keys:['spam' 'egg'] unique:true}]}}]}`,
+		},
 	}
 	for _, test := range tests {
 		reg := &lit.Reg{}

@@ -56,7 +56,50 @@ var schemaSpec = domSpec(&Schema{}, "<form schema name:sym tags:tupl?|exp @>", t
 	return nil
 })
 
+func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_ lit.Val, err error) {
+	m := n.Ptr().(*Model)
+	switch a := arg.(type) {
+	case nil:
+		return nil, fmt.Errorf("index %s with nil arg", s)
+	case *exp.Lit:
+		switch av := a.Val.(type) {
+		case *lit.List:
+			if m.Object == nil {
+				m.Object = &Object{}
+			}
+			idx := &Index{Unique: s == "uniq"}
+			for _, v := range av.Vals {
+				s, err := lit.ToStr(v)
+				if err != nil {
+					return nil, err
+				}
+				idx.Keys = append(idx.Keys, string(s))
+			}
+			m.Object.Indices = append(m.Object.Indices, idx)
+		case lit.Str:
+			if m.Object == nil {
+				m.Object = &Object{}
+			}
+			idx := &Index{Unique: s == "uniq", Keys: []string{av.String()}}
+			m.Object.Indices = append(m.Object.Indices, idx)
+		default:
+			return nil, fmt.Errorf("index %s unexpected value %T", s, av)
+		}
+		return nil, nil
+	}
+	return nil, fmt.Errorf("index %s unexpected arg %T", s, arg)
+}
+
+func noopSetter(p *exp.Prog, n ext.Node, key string, v lit.Val) error {
+	return nil
+}
+
+var idxRule = ext.Rule{Prepper: idxAppender, Setter: noopSetter}
 var modelSpec = domSpec(&Model{}, "<form model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
+	Key: map[string]ext.Rule{
+		"idx":  idxRule,
+		"uniq": idxRule,
+	},
 	Default: ext.Rule{
 		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
