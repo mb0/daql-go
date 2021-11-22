@@ -5,7 +5,8 @@
 	PK;
 	Idx;
 	Uniq;
-	Ordr;
+	Asc;
+	Desc;
 	Auto;
 	RO;
 )

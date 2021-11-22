@@ -114,7 +114,8 @@ var bitConsts = []typ.Const{
 	typ.C("PK", int64(BitPK)),
 	typ.C("Idx", int64(BitIdx)),
 	typ.C("Uniq", int64(BitUniq)),
-	typ.C("Ordr", int64(BitOrdr)),
+	typ.C("Asc", int64(BitAsc)),
+	typ.C("Desc", int64(BitDesc)),
 	typ.C("Auto", int64(BitAuto)),
 	typ.C("RO", int64(BitRO)),
 }

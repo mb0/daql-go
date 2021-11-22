@@ -22,7 +22,8 @@ const (
 	BitPK
 	BitIdx
 	BitUniq
-	BitOrdr
+	BitAsc
+	BitDesc
 	BitAuto
 	BitRO
 )
