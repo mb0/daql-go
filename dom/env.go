@@ -33,6 +33,7 @@ func FindEnv(env exp.Env) *Env {
 	return nil
 }
 func (e *Env) Parent() exp.Env { return e.Par }
+func (e *Env) Dyn() exp.Spec   { return e.Par.Dyn() }
 func (e *Env) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
 	var def exp.Spec
 	switch s.Sym {

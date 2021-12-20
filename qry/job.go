@@ -78,6 +78,7 @@ func FindJob(env exp.Env) *Job {
 // ParentJob returns the parent job environment of this job or nil.
 func (e *Job) ParentJob() *Job { return FindJob(e.Env) }
 func (e *Job) Parent() exp.Env { return e.Env }
+func (e *Job) Dyn() exp.Spec   { return e.Env.Dyn() }
 func (e *Job) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
 	k, ok := exp.DotKey(k)
 	if !ok {

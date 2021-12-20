@@ -111,6 +111,7 @@ func (p *Doc) Add(j *Job) {
 }
 
 func (e *Doc) Parent() exp.Env { return e.Env }
+func (e *Doc) Dyn() exp.Spec   { return e.Env.Dyn() }
 func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
 	switch c := s.Sym[0]; c {
 	case '?', '*', '#':
