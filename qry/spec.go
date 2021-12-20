@@ -27,12 +27,17 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 		s.Doc.Add(j)
 	}
 	if t.Subj.Type == typ.Void {
-		res, err := p.Resl(par, &exp.Sym{Sym: t.Ref}, typ.Void)
-		if err != nil {
-			return c, err
+		if j.Model != nil {
+			t.Subj.Type = j.Model.Type()
+			t.Subj.Fields = subjFields(t.Subj.Type)
+		} else {
+			res, err := p.Resl(par, &exp.Sym{Sym: t.Ref}, typ.Void)
+			if err != nil {
+				return c, err
+			}
+			t.Subj.Type = res.Resl()
+			t.Subj.Fields = subjFields(t.Subj.Type)
 		}
-		t.Subj.Type = res.Resl()
-		t.Subj.Fields = subjFields(t.Subj.Type)
 	}
 	whr, args := splitPlain(c.Args[0].(*exp.Tupl).Els)
 	tags, decl := splitDecls(args)

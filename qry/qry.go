@@ -3,6 +3,8 @@ package qry
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
 	"xelf.org/daql/dom"
 	"xelf.org/xelf/exp"
@@ -16,40 +18,46 @@ type Backend interface {
 	Exec(*exp.Prog, *Job) (lit.Val, error)
 }
 
-// Backends is a list of backends that falls back on a lit backend for path subjects.
-type Backends []Backend
-
-// Subj returns a subject from the first backend that provides ref or an error.
-func (bs Backends) Subj(ref string) (*Subj, error) {
-	switch ref[0] {
-	case '.', '/', '$': // path subj
-		s := Subj{Ref: ref, Bend: &LitBackend{}}
-		return &s, nil
-	}
-	for _, b := range bs {
-		if m := b.Proj().Model(ref); m != nil {
-			s := &Subj{Ref: ref, Bend: b, Model: m}
-			s.Type = m.Type()
-			s.Fields = subjFields(s.Type)
-			return s, nil
-		}
-	}
-	return nil, fmt.Errorf("no subj found for %q", ref)
-}
-
 // Qry is a context to execute queries on backends.
 type Qry struct {
 	Reg *lit.Reg
 	Env exp.Env
-	Backends
+	Backend
+	doms *dom.Schema
 }
 
-// New returns a new query context with the program environment and backends.
-func New(reg *lit.Reg, env exp.Env, bends ...Backend) *Qry {
+// New returns a new query context with the program environment and backend.
+func New(reg *lit.Reg, env exp.Env, bend Backend) *Qry {
 	if reg == nil {
 		reg = &lit.Reg{}
 	}
-	return &Qry{Backends: Backends(bends), Env: env, Reg: reg}
+	var pr dom.Project
+	doms, err := dom.ReadSchema(reg, strings.NewReader(dom.RawSchema()), "dom.daql", &pr)
+	if err != nil {
+		log.Fatalf("could not read dom schema: %s", err)
+	}
+	return &Qry{Backend: bend, Env: env, Reg: reg, doms: doms}
+}
+
+// Subj returns a subject from the first backend that provides ref or an error.
+func (q *Qry) Subj(ref string) (*Subj, error) {
+	switch ref[0] {
+	case '.', '/', '$': // path subj
+		return &Subj{Ref: ref, Bend: &LitBackend{}}, nil
+	}
+	pr := q.Proj()
+	switch ref {
+	case "dom.model", "dom.schema", "dom.project":
+		m := q.doms.Model(ref[4:])
+		return &Subj{Ref: ref, Bend: &DomBackend{pr}, Model: m}, nil
+	}
+	if m := pr.Model(ref); m != nil {
+		s := &Subj{Ref: ref, Bend: q.Backend, Model: m}
+		s.Type = m.Type()
+		s.Fields = subjFields(s.Type)
+		return s, nil
+	}
+	return nil, fmt.Errorf("no subj found for %q", ref)
 }
 
 // Exec executes the given query str with arg and returns a value or an error.
