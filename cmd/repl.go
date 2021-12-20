@@ -8,10 +8,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/peterh/liner"
 	"xelf.org/daql/qry"
+	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
@@ -41,52 +41,45 @@ func NewRepl(reg *lit.Reg, bend qry.Backend, hist string) *Repl {
 func (r Repl) Run() {
 	r.readHistory()
 	defer r.Close()
-	var buf bytes.Buffer
-	var multi bool
+	var raw []byte
 	q := qry.New(r.Reg, extlib.Std, r.Bend)
 	for {
 		prompt := "> "
-		if multi = buf.Len() > 0; multi {
+		if len(raw) > 0 {
 			prompt = "… "
 		}
 		got, err := r.Prompt(prompt)
 		if err != nil {
-			buf.Reset()
 			if err == io.EOF {
 				r.writeHistory()
 				fmt.Println()
 				return
 			}
+			raw = raw[:0]
 			log.Printf("unexpected error reading prompt: %v", err)
 			continue
 		}
-		got = strings.TrimSpace(got)
-		if got == "" {
-			continue
-		}
-		if multi {
-			buf.WriteByte(' ')
-		}
-		buf.WriteString(got)
-		r.AppendHistory(buf.String())
-		el, err := exp.Read(r.Reg, &buf, "")
+		raw = append(raw, got...)
+		el, err := exp.Read(r.Reg, bytes.NewReader(raw), "")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
+				raw = append(raw, '\n')
 				continue
 			}
-			buf.Reset()
 			log.Printf("error parsing %s: %v", got, err)
+			r.AppendHistory(string(raw))
+			raw = raw[:0]
 			continue
 		}
-		buf.Reset()
+		r.AppendHistory(bfr.String(el))
+		raw = raw[:0]
 		l, err := q.ExecExp(el, nil)
 		if err != nil {
 			log.Printf("error resolving %s: %v", got, err)
 			continue
 		}
-		fmt.Printf("= %s\n\n", l)
+		fmt.Printf("= %s\n\n", bfr.String(l))
 	}
-	return
 }
 
 func (r *Repl) readHistory() {
