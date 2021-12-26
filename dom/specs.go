@@ -161,7 +161,6 @@ func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	return nil, nil
 }
 func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) (lit.Val, error) {
-	s := n.Ptr().(*Schema)
 	aa, err := p.Eval(env, arg)
 	if err != nil {
 		return nil, err
@@ -170,6 +169,7 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	if !ok || mut.Zero() {
 		return nil, fmt.Errorf("not a model value %s", aa)
 	}
+	s := n.Ptr().(*Schema)
 	m := mut.Ptr().(*Model)
 	m.Schema = s.Name
 	s.Models = append(s.Models, m)
@@ -258,6 +258,9 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 					el.Name = name
 				}
 			}
+			if el.Name == "ID" && k == knd.Obj && len(m.Elems) == 0 {
+				el.Bits |= BitPK
+			}
 		}
 		if strings.HasSuffix(el.Name, "?") {
 			el.Bits |= BitOpt
@@ -336,13 +339,19 @@ func prepRefElem(el *Elem) {
 	el.Name = "@"
 	el.Type = typ.Ref(ref)
 }
+
+func isModelRef(m *Model, ref string) bool {
+	// TODO also handle qualified names ?
+	return m.Name == ref
+}
 func reslRefType(m *Model, el *Elem) error {
 	if m == nil {
 		return fmt.Errorf("model %s not found", el.Type)
 	}
 	// update type (usually container type)
 	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
-		if e.Kind&knd.Ref != 0 {
+		b, ok := e.Body.(*typ.RefBody)
+		if ok && isModelRef(m, b.Ref) {
 			return m.Type(), nil
 		}
 		return e.Type, nil
