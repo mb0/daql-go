@@ -29,7 +29,9 @@ func GraphSchemas(p *bfr.P, pr *Project, ss []*dom.Schema) error {
 				continue
 			}
 			for _, r := range rel.Out {
-				p.Fmt("\"%s\"->\"%s\"\n", key, r.B.Qualified())
+				if r.Via.Model == nil {
+					p.Fmt("\"%s\"->\"%s\"\n", key, r.B.Qualified())
+				}
 			}
 		}
 	}

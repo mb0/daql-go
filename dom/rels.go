@@ -109,16 +109,34 @@ func Relate(pro *Project) (Relations, error) {
 	return res, nil
 }
 
+func domRef(pro *Project, s *Schema, m *Model, ref string) *Model {
+	if ref == "" {
+		return nil
+	}
+	if ref[0] == '.' {
+		if ref == "." {
+			return m
+		}
+		if ref[1] == '.' {
+			return s.Model(cor.Keyed(ref[2:]))
+		}
+		return nil
+	}
+	idx := strings.IndexByte(ref, '.')
+	if idx < 0 {
+		return s.Model(cor.Keyed(ref))
+	}
+	return pro.Model(cor.Keyed(ref))
+}
+
 func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 	for i, e := range m.Elems {
 		rel := Relation{A: ModelRef{m, e.Key()}}
 		e := m.Elems[i]
+		var ref string
 		if e.Ref != "" {
-			if strings.HasPrefix(e.Ref, "..") {
-				rel.B.Model = s.Model(cor.Keyed(e.Ref))
-			} else {
-				rel.B.Model = pro.Model(cor.Keyed(e.Ref))
-			}
+			ref = e.Ref
+			rel.B.Model = domRef(pro, s, m, e.Ref)
 			// TODO check field type if uuid or cont|uuid or other
 			rel.B.Key = "_" // signifies primary key
 			if e.Bits&BitUniq != 0 {
@@ -129,7 +147,8 @@ func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 		} else if embed, many := isEmbed(e.Type); embed {
 			// embedded schema type
 			lt := typ.Last(e.Type)
-			rel.B.Model = pro.Model(typ.Name(lt))
+			ref = typ.Name(lt)
+			rel.B.Model = domRef(pro, s, m, ref)
 			if many {
 				rel.Rel = Rel1N | RelEmbed
 			} else {
@@ -139,7 +158,7 @@ func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 			continue
 		}
 		if rel.B.Model == nil {
-			return fmt.Errorf("model ref not found ref %q typ %s", e.Ref, typ.Last(e.Type))
+			return fmt.Errorf("model ref not found ref %s %s typ %s", m.Qualified(), ref, typ.Last(e.Type))
 		}
 		res.add(rel)
 	}
