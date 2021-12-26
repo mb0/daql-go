@@ -1,9 +1,11 @@
 package dom
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
@@ -17,30 +19,40 @@ type FileLoader struct {
 }
 
 func (l *FileLoader) Load(reg *lit.Reg, res string) (exp.Exp, string, error) {
-	tries := []string{"schema.daql", fmt.Sprintf("%s.daql", filepath.Base(res))}
+	var tries []string
+	if strings.HasSuffix(res, ".daql") {
+		tries = append(tries, res)
+	} else {
+		f := res + ".daql"
+		tries = []string{f, res + "/schema.daql", res + "/" + f}
+	}
 	for _, r := range l.Roots {
-		path := filepath.Join(r, res)
-		fi, err := os.Stat(path)
-		if err != nil || !fi.IsDir() {
-			continue
-		}
 		for _, try := range tries {
-			p := filepath.Join(path, try)
-			fi, err := os.Stat(p)
+			x, rel, err := l.try(reg, filepath.Join(r, try))
 			if err != nil {
-				continue
-			}
-			if fi.IsDir() {
-				continue
-			}
-			x, rel, err := l.open(reg, p)
-			if err != nil {
-				return nil, "", fmt.Errorf("fileloader %s: %v", p, err)
+				if err == errNotFound {
+					continue
+				}
+				return nil, "", err
 			}
 			return x, rel, nil
 		}
 	}
-	return nil, "", fmt.Errorf("no schema found for path %q", res)
+	return nil, "", fmt.Errorf("no schema found for %q", res)
+}
+
+var errNotFound = errors.New("not found")
+
+func (l *FileLoader) try(reg *lit.Reg, path string) (exp.Exp, string, error) {
+	fi, err := os.Stat(path)
+	if err != nil || fi.IsDir() {
+		return nil, "", errNotFound
+	}
+	x, rel, err := l.open(reg, path)
+	if err != nil {
+		return nil, "", fmt.Errorf("fileloader %s: %w", path, err)
+	}
+	return x, rel, nil
 }
 
 func (l *FileLoader) open(reg *lit.Reg, path string) (exp.Exp, string, error) {
