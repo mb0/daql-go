@@ -249,14 +249,6 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 				el = n
 			case typ.Type:
 				el.Type = tv
-				// special case to allow embedding consts
-				if key == "" && k == knd.Obj && tv.Kind&(knd.Enum|knd.Bits) != 0 {
-					name := typ.Name(tv)
-					if idx := strings.LastIndexByte(name, '.'); idx >= 0 {
-						name = name[idx+1:]
-					}
-					el.Name = name
-				}
 			}
 			if el.Name == "ID" && k == knd.Obj && len(m.Elems) == 0 {
 				el.Bits |= BitPK
@@ -348,16 +340,25 @@ func reslRefType(m *Model, el *Elem) error {
 	if m == nil {
 		return fmt.Errorf("model %s not found", el.Type)
 	}
+	var found bool
 	// update type (usually container type)
 	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
 		b, ok := e.Body.(*typ.RefBody)
 		if ok && isModelRef(m, b.Ref) {
+			found = true
 			return m.Type(), nil
 		}
 		return e.Type, nil
 	})
-	if el.Name == "@" {
-		el.Name = m.Name
+	if found {
+		switch el.Name {
+		case "@":
+			el.Name = m.Name
+		case "":
+			if found && m.Kind.Kind&(knd.Enum|knd.Bits) != 0 {
+				el.Name = m.Name
+			}
+		}
 	}
 	return nil
 }

@@ -11,12 +11,15 @@ const PersonRaw = `(schema person
 	(ID:int pk;)
 	Name:str
 )
-(Contact;
-	Addr:str
+(Gender:enum
+	D;
+	F;
+	M;
 )
 (Person; topic;
 	(ID:int pk;)
 	Name:str
+	@Gender
 	(Family:@Group.ID)
 )
 (Member; topic;
@@ -34,6 +37,7 @@ type Group struct {
 type Person struct {
 	ID     int
 	Name   string
+	Gender string
 	Family int
 }
 
@@ -52,9 +56,10 @@ const PersonFixRaw = `{
 		[4  'Gophers']
 	]
 	person:[
-		[1  'Martin' 1 {addr: 'baumstr. 23'}]
-		[2  'Ringo'  2 null]
-		[3  'Rob'    0 null]
+		[1  'Martin' 1 'm']
+		[2  'Ringo'  2 'm']
+		[3  'Rob'    4 'm']
+		[4  'Corp'   0 'd']
 	]
 	member:[
 		[1 1 1 '1983-11-07']
