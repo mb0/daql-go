@@ -143,7 +143,7 @@ func TestDom(t *testing.T) {
 	}
 	for _, test := range tests {
 		reg := &lit.Reg{}
-		s, err := exp.Eval(reg, NewEnv(nil), test.raw)
+		s, err := exp.Eval(nil, reg, NewEnv(nil), test.raw)
 		if err != nil {
 			t.Errorf("execute %s got error: %+v", test.raw, err)
 			continue

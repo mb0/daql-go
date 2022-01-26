@@ -1,6 +1,7 @@
 package wshub
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 // Client is connection to a hub served over websockets.
 type Client struct {
 	Config
+	ctx  context.Context
 	id   int64
 	send chan *hub.Msg
 }
@@ -26,10 +28,14 @@ func WSURL(url string) string {
 }
 
 // NewClient returns a new client with the given configuration.
-func NewClient(conf Config) *Client {
-	return &Client{Config: conf.Default(), id: hub.NextID(), send: make(chan *hub.Msg, 32)}
+func NewClient(ctx context.Context, conf Config) *Client {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return &Client{Config: conf.Default(), ctx: ctx, id: hub.NextID(), send: make(chan *hub.Msg, 32)}
 }
 
+func (c *Client) Ctx() context.Context  { return c.ctx }
 func (c *Client) ID() int64             { return c.id }
 func (c *Client) Chan() chan<- *hub.Msg { return c.send }
 func (c *Client) User() string          { return c.Config.User }
@@ -66,6 +72,9 @@ func (c *Client) RunWithBackoff(r chan<- *hub.Msg, bof Backoff) error {
 			nerr = 0
 			err = c.run(wc, r)
 		}
+		if err := c.ctx.Err(); err != nil {
+			return err
+		}
 		sleep, err := bof(nerr, err)
 		if err != nil {
 			return err
@@ -81,7 +90,7 @@ func (c *Client) connect() (*websocket.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	wc, _, err := c.Dial(c.URL, hdr)
+	wc, _, err := c.DialContext(c.ctx, c.URL, hdr)
 	if err != nil {
 		c.ClearToken(c.URL)
 		return nil, err
@@ -91,7 +100,9 @@ func (c *Client) connect() (*websocket.Conn, error) {
 }
 
 func (c *Client) run(wc *websocket.Conn, r chan<- *hub.Msg) error {
-	cc := newConn(c.id, wc, c.send, c.Config.User)
+	ctx, cancel := context.WithCancel(c.ctx)
+	defer cancel()
+	cc := newConn(ctx, c.id, wc, c.send, c.Config.User)
 	r <- &hub.Msg{From: cc, Subj: hub.Signon}
 	go cc.writeAll(c.id, c.Log, 2*time.Second)
 	err := cc.readAll(r)

@@ -1,6 +1,7 @@
 package evt
 
 import (
+	"context"
 	"time"
 
 	"xelf.org/daql/dom"
@@ -25,7 +26,7 @@ type Ledger interface {
 	// Events returns all events for the given topics since rev.
 	// This methods is primarily used by the event central to manage subscribed events.
 	// The qry package can be used for more complex event queries.
-	Events(rev time.Time, tops ...string) ([]*Event, error)
+	Events(ctx context.Context, rev time.Time, tops ...string) ([]*Event, error)
 }
 
 // Publisher is a ledger that can publish transactions.

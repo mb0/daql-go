@@ -2,6 +2,7 @@
 package qry
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -61,21 +62,21 @@ func (q *Qry) Subj(ref string) (*Subj, error) {
 }
 
 // Exec executes the given query str with arg and returns a value or an error.
-func (q *Qry) Exec(str string, arg lit.Val) (lit.Val, error) {
+func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (lit.Val, error) {
 	x, err := exp.Parse(q.Reg, str)
 	if err != nil {
 		return nil, fmt.Errorf("parse qry %s error: %w", str, err)
 	}
-	return q.ExecExp(x, arg)
+	return q.ExecExp(ctx, x, arg)
 }
 
 // ExecExp executes the given query expr with arg and returns a value or an error.
-func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
+func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
 	var env exp.Env = &Doc{Qry: q}
 	if arg != nil {
 		env = &exp.ArgEnv{Par: env, Typ: arg.Type(), Val: arg}
 	}
-	a, err := exp.EvalExp(q.Reg, env, expr)
+	a, err := exp.EvalExp(ctx, q.Reg, env, expr)
 	if err != nil {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
@@ -83,7 +84,7 @@ func (q *Qry) ExecExp(expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
 }
 
 // ExecAuto generates query from and saves the query result into a tagged go struct value pointer.
-func (q *Qry) ExecAuto(pp interface{}, arg lit.Val) (lit.Mut, error) {
+func (q *Qry) ExecAuto(ctx context.Context, pp interface{}, arg lit.Val) (lit.Mut, error) {
 	x, err := ReflectQuery(q.Reg, pp)
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func (q *Qry) ExecAuto(pp interface{}, arg lit.Val) (lit.Mut, error) {
 	if err != nil {
 		return nil, err
 	}
-	el, err := q.ExecExp(x, arg)
+	el, err := q.ExecExp(ctx, x, arg)
 	if err != nil {
 		return nil, err
 	}

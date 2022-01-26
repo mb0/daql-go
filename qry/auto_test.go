@@ -27,7 +27,7 @@ func TestExecAuto(t *testing.T) {
 	reg := &lit.Reg{}
 	q := New(reg, extlib.Std, getBackend(reg))
 	var res MyQuery
-	mut, err := q.ExecAuto(&res, &lit.Dict{Keyed: []lit.KeyVal{
+	mut, err := q.ExecAuto(nil, &res, &lit.Dict{Keyed: []lit.KeyVal{
 		{Key: "name", Val: lit.Str("a")},
 	}})
 	if err != nil {

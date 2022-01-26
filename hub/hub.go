@@ -2,6 +2,7 @@
 package hub
 
 import (
+	"context"
 	"regexp"
 	"strings"
 )
@@ -16,18 +17,23 @@ const (
 // One-off connections used for a simple request-response round trips can be used without signon and
 // must use id -1. These connections can only be responded to directly and must not be stored.
 type Hub struct {
+	ctx   context.Context
 	conns map[int64]Conn
 	msgs  chan *Msg
 }
 
 // NewHub creates and returns a new hub.
-func NewHub() *Hub {
-	return &Hub{conns: make(map[int64]Conn, 64), msgs: make(chan *Msg, 128)}
+func NewHub(ctx context.Context) *Hub {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return &Hub{ctx: ctx, conns: make(map[int64]Conn, 64), msgs: make(chan *Msg, 128)}
 }
 
-func (h *Hub) ID() int64         { return 0 }
-func (h *Hub) Chan() chan<- *Msg { return h.msgs }
-func (h *Hub) User() string      { return "hub" }
+func (h *Hub) Ctx() context.Context { return h.ctx }
+func (h *Hub) ID() int64            { return 0 }
+func (h *Hub) Chan() chan<- *Msg    { return h.msgs }
+func (h *Hub) User() string         { return "hub" }
 
 // Run starts routing received messages with the given routers. It is usually run as go routine.
 func (h *Hub) Run(rs ...Router) {
@@ -35,17 +41,23 @@ func (h *Hub) Run(rs ...Router) {
 	if len(rs) == 1 {
 		r = rs[0]
 	}
-	for m := range h.msgs {
-		if m == nil {
-			break
-		}
-		if m.Subj == Signon {
-			h.conns[m.From.ID()] = m.From
-		}
-		r.Route(m)
-		if m.Subj == Signoff {
-			delete(h.conns, m.From.ID())
-			m.From.Chan() <- nil
+	done := h.ctx.Done()
+	for {
+		select {
+		case m := <-h.msgs:
+			if m == nil {
+				return
+			}
+			if m.Subj == Signon {
+				h.conns[m.From.ID()] = m.From
+			}
+			r.Route(m)
+			if m.Subj == Signoff {
+				delete(h.conns, m.From.ID())
+				m.From.Chan() <- nil
+			}
+		case <-done:
+			return
 		}
 	}
 }

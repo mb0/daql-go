@@ -59,7 +59,7 @@ func (ctr *Ctrl) sub(m *hub.Msg, req SubReq) (*Update, error) {
 	if len(tops) == 0 {
 		return nil, fmt.Errorf("no new subscriptions")
 	}
-	evs, err := ctr.Events(req.Rev, tops...)
+	evs, err := ctr.Events(m.From.Ctx(), req.Rev, tops...)
 	if err != nil {
 		return nil, err
 	}

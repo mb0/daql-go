@@ -2,5 +2,5 @@ github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0U
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d h1:eAS2t2Vy+6psf9LZ4T5WXWsbkBt3Tu5PWekJy5AGyEU=
 github.com/mb0/diff v0.0.0-20131118162322-d8d9a906c24d/go.mod h1:3YMHqrw2Qu3Liy82v4QdAG17e9k91HZ7w3hqlpWqhDo=
-xelf.org/xelf v0.0.0-20211220001632-957f2f5fba35 h1:3lCwJOfrOgFO/5mIqBd4WTSWnSi4xqTrjiAsWibzo0g=
-xelf.org/xelf v0.0.0-20211220001632-957f2f5fba35/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=
+xelf.org/xelf v0.0.0-20220126024223-0139d0cd0171 h1:ZFGDq6lqAWiRyWYUAisqv3hzD4Su+QplHubFCBkDHgM=
+xelf.org/xelf v0.0.0-20220126024223-0139d0cd0171/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=

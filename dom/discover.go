@@ -60,7 +60,7 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	}
 	env := NewEnv(nil)
 	env.Loader = &FileLoader{Proj: path, Roots: []string{filepath.Dir(path)}}
-	l, err := exp.EvalExp(reg, env, x)
+	l, err := exp.EvalExp(nil, reg, env, x)
 	if err != nil {
 		return nil, fmt.Errorf("eval project %s: %v", path, err)
 	}
@@ -97,7 +97,7 @@ func ReadSchema(reg *lit.Reg, r io.Reader, path string, pro *Project) (s *Schema
 		return nil, err
 	}
 	env := &ext.NodeEnv{Par: NewEnv(nil), Node: n}
-	l, err := exp.EvalExp(reg, env, x)
+	l, err := exp.EvalExp(nil, reg, env, x)
 	if err != nil {
 		return nil, err
 	}

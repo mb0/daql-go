@@ -83,7 +83,7 @@ func TestQry(t *testing.T) {
 	qry := New(reg, extlib.Std, b)
 	for _, test := range tests {
 		start := time.Now()
-		el, err := qry.Exec(test.Raw, param)
+		el, err := qry.Exec(nil, test.Raw, param)
 		end := time.Now()
 		if err != nil {
 			t.Errorf("%v", err)

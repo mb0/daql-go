@@ -30,7 +30,7 @@ func TestWriteLit(t *testing.T) {
 			"cor": "xelf/cor",
 		}}
 		reg := &lit.Reg{}
-		l, err := exp.Eval(reg, lib.Std, test.xelf)
+		l, err := exp.Eval(nil, reg, lib.Std, test.xelf)
 		if err != nil {
 			t.Errorf("parse %s err: %v", test.xelf, err)
 			continue

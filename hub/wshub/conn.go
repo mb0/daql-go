@@ -1,6 +1,7 @@
 package wshub
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,6 +15,7 @@ import (
 )
 
 type conn struct {
+	ctx  context.Context
 	id   int64
 	wc   *websocket.Conn
 	user string
@@ -21,19 +23,23 @@ type conn struct {
 	tick <-chan time.Time
 }
 
-func newConn(id int64, wc *websocket.Conn, send chan *hub.Msg, user string) *conn {
+func newConn(ctx context.Context, id int64, wc *websocket.Conn, send chan *hub.Msg, user string) *conn {
 	if send == nil {
 		send = make(chan *hub.Msg, 32)
 	}
-	return &conn{id: id, wc: wc, send: send, user: user}
+	return &conn{ctx: ctx, id: id, wc: wc, send: send, user: user}
 }
 
+func (c *conn) Ctx() context.Context  { return c.ctx }
 func (c *conn) ID() int64             { return c.id }
 func (c *conn) Chan() chan<- *hub.Msg { return c.send }
 func (c *conn) User() string          { return c.user }
 
 func (c *conn) readAll(route chan<- *hub.Msg) error {
 	for {
+		if err := c.ctx.Err(); err != nil {
+			return err
+		}
 		op, r, err := c.wc.NextReader()
 		if err != nil {
 			if err != io.EOF && err != io.ErrUnexpectedEOF {
@@ -87,6 +93,8 @@ func (c *conn) writeAll(id int64, log log.Logger, msgtimeout time.Duration) {
 			if err != nil {
 				return
 			}
+		case <-c.ctx.Done():
+			return
 		}
 	}
 }

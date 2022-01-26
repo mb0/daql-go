@@ -2,6 +2,7 @@
 package wshub
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -36,11 +37,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// the upgrader already writes a http error if appropriate
 		return
 	}
-	route := s.Hub.Chan()
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+	c := newConn(ctx, hub.NextID(), wc, nil, user)
 	t := time.NewTicker(60 * time.Second)
 	defer t.Stop()
-	c := newConn(hub.NextID(), wc, nil, user)
 	c.tick = t.C
+	route := s.Hub.Chan()
 	route <- &hub.Msg{From: c, Subj: hub.Signon}
 	go c.writeAll(0, s.Log, 20*time.Second)
 	err = c.readAll(route)
