@@ -7,20 +7,19 @@ import (
 )
 
 const PersonRaw = `(schema person
-(Group;
+(Group; topic;
 	(ID:int pk;)
 	Name:str
 )
 (Contact;
 	Addr:str
 )
-(Person;
+(Person; topic;
 	(ID:int pk;)
 	Name:str
 	(Family:@Group.ID)
-	@Contact?
 )
-(Member;
+(Member; topic;
 	(ID:int pk;)
 	@Person.ID
 	@Group.ID
