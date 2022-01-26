@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -29,7 +30,7 @@ func OpenData(pr *Project, uri string) (*Data, error) {
 		// postgres://localhost:123/daql
 		// postgres:///daql
 		// postgres:///daql?host=/opt/run/postgresql
-		db, err := dapgx.Open(uri, nil)
+		db, err := dapgx.Open(context.Background(), uri, nil)
 		if err != nil {
 			return nil, err
 		}

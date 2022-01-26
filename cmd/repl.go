@@ -73,7 +73,7 @@ func (r Repl) Run() {
 		}
 		r.AppendHistory(bfr.String(el))
 		raw = raw[:0]
-		l, err := q.ExecExp(el, nil)
+		l, err := q.ExecExp(nil, el, nil)
 		if err != nil {
 			log.Printf("error resolving %s: %v", got, err)
 			continue
