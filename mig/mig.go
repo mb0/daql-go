@@ -66,9 +66,9 @@ func (v Vers) String() string { return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor
 // Record consists of a project definition and its manifest at one point in time.
 // A record's path can be used to look up migration rules and scripts.
 type Record struct {
-	Path string // record path relative to history folder
+	Path string `json:"path"` // record path relative to history folder
 	*dom.Project
-	Manifest
+	Manifest `json:"manifest"`
 }
 
 // ReadProject reads the current project's unrecorded definition and manifest or an error.
