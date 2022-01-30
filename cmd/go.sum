@@ -14,6 +14,7 @@ github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/me
 github.com/gofrs/uuid v4.0.0+incompatible h1:1SD/1F5pU8p29ybwgQSwpQk+mwdRrXCYuPhW6m+TnJw=
 github.com/gofrs/uuid v4.0.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/jackc/chunkreader v1.0.0 h1:4s39bBR8ByfqH+DKm8rQA3E1LHZWB9XWcrz8fqaZbe0=
 github.com/jackc/chunkreader v1.0.0/go.mod h1:RT6O25fNZIuasFJRyZ4R/Y2BbhasbmZXF9QQ7T3kePo=
@@ -183,7 +184,9 @@ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
 xelf.org/dapgx v0.0.0-20220126192850-9387bbbdf1eb h1:MYzPjfHRDAgAryndBOqVh500YfG8ZOCRNdnr6sVMydU=
 xelf.org/dapgx v0.0.0-20220126192850-9387bbbdf1eb/go.mod h1:6WDxj7F4HcDu5JciXw9upy8AwWyA6nsndzjJ2bMsw/A=
-xelf.org/daql v0.0.0-20220126154713-56363f9724a4 h1:mWArO+AUKvoKLD1u0iOfG5A77E7Uk/PeuTOK1srv/oM=
 xelf.org/daql v0.0.0-20220126154713-56363f9724a4/go.mod h1:JifWxpLmtPkRCGFjfHgjy4Mri+wmZ1T2vY5O/i/l3qU=
+xelf.org/daql v0.0.0-20220127041915-907bd8d4133d h1:hEH5cK7GmP8uCsphHb4ZJHoG6yRDW1vcUDWXgzNL5x0=
+xelf.org/daql v0.0.0-20220127041915-907bd8d4133d/go.mod h1:JifWxpLmtPkRCGFjfHgjy4Mri+wmZ1T2vY5O/i/l3qU=
+xelf.org/daql/cmd v0.0.0-20220127041915-907bd8d4133d/go.mod h1:S2u7obtShpKd3Rd7u1xL/vj3drz785ab0HPbCczsnoo=
 xelf.org/xelf v0.0.0-20220126024223-0139d0cd0171 h1:ZFGDq6lqAWiRyWYUAisqv3hzD4Su+QplHubFCBkDHgM=
 xelf.org/xelf v0.0.0-20220126024223-0139d0cd0171/go.mod h1:bm1EiA9l29A9LLR52rFbxjDjFcW+60JU0UOQn+Tm9EA=

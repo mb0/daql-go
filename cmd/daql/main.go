@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"xelf.org/daql/dom"
 	"xelf.org/daql/gen/gengo"
 	"xelf.org/daql/mig"
+	"xelf.org/dawui"
 	"xelf.org/xelf/bfr"
 )
 
@@ -48,7 +50,7 @@ Other commands
 
 var (
 	dirFlag  = flag.String("dir", ".", "project directory path")
-	dataFlag = flag.String("data", "", "dataset either db uri or path to backup zig or folder")
+	dataFlag = flag.String("data", "", "dataset either db uri or path to backup zip or folder")
 )
 
 func main() {
@@ -72,7 +74,16 @@ func main() {
 	case "gengo", "genpg":
 		err = genGen(cmd, args)
 	case "repl":
+		log.SetPrefix("· ")
 		err = repl(args)
+	case "webui":
+		var srv *dawui.Server
+		srv, err = dawui.NewServer(*dirFlag, *dataFlag)
+		if err != nil {
+			break
+		}
+		log.Printf("open server at http://localhost:8090")
+		http.ListenAndServe("localhost:8090", srv)
 	case "help":
 		if len(args) > 0 {
 			// TODO print command help
