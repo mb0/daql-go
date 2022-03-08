@@ -49,8 +49,10 @@ Other commands
 `
 
 var (
-	dirFlag  = flag.String("dir", ".", "project directory path")
-	dataFlag = flag.String("data", "", "dataset either db uri or path to backup zip or folder")
+	dirFlag    = flag.String("dir", ".", "project directory path")
+	dataFlag   = flag.String("data", "", "dataset either db uri or path to backup zip or folder")
+	addrFlag   = flag.String("addr", "localhost:8090", "http address for webui")
+	staticFlag = flag.String("static", "", "alternative static resources path for webui")
 )
 
 func main() {
@@ -78,12 +80,12 @@ func main() {
 		err = repl(args)
 	case "webui":
 		var srv *dawui.Server
-		srv, err = dawui.NewServer(*dirFlag, *dataFlag)
+		srv, err = dawui.NewServer(*dirFlag, *dataFlag, *staticFlag)
 		if err != nil {
 			break
 		}
-		log.Printf("open server at http://localhost:8090")
-		http.ListenAndServe("localhost:8090", srv)
+		log.Printf("open server at http://%s", *addrFlag)
+		err = http.ListenAndServe(*addrFlag, srv)
 	case "help":
 		if len(args) > 0 {
 			// TODO print command help
