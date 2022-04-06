@@ -50,10 +50,13 @@ func (c *conn) readAll(route chan<- *hub.Msg) error {
 			}
 			return fmt.Errorf("wshub client next reader: %w", err)
 		}
-		if op == websocket.BinaryMessage {
-			return fmt.Errorf("wshub client unexpected binary message: %w", err)
-		}
-		if op != websocket.TextMessage {
+		switch op {
+		case websocket.BinaryMessage, websocket.TextMessage:
+			// we treat text and binary messages the same and expect
+			// a utf-8 header line with subj#tok\n
+		case websocket.CloseMessage:
+			return nil
+		default:
 			continue
 		}
 		raw, err := ioutil.ReadAll(r)

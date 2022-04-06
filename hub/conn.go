@@ -64,3 +64,15 @@ func Req(hub chan<- *Msg, user string, req *Msg, timeout time.Duration) (*Msg, e
 	}
 	return nil, fmt.Errorf("timeout request %s#%s: %v", req.Subj, req.Tok, ctx.Err())
 }
+
+// Send sends a message to a connection that might have signed off and returns the success.
+func Send(c Conn, m *Msg) bool {
+	if c != nil {
+		select {
+		case c.Chan() <- m:
+			return true
+		default:
+		}
+	}
+	return false
+}
