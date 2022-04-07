@@ -110,26 +110,35 @@ func (c *conn) write(kind int, data []byte, timeout time.Duration) error {
 func (c *conn) writeMsg(msg *hub.Msg, timeout time.Duration, log log.Logger) error {
 	b := bfr.Get()
 	defer bfr.Put(b)
-	if err := writeMsgTo(&bfr.P{Writer: b, JSON: true}, msg); err != nil {
+	kind, err := writeMsgTo(&bfr.P{Writer: b, JSON: true}, msg)
+	if err != nil {
 		return err
 	}
-	return c.write(websocket.TextMessage, b.Bytes(), timeout)
+	return c.write(kind, b.Bytes(), timeout)
 }
 
-func writeMsgTo(b *bfr.P, m *hub.Msg) error {
+type msgKind int
+
+var AsBinary msgKind = websocket.BinaryMessage
+
+func writeMsgTo(b *bfr.P, m *hub.Msg) (kind int, err error) {
 	b.Fmt(m.Subj)
 	if len(m.Tok) != 0 {
 		b.Byte('#')
 		b.Fmt(m.Tok)
 	}
-	b.Byte('\n')
-	if len(m.Raw) != 0 {
-		b.Write(m.Raw)
+	err = b.Byte('\n')
+	if m.Data == AsBinary {
+		_, err = b.Write(m.Raw)
+		return websocket.BinaryMessage, err
+	} else if len(m.Raw) != 0 {
+		_, err = b.Write(m.Raw)
 	} else if m.Data != nil {
 		if w, ok := m.Data.(bfr.Printer); ok {
-			return w.Print(b)
+			err = w.Print(b)
+		} else {
+			err = json.NewEncoder(b).Encode(m.Data)
 		}
-		return json.NewEncoder(b).Encode(m.Data)
 	}
-	return b.Err
+	return websocket.TextMessage, err
 }
