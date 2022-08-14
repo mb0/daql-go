@@ -86,7 +86,7 @@ func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
 	mt := m.Type()
 	for i, v := range list.Vals {
 		l := v.(*lit.List)
-		s := &lit.Strc{Reg: b.Reg, Typ: mt, Vals: l.Vals}
+		s := &lit.Obj{Reg: b.Reg, Typ: mt, Vals: l.Vals}
 		list.Vals[i] = s
 	}
 	b.Data[m.Qualified()] = list

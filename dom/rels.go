@@ -79,7 +79,7 @@ func Relate(pro *Project) (Relations, error) {
 	// TODO collect relaxed reference in the first iteration
 	for _, s := range pro.Schemas {
 		for _, m := range s.Models {
-			if m.Kind.Kind&knd.Strc == 0 {
+			if m.Kind.Kind&knd.Obj == 0 {
 				continue
 			}
 			err := res.relate(pro, s, m)
@@ -147,8 +147,7 @@ func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 		} else if embed, many := isEmbed(e.Type); embed {
 			// embedded schema type
 			lt := typ.Last(e.Type)
-			ref = typ.Name(lt)
-			rel.B.Model = domRef(pro, s, m, ref)
+			rel.B.Model = domRef(pro, s, m, lt.Ref)
 			if many {
 				rel.Rel = Rel1N | RelEmbed
 			} else {
@@ -187,6 +186,6 @@ func (rs Relations) upsert(m *Model) *ModelRels {
 }
 
 func isEmbed(t typ.Type) (yes, many bool) {
-	k := typ.Last(t).Kind
-	return k&knd.Schm != 0 && k&knd.Any != 0, k != t.Kind
+	l := typ.Last(t)
+	return l.Ref != "" && l.Kind&(knd.Bits|knd.Obj) != 0, t.Kind&knd.List != 0
 }

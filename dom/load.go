@@ -74,7 +74,7 @@ func (l *FileLoader) open(reg *lit.Reg, path string) (exp.Exp, string, error) {
 
 var load = func() *loadSpec {
 	n, _ := ext.NewNode(domReg, &Schema{})
-	sig, _ := typ.Parse(`<form load str @>`)
+	sig, _ := typ.Parse(`<form@load str @>`)
 	exp.SigRes(sig).Type = n.Type()
 	return &loadSpec{SpecBase: exp.SpecBase{Decl: sig}}
 }()

@@ -80,7 +80,7 @@ func WriteVal(g *gen.Gen, t typ.Type, v lit.Val) error {
 			g.Fmt("%q: ", k)
 			return WriteVal(g, e.Type(), e)
 		})
-	case knd.Rec, knd.Obj:
+	case knd.Obj:
 		if opt {
 			g.Byte('&')
 		}

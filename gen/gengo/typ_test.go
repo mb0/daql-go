@@ -23,7 +23,7 @@ func TestWriteType(t *testing.T) {
 		{typ.DictOf(typ.Time), "map[string]time.Time", []string{"time"}},
 		{typ.Bool, "bool", nil},
 		{typ.Span, "time.Duration", []string{"time"}},
-		{typ.Rec(
+		{typ.Obj("",
 			typ.P("Foo", typ.Str),
 			typ.P("Bar?", typ.Int),
 			typ.P("Spam", typ.Opt(typ.Int)),

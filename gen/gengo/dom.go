@@ -112,16 +112,14 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 		writeEnumConsts(g, m)
 	case knd.Obj:
 		g.Fmt("type %s ", m.Name)
-		err = WriteType(g, typ.Type{Kind: knd.Rec, Body: &typ.ParamBody{
-			Name: m.Qualified(), Params: m.Params(),
-		}})
+		err = writeRec(g, m.Type())
 		g.Byte('\n')
 	case knd.Func:
 		ps := m.Params()
 		last := len(ps) - 1
 		if last > 0 {
 			g.Fmt("type %sReq ", m.Name)
-			err = WriteType(g, typ.Rec(ps[:last]...))
+			err = WriteType(g, typ.Obj("", ps[:last]...))
 			if err != nil {
 				break
 			}
@@ -129,7 +127,7 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 		}
 		g.Fmt("type %sRes ", m.Name)
 		res := ps[last].Type
-		err = WriteType(g, typ.Rec(
+		err = WriteType(g, typ.Obj("",
 			typ.P("Res?", res),
 			typ.P("Err?", typ.Str),
 		))

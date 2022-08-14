@@ -66,23 +66,23 @@ func TestDom(t *testing.T) {
 		},
 		{`(schema test (Foo; A:str) (Bar; B:@Foo))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
-			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'B' type:<obj test.Foo>}]}]}`,
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'B' type:<obj@test.Foo>}]}]}`,
 		},
 		{`(schema test (Foo; A:str) (Bar; @Foo;))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
-			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<obj test.Foo>}]}]}`,
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<obj@test.Foo>}]}]}`,
 		},
 		{`(schema test (Foo; A:str) (Bar; @Foo))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
-			`{kind:<obj> name:'Bar' schema:'test' elems:[{type:<obj test.Foo>}]}]}`,
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{type:<obj@test.Foo>}]}]}`,
 		},
 		{`(schema test (Foo:enum A;) (Bar; @Foo))`, `{name:'test' models:[` +
 			`{kind:<enum> name:'Foo' schema:'test' elems:[{name:'A' val:1}]} ` +
-			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum test.Foo>}]}]}`,
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum@test.Foo>}]}]}`,
 		},
 		{`(schema test (Foo:enum A;) (Bar; @Foo;))`, `{name:'test' models:[` +
 			`{kind:<enum> name:'Foo' schema:'test' elems:[{name:'A' val:1}]} ` +
-			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum test.Foo>}]}]}`,
+			`{kind:<obj> name:'Bar' schema:'test' elems:[{name:'Foo' type:<enum@test.Foo>}]}]}`,
 		},
 		{`(schema test (Group; ID:str) (Entry; ID:int @Group.ID;)))`,
 			`{name:'test' models:[` +

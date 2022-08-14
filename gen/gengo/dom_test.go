@@ -16,8 +16,8 @@ const fooRaw = `(schema foo
 	(Kind:enum A; B; C;)
 	(Node1; Name?:str)
 	(Node2; Start:time)
-	(Node3; Kind:<bits bar.Kind>)
-	(Node4; Kind:<bits foo.Kind>)
+	(Node3; Kind:<bits@bar.Kind>)
+	(Node4; Kind:<bits@foo.Kind>)
 )`
 
 func TestWriteFile(t *testing.T) {

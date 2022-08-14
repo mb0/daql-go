@@ -49,42 +49,18 @@ func WriteType(g *gen.Gen, t typ.Type) error {
 			return WriteType(g, el)
 		}
 		return g.Fmt(Import(g, "*lit.Dict"))
-	case knd.Rec:
-		opt := t.Kind&knd.None != 0
-		if opt {
-			g.Byte('*')
+	case knd.Obj:
+		if t.Ref == "" {
+			return writeRec(g, t)
 		}
-		g.Fmt("struct {\n")
-		b, ok := t.Body.(*typ.ParamBody)
-		if !ok || len(b.Params) == 0 {
-			return fmt.Errorf("invalid")
-		}
-		for _, f := range b.Params {
-			opt := f.IsOpt()
-			g.Byte('\t')
-			if f.Name != "" {
-				g.Fmt(cor.Cased(f.Name))
-				g.Byte(' ')
-			}
-			err := WriteType(g, f.Type)
-			if err != nil {
-				return fmt.Errorf("write field %s: %w", f.Name, err)
-			}
-			if f.Key != "" {
-				g.Fmt(" `json:\"")
-				g.Fmt(f.Key)
-				if opt {
-					g.Fmt(",omitempty")
-				}
-				g.Fmt("\"`")
-			}
-			g.Byte('\n')
-		}
-		return g.Byte('}')
-	case knd.Bits, knd.Enum, knd.Obj:
-		name := typ.Name(t)
+		fallthrough
+	case knd.Bits, knd.Enum:
+		name := t.Ref
 		if i := strings.LastIndexByte(name, '.'); i >= 0 {
 			name = name[:i+1] + cor.Cased(name[i+1:])
+		}
+		if name == "" {
+			return fmt.Errorf("no type name for %s", t)
 		}
 		r = Import(g, name)
 	}
@@ -95,4 +71,38 @@ func WriteType(g *gen.Gen, t typ.Type) error {
 		g.Byte('*')
 	}
 	return g.Fmt(r)
+}
+
+func writeRec(g *gen.Gen, t typ.Type) error {
+	opt := t.Kind&knd.None != 0
+	if opt {
+		g.Byte('*')
+	}
+	g.Fmt("struct {\n")
+	b, ok := t.Body.(*typ.ParamBody)
+	if !ok || len(b.Params) == 0 {
+		return fmt.Errorf("invalid")
+	}
+	for _, f := range b.Params {
+		opt := f.IsOpt()
+		g.Byte('\t')
+		if f.Name != "" {
+			g.Fmt(cor.Cased(f.Name))
+			g.Byte(' ')
+		}
+		err := WriteType(g, f.Type)
+		if err != nil {
+			return fmt.Errorf("write field %s: %w", f.Name, err)
+		}
+		if f.Key != "" {
+			g.Fmt(" `json:\"")
+			g.Fmt(f.Key)
+			if opt {
+				g.Fmt(",omitempty")
+			}
+			g.Fmt("\"`")
+		}
+		g.Byte('\n')
+	}
+	return g.Byte('}')
 }

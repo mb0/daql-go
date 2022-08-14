@@ -32,7 +32,7 @@ func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub subSpecs) 
 	return spec
 }
 
-var projectSpec = domSpec(&Project{}, "<form project name:sym tags:tupl?|exp @>", true, ext.Rules{
+var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>", true, ext.Rules{
 	Default: ext.Rule{
 		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
@@ -44,7 +44,7 @@ var projectSpec = domSpec(&Project{}, "<form project name:sym tags:tupl?|exp @>"
 	return nil
 })
 
-var schemaSpec = domSpec(&Schema{}, "<form schema name:sym tags:tupl?|exp @>", true, ext.Rules{
+var schemaSpec = domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", true, ext.Rules{
 	Default: ext.Rule{
 		Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
@@ -95,7 +95,7 @@ func noopSetter(p *exp.Prog, n ext.Node, key string, v lit.Val) error {
 }
 
 var idxRule = ext.Rule{Prepper: idxAppender, Setter: noopSetter}
-var modelSpec = domSpec(&Model{}, "<form model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
+var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
 	Key: map[string]ext.Rule{
 		"idx":  idxRule,
 		"uniq": idxRule,
@@ -112,7 +112,7 @@ var modelSpec = domSpec(&Model{}, "<form model name:sym kind:typ tags:tupl?|exp 
 })
 
 var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
-var elemSpec = domSpec(&Elem{}, "<form field name:sym type:typ tupl?|tag @>", false, ext.Rules{
+var elemSpec = domSpec(&Elem{}, "<form@field name:sym type:typ tupl?|tag @>", false, ext.Rules{
 	Key: map[string]ext.Rule{
 		"opt":  bitRule,
 		"pk":   bitRule,
@@ -268,7 +268,7 @@ func reslDomRefs(m *Model, s *Schema, p *Project) (err error) {
 	for _, el := range m.Elems {
 		et := typ.ContEl(el.Type)
 		if et.Kind&knd.Ref != 0 {
-			err = reslDomRef(el, typ.Name(et), m, s, p)
+			err = reslDomRef(el, et.Ref, m, s, p)
 			if err != nil {
 				return err
 			}
@@ -343,8 +343,7 @@ func reslRefType(m *Model, el *Elem) error {
 	var found bool
 	// update type (usually container type)
 	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
-		b, ok := e.Body.(*typ.RefBody)
-		if ok && isModelRef(m, b.Ref) {
+		if e.Ref != "" && isModelRef(m, e.Ref) {
 			found = true
 			return m.Type(), nil
 		}

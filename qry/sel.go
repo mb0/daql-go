@@ -64,7 +64,7 @@ func paramField(p typ.Param) *Field {
 }
 
 func subjFields(t typ.Type) Fields {
-	if k := t.Kind & knd.Strc; k == 0 || t.Kind&knd.All != k {
+	if k := t.Kind & knd.Obj; k == 0 || t.Kind&knd.All != k {
 		return nil
 	}
 	pb := t.Body.(*typ.ParamBody)
@@ -156,7 +156,7 @@ func reslSel(p *exp.Prog, j *Job, ds []*exp.Tag) (*Sel, error) {
 	for _, f := range fs {
 		ps = append(ps, typ.P(f.Name, f.Type))
 	}
-	return &Sel{Type: typ.Rec(ps...), Fields: fs}, nil
+	return &Sel{Type: typ.Obj("", ps...), Fields: fs}, nil
 }
 
 func simpleExpr(el exp.Exp) exp.Exp {

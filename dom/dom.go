@@ -27,21 +27,22 @@ func (m *Model) Consts() []typ.Const {
 }
 func (m *Model) Type() typ.Type {
 	t := m.Kind
+	t.Ref = m.Qualified()
 	switch t.Kind {
 	case knd.Bits, knd.Enum:
-		t.Body = &typ.ConstBody{Name: m.Qualified(), Consts: m.Consts()}
+		t.Body = &typ.ConstBody{Consts: m.Consts()}
 	case knd.Func:
-		t.Body = &typ.ParamBody{Name: m.Qualified(), Params: m.Params()}
+		t.Body = &typ.ParamBody{Params: m.Params()}
 	case knd.Obj:
 		res := make([]typ.Param, 0, len(m.Elems)+8)
 		for _, el := range m.Elems {
-			if el.Name == "" && el.Type.Kind&knd.Strc != 0 {
+			if el.Name == "" && el.Type.Kind&knd.Obj != 0 {
 				res = flatParams(el.Type, res)
 			} else {
 				res = append(res, typ.P(el.Name, el.Type))
 			}
 		}
-		t.Body = &typ.ParamBody{Name: m.Qualified(), Params: res}
+		t.Body = &typ.ParamBody{Params: res}
 	}
 	return t
 }
