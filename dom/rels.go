@@ -133,10 +133,9 @@ func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 	for i, e := range m.Elems {
 		rel := Relation{A: ModelRef{m, e.Key()}}
 		e := m.Elems[i]
-		var ref string
-		if e.Ref != "" {
-			ref = e.Ref
-			rel.B.Model = domRef(pro, s, m, e.Ref)
+		ref := e.Type.Ref
+		if ref != "" {
+			rel.B.Model = domRef(pro, s, m, ref)
 			// TODO check field type if uuid or cont|uuid or other
 			rel.B.Key = "_" // signifies primary key
 			if e.Bits&BitUniq != 0 {
@@ -148,6 +147,7 @@ func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
 			// embedded schema type
 			lt := typ.Last(e.Type)
 			rel.B.Model = domRef(pro, s, m, lt.Ref)
+			ref = lt.Ref
 			if many {
 				rel.Rel = Rel1N | RelEmbed
 			} else {

@@ -82,7 +82,7 @@ func (mv Versioner) Version(n dom.Node) (res Version, err error) {
 		}
 		hashExtra(hm, hp, d.Extra)
 		for _, e := range d.Elems {
-			fmt.Fprintf(hm, "  %s:%s:%d:%d:%s\n", e.Name, e.Type, e.Val, e.Bits, e.Ref)
+			fmt.Fprintf(hm, "  %s:%s:%d:%d\n", e.Name, e.Type, e.Val, e.Bits)
 			hashExtra(hm, hp, e.Extra)
 		}
 	case *dom.Schema:

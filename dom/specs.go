@@ -250,9 +250,6 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			case typ.Type:
 				el.Type = tv
 			}
-			if el.Name == "ID" && k == knd.Obj && len(m.Elems) == 0 {
-				el.Bits |= BitPK
-			}
 		}
 		if strings.HasSuffix(el.Name, "?") {
 			el.Bits |= BitOpt
@@ -265,7 +262,11 @@ func reslDomRefs(m *Model, s *Schema, p *Project) (err error) {
 	if m.Kind.Kind&knd.Obj == 0 {
 		return nil
 	}
-	for _, el := range m.Elems {
+	for i, el := range m.Elems {
+		if i == 0 && el.Name == "ID" {
+			el.Bits |= BitPK
+			el.Type.Ref = m.Qualified() + ".ID"
+		}
 		et := typ.ContEl(el.Type)
 		if et.Kind&knd.Ref != 0 {
 			err = reslDomRef(el, et.Ref, m, s, p)
@@ -375,17 +376,14 @@ func reslRefField(m *Model, key string, el *Elem) error {
 	if el.Name == "@" {
 		el.Name = m.Name
 	}
-	el.Ref = m.Qualified()
-	// we assume id is usually the primary key and omit it from references
-	if p.Key != "id" {
-		el.Ref += "." + p.Key
-	}
 	if el.Name == "" {
 		el.Name = m.Name
 	}
 	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
 		if e.Kind&knd.Ref != 0 {
-			return p.Type, nil
+			t := p.Type
+			t.Ref = m.Qualified() + "." + p.Name
+			return t, nil
 		}
 		return e.Type, nil
 	})

@@ -54,11 +54,11 @@ func TestDom(t *testing.T) {
 		},
 		{`(schema test (Named; (ID:uuid pk;) Name:str))`,
 			`{name:'test' models:[{kind:<obj> name:'Named' schema:'test' elems:[` +
-				`{name:'ID' type:<uuid> bits:2} {name:'Name' type:<str>}]}]}`,
+				`{name:'ID' type:<uuid@test.Named.ID> bits:2} {name:'Name' type:<str>}]}]}`,
 		},
 		{`(schema test (Named; ID:uuid Name:str))`,
 			`{name:'test' models:[{kind:<obj> name:'Named' schema:'test' elems:[` +
-				`{name:'ID' type:<uuid> bits:2} {name:'Name' type:<str>}]}]}`,
+				`{name:'ID' type:<uuid@test.Named.ID> bits:2} {name:'Name' type:<str>}]}]}`,
 		},
 		{`(schema test (Foo; A:str) (Bar; B:str))`, `{name:'test' models:[` +
 			`{kind:<obj> name:'Foo' schema:'test' elems:[{name:'A' type:<str>}]} ` +
@@ -86,34 +86,34 @@ func TestDom(t *testing.T) {
 		},
 		{`(schema test (Group; ID:str) (Entry; ID:int @Group.ID;)))`,
 			`{name:'test' models:[` +
-				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str@test.Group.ID> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
-				`{name:'ID' type:<int> bits:2} ` +
-				`{name:'Group' type:<str> ref:'test.Group'}]}]}`,
+				`{name:'ID' type:<int@test.Entry.ID> bits:2} ` +
+				`{name:'Group' type:<str@test.Group.ID>}]}]}`,
 		},
 		{`(schema test (Group; ID:str) (Entry; ID:int @Group.ID)))`,
 			`{name:'test' models:[` +
-				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str@test.Group.ID> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
-				`{name:'ID' type:<int> bits:2} ` +
-				`{name:'Group' type:<str> ref:'test.Group'}]}]}`,
+				`{name:'ID' type:<int@test.Entry.ID> bits:2} ` +
+				`{name:'Group' type:<str@test.Group.ID>}]}]}`,
 		},
 		{`(schema test (Group; ID:str) (Entry; ID:int Groups:list|@Group.ID)))`,
 			`{name:'test' models:[` +
-				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str> bits:2}]} ` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str@test.Group.ID> bits:2}]} ` +
 				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
-				`{name:'ID' type:<int> bits:2} ` +
-				`{name:'Groups' type:<list|str> ref:'test.Group'}]}]}`,
+				`{name:'ID' type:<int@test.Entry.ID> bits:2} ` +
+				`{name:'Groups' type:<list|str@test.Group.ID>}]}]}`,
 		},
 		{`(schema tree (Node; ID:str Par:@.ID))`,
 			`{name:'tree' models:[` +
-				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str> bits:2} ` +
-				`{name:'Par' type:<str> ref:'tree.Node'}]}]}`,
+				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str@tree.Node.ID> bits:2} ` +
+				`{name:'Par' type:<str@tree.Node.ID>}]}]}`,
 		},
-		{`(schema tree (Node; ID:str Par:@Node.ID))`,
+		{`(schema tree (Node; ID:str@@ Par:@Node.ID))`,
 			`{name:'tree' models:[` +
-				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str> bits:2} ` +
-				`{name:'Par' type:<str> ref:'tree.Node'}]}]}`,
+				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str@tree.Node.ID> bits:2} ` +
+				`{name:'Par' type:<str@tree.Node.ID>}]}]}`,
 		},
 		{`(schema test (Spam:func Egg:str bool))`, "{name:'test' models:[" +
 			`{kind:<func> name:'Spam' schema:'test' elems:[{name:'Egg' type:<str>} {type:<bool>}]}]}`,

@@ -16,7 +16,6 @@
 	Type?:typ
 	Val?:int
 	Bits?:@dom.Bit
-	Ref?:str
 	Extra?:dict
 )
 

@@ -34,7 +34,6 @@ type Elem struct {
 	Type  typ.Type  `json:"type,omitempty"`
 	Val   int64     `json:"val,omitempty"`
 	Bits  Bit       `json:"bits,omitempty"`
-	Ref   string    `json:"ref,omitempty"`
 	Extra *lit.Dict `json:"extra,omitempty"`
 }
 
