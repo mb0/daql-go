@@ -104,6 +104,11 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
+	ReslHook: func(p *exp.Prog, c *exp.Call) error {
+		name := c.Args[0].String()
+		p.Reg.SetRef(name, typ.Type{Kind: knd.Obj | knd.Ref}, nil)
+		return nil
+	},
 }, func(k string) exp.Spec {
 	if k == ":" || k == "elem" {
 		return elemSpec
@@ -162,7 +167,7 @@ func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 }
 func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) (lit.Val, error) {
 	aa, err := p.Eval(env, arg)
-	if err != nil {
+	if err != nil || aa.Val == nil {
 		return nil, err
 	}
 	mut, ok := aa.Value().(lit.Mut)
@@ -178,7 +183,8 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	if err != nil {
 		return nil, err
 	}
-	p.Reg.SetRef(strings.ToLower(m.Qualified()), m.Type(), nil)
+	t := m.Type()
+	p.Reg.SetRef(m.Qualified(), t, nil)
 	return nil, nil
 }
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (_ lit.Val, err error) {

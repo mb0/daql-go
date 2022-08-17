@@ -69,7 +69,7 @@ func TestQry(t *testing.T) {
 		{`(*prod.prod (ge .id 25) + catn:(?prod.cat (eq .id ..cat) _:name))`,
 			`[{id:25 name:'Y' cat:1 catn:'a'} {id:26 name:'Z' cat:1 catn:'a'}]`},
 		{`(*dom.model (eq .schema 'prod') _:name)`, `['Cat' 'Prod' 'Label']`},
-		{`(?dom.model (eq .name 'Cat'))`, `{kind:<obj> name:'Cat' schema:'prod' extra:{topic:true} elems:[{name:'ID' type:<int@prod.Cat.ID> bits:2} {name:'Name' type:<str>}] object:null}`},
+		{`(?dom.model (eq .name 'Cat'))`, `{kind:<obj> name:'Cat' schema:'prod' extra:{topic:true} elems:[{name:'ID' type:<int@prod.Cat.ID> bits:2} {name:'Name' type:<str>}] object:{}}`},
 	}
 	param := &lit.Dict{Keyed: []lit.KeyVal{
 		{Key: "int1", Val: lit.Int(1)},

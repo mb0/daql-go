@@ -8,7 +8,7 @@ import (
 
 const PersonRaw = `(schema person
 (Group; topic;
-	(ID:int pk;)
+	ID:int
 	Name:str
 )
 (Gender:enum
@@ -17,13 +17,13 @@ const PersonRaw = `(schema person
 	M;
 )
 (Person; topic;
-	(ID:int pk;)
+	ID:int
 	Name:str
 	@Gender
 	(Family:@Group.ID)
 )
 (Member; topic;
-	(ID:int pk;)
+	ID:int
 	@Person.ID
 	@Group.ID
 	Joined:time

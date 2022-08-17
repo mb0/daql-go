@@ -4,16 +4,16 @@ import "xelf.org/xelf/lit"
 
 const ProdRaw = `(schema prod
 (Cat; topic;
-	(ID:int pk;)
+	ID:int
 	Name:str
 )
 (Prod; topic;
-	(ID:int pk;)
+	ID:int
 	Name:str
 	@Cat.ID
 )
 (Label; topic;
-	(ID:int pk;)
+	ID:int
 	Name:str
 	Tmpl:raw
 )

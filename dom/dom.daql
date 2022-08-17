@@ -15,7 +15,7 @@
 	Name?:str
 	Type?:typ
 	Val?:int
-	Bits?:@dom.Bit
+	Bits?:@Bit
 	Extra?:dict
 )
 
@@ -26,7 +26,7 @@
 )
 
 (Object; doc:`holds data specific to object types for grouping.`
-	Indices?:list|@dom.Index?
+	Indices?:list|@Index?
 	OrderBy?:list|str
 	(<> TODO add triggers and references)
 )
@@ -36,8 +36,8 @@
 	Name:str
 	Schema?:str
 	Extra?:dict
-	Elems?:list|@dom.Elem?
-	Object?:@dom.Object?
+	Elems?:list|@Elem?
+	Object?:@Object?
 )
 
 (Schema; doc:`is a namespace for models.`
@@ -45,7 +45,7 @@
 	Extra?:dict
 	Path?:str
 	Use?:list|str
-	Models:list|@dom.Model?
+	Models:list|@Model?
 )
 
 (Project; doc:`is a collection of schemas and project specific extra configuration.
@@ -57,6 +57,6 @@ Extra setting, usually include, but are not limited to, targets and output paths
 generation, paths to look for the project's manifest and history.`
 	Name?:str
 	Extra?:dict
-	Schemas:list|@dom.Schema?
+	Schemas:list|@Schema?
 )
 )

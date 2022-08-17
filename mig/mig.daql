@@ -2,7 +2,7 @@
 
 (Migration; doc:`contains migration information of a data source.` backup;
 
-	(ID:int pk; auto;)
+	(ID:int auto;)
 	Vers:str
 	Date:time
 	Note?:str

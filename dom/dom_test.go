@@ -110,11 +110,6 @@ func TestDom(t *testing.T) {
 				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str@tree.Node.ID> bits:2} ` +
 				`{name:'Par' type:<str@tree.Node.ID>}]}]}`,
 		},
-		{`(schema tree (Node; ID:str@@ Par:@Node.ID))`,
-			`{name:'tree' models:[` +
-				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str@tree.Node.ID> bits:2} ` +
-				`{name:'Par' type:<str@tree.Node.ID>}]}]}`,
-		},
 		{`(schema test (Spam:func Egg:str bool))`, "{name:'test' models:[" +
 			`{kind:<func> name:'Spam' schema:'test' elems:[{name:'Egg' type:<str>} {type:<bool>}]}]}`,
 		},
