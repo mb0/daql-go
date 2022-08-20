@@ -61,7 +61,7 @@ type Job struct {
 	*Doc
 	Env exp.Env
 	*Task
-	Val lit.Val
+	Val *exp.Lit
 	Cur lit.Val
 }
 

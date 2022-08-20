@@ -16,7 +16,7 @@ import (
 type LitBackend struct{}
 
 func (b *LitBackend) Proj() *dom.Project { return nil }
-func (b *LitBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
+func (b *LitBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 	a, err := p.Eval(j.Env, &exp.Sym{Sym: j.Ref})
 	if err != nil {
 		return nil, fmt.Errorf("lit backend: %w", err)
@@ -68,7 +68,7 @@ func (b *MemBackend) Stream(key string) (mig.Stream, error) {
 	}
 	return mig.NewLitStream(b.list(m)), nil
 }
-func (b *MemBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
+func (b *MemBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 	return execListQry(p, j, b.list(j.Model))
 }
 func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
@@ -78,7 +78,7 @@ func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
 	return list
 }
 
-// Add converts and adds a nested list of values to a to this backend.
+// Add converts and adds a nested list of values to this backend.
 func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
 	if b.Data == nil {
 		b.Data = make(map[string]*lit.List)
@@ -96,7 +96,7 @@ func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
 var _ mig.Dataset = (*MemBackend)(nil)
 var andSpec = lib.And
 
-func execListQry(p *exp.Prog, j *Job, list *lit.List) (lit.Val, error) {
+func execListQry(p *exp.Prog, j *Job, list *lit.List) (*exp.Lit, error) {
 	var whr exp.Exp
 	if len(j.Whr) > 0 {
 		whr = &exp.Call{Args: append([]exp.Exp{&exp.Lit{Res: andSpec.Type(), Val: andSpec}}, j.Whr...)}
@@ -108,16 +108,20 @@ func execListQry(p *exp.Prog, j *Job, list *lit.List) (lit.Val, error) {
 	if err != nil {
 		return nil, err
 	}
+	l := &exp.Lit{Res: j.Res}
 	switch j.Kind {
 	case KindOne:
 		if len(res.Vals) == 0 {
-			return lit.Null{}, nil
+			l.Val = lit.Null{}
+		} else {
+			l.Val = res.Vals[0]
 		}
-		return res.Vals[0], nil
 	case KindMany:
-		return res, nil
+		l.Val = res
+	default:
+		return nil, fmt.Errorf("exec unknown query kind %s", j.Ref)
 	}
-	return nil, fmt.Errorf("exec unknown query kind %s", j.Ref)
+	return l, nil
 }
 
 func collectList(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*lit.List, error) {
@@ -190,10 +194,10 @@ func collectList(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*lit.List, e
 	if j.Lim > 0 && len(res) > int(j.Lim) {
 		res = res[:j.Lim]
 	}
-	return &lit.List{Vals: res}, nil
+	return &lit.List{Reg: p.Reg, El: typ.El(j.Res), Vals: res}, nil
 }
 
-func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (lit.Val, error) {
+func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*exp.Lit, error) {
 	// we can ignore order and selection completely
 	var res int64
 	if whr == nil {
@@ -221,7 +225,7 @@ func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (lit.Val, er
 	if j.Lim > 0 && res > j.Lim {
 		res = j.Lim
 	}
-	return lit.Int(res), nil
+	return &exp.Lit{Res: typ.Int, Val: lit.Int(res)}, nil
 }
 
 func filter(p *exp.Prog, env exp.Env, l lit.Val, whr exp.Exp) (bool, error) {

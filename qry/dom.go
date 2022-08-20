@@ -13,7 +13,7 @@ type DomBackend struct {
 }
 
 func (b *DomBackend) Proj() *dom.Project { return b.Project }
-func (b *DomBackend) Exec(p *exp.Prog, j *Job) (lit.Val, error) {
+func (b *DomBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 	var list *lit.List
 	switch j.Ref {
 	case "dom.model":

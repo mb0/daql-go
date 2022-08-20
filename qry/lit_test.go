@@ -100,3 +100,52 @@ func TestQry(t *testing.T) {
 		log.Printf("test took %s", end.Sub(start))
 	}
 }
+
+func TestQryType(t *testing.T) {
+	reg := &lit.Reg{}
+	b := getBackend(reg)
+	tests := []struct {
+		Raw  string
+		Want string
+	}{
+		{`(#prod.cat)`, `<int>`},
+		//{`([] (#prod.cat) (#prod.prod))`, `<list|int>`},
+		//{`({} cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
+		{`(list|int (#prod.cat) (#prod.prod))`, `<list|int>`},
+		{`(dict|int cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
+		{`(?prod.cat)`, `<obj@prod.Cat?>`},
+		{`(?$list)`, `<str?>`},
+		{`(?prod.cat _ id;)`, `<obj? ID:int@prod.Cat.ID>`},
+		{`(*prod.cat _ id)`, `<list|obj ID:int@prod.Cat.ID>`},
+		{`(?prod.cat _:id)`, `<int@prod.Cat.ID?>`},
+		{`(*prod.cat _:id)`, `<list|int@prod.Cat.ID>`},
+		{`(*prod.cat lim:2)`, `<list|obj@prod.Cat>`},
+		{`(?prod.label _ id; label:('Label: ' .name))`,
+			`<obj? ID:int@prod.Label.ID Label:str>`},
+	}
+	param := &lit.Dict{Keyed: []lit.KeyVal{
+		{Key: "int1", Val: lit.Int(1)},
+		{Key: "strA", Val: lit.Str("a")},
+		{Key: "list", Val: &lit.List{El: typ.Str, Vals: []lit.Val{
+			lit.Str("a"),
+			lit.Str("b"),
+			lit.Str("c"),
+		}}},
+	}}
+	qry := New(reg, extlib.Std, b)
+	for _, test := range tests {
+		el, err := qry.Exec(nil, test.Raw, param)
+		if err != nil {
+			t.Errorf("%v", err)
+			continue
+		}
+		if el == nil {
+			t.Errorf("qry %s got nil result", test.Raw)
+			continue
+		}
+		if got := bfr.String(el.Res); got != test.Want {
+			t.Errorf("want for %s\n\t%s got %s", test.Raw, test.Want, got)
+			continue
+		}
+	}
+}

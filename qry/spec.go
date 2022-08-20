@@ -5,6 +5,7 @@ import (
 
 	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
+	"xelf.org/xelf/knd"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
 )
@@ -35,7 +36,11 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 			if err != nil {
 				return c, err
 			}
-			t.Subj.Type = res.Resl()
+			rt := res.Resl()
+			if rt.Kind&knd.List == 0 {
+				return nil, fmt.Errorf("resl subj want list got %s", rt)
+			}
+			t.Subj.Type = typ.ContEl(rt)
 			t.Subj.Fields = subjFields(t.Subj.Type)
 		}
 	}
@@ -109,8 +114,9 @@ func (s *Spec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
 	if err != nil {
 		return nil, err
 	}
+	v.Src = c.Src
 	j.Val = v
-	return &exp.Lit{Val: j.Val, Src: c.Src}, nil
+	return j.Val, nil
 }
 
 func splitPlain(args []exp.Exp) (plain, rest []exp.Exp) {
