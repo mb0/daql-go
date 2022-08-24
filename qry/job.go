@@ -79,26 +79,18 @@ func FindJob(env exp.Env) *Job {
 func (e *Job) ParentJob() *Job { return FindJob(e.Env) }
 func (e *Job) Parent() exp.Env { return e.Env }
 func (e *Job) Dyn() exp.Spec   { return e.Env.Dyn() }
-func (e *Job) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
+func (e *Job) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	k, ok := exp.DotKey(k)
 	if !ok {
-		return e.Env.Resl(p, s, k)
+		return e.Env.Resl(p, s, k, eval)
 	}
 	f, err := e.Task.Field(k[1:])
 	if err != nil {
 		return nil, err
 	}
-	s.Type, s.Env, s.Rel = f.Type, e, k
-	return s, nil
-}
-func (e *Job) Eval(p *exp.Prog, s *exp.Sym, k string) (*exp.Lit, error) {
-	k, ok := exp.DotKey(k)
-	if !ok {
-		return e.Env.Eval(p, s, k)
-	}
-	_, err := e.Task.Field(k[1:])
-	if err != nil {
-		return nil, err
+	if !eval {
+		s.Type, s.Env, s.Rel = f.Type, e, k
+		return s, nil
 	}
 	if e.Cur == nil && e.Val == nil {
 		return nil, fmt.Errorf("job env unresolved %s in %s", s.Sym, e.Subj.Type)

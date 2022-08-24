@@ -34,7 +34,7 @@ func FindEnv(env exp.Env) *Env {
 }
 func (e *Env) Parent() exp.Env { return e.Par }
 func (e *Env) Dyn() exp.Spec   { return e.Par.Dyn() }
-func (e *Env) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
+func (e *Env) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	var def exp.Spec
 	switch s.Sym {
 	case "project":
@@ -45,8 +45,5 @@ func (e *Env) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
 	if def != nil {
 		return &exp.Lit{Res: def.Type(), Val: def}, nil
 	}
-	return e.Par.Resl(p, s, k)
-}
-func (e *Env) Eval(p *exp.Prog, s *exp.Sym, k string) (*exp.Lit, error) {
-	return e.Par.Eval(p, s, k)
+	return e.Par.Resl(p, s, k, eval)
 }

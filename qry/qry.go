@@ -121,7 +121,7 @@ func (p *Doc) Add(j *Job) {
 
 func (e *Doc) Parent() exp.Env { return e.Env }
 func (e *Doc) Dyn() exp.Spec   { return e.Env.Dyn() }
-func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
+func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	switch c := s.Sym[0]; c {
 	case '?', '*', '#':
 		subj, err := e.Subj(s.Sym[1:])
@@ -132,8 +132,5 @@ func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string) (exp.Exp, error) {
 		spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
 		return &exp.Lit{Res: sig.Type(), Val: spec, Src: s.Src}, nil
 	}
-	return e.Env.Resl(p, s, k)
-}
-func (e *Doc) Eval(p *exp.Prog, s *exp.Sym, k string) (*exp.Lit, error) {
-	return e.Env.Eval(p, s, k)
+	return e.Env.Resl(p, s, k, eval)
 }
