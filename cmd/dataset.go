@@ -49,14 +49,14 @@ func OpenData(pr *Project, uri string) (*Data, error) {
 				log.Printf("stream error: %v", err)
 				continue
 			}
-			var vals []lit.Val
+			var vals lit.Vals
 			v, err := stream.Scan()
 			for err != nil {
 				vals = append(vals, v)
 				v, err = stream.Scan()
 			}
 			log.Printf("stream error: %v", err)
-			err = bend.Add(m, &lit.List{Reg: pr.Reg, Vals: vals})
+			err = bend.Add(m, &vals)
 			if err != nil {
 				return nil, fmt.Errorf("prepare backend, add %s: %v", key, err)
 			}

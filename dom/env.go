@@ -2,7 +2,6 @@ package dom
 
 import (
 	"xelf.org/xelf/exp"
-	"xelf.org/xelf/lib"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
 )
@@ -16,34 +15,23 @@ type Env struct {
 	Loader
 }
 
-func NewEnv(par exp.Env) *Env {
-	if par == nil {
-		par = exp.Builtins(make(lib.Specs).AddMap(extlib.Std))
-	}
-	return &Env{Par: par}
-}
+func NewEnv() *Env { return &Env{Par: extlib.Std} }
 
 func FindEnv(env exp.Env) *Env {
-	for env != nil {
-		if d, ok := env.(*Env); ok {
+	for ; env != nil; env = env.Parent() {
+		if d, _ := env.(*Env); d != nil {
 			return d
 		}
-		env = env.Parent()
 	}
 	return nil
 }
 func (e *Env) Parent() exp.Env { return e.Par }
-func (e *Env) Dyn() exp.Spec   { return e.Par.Dyn() }
-func (e *Env) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
-	var def exp.Spec
+func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	switch s.Sym {
 	case "project":
-		def = projectSpec
+		return exp.LitVal(projectSpec), nil
 	case "schema":
-		def = schemaSpec
+		return exp.LitVal(schemaSpec), nil
 	}
-	if def != nil {
-		return &exp.Lit{Res: def.Type(), Val: def}, nil
-	}
-	return e.Par.Resl(p, s, k, eval)
+	return e.Par.Lookup(s, k, eval)
 }

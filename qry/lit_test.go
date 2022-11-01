@@ -18,8 +18,8 @@ func getBackend(reg *lit.Reg) Backend {
 	f := domtest.Must(domtest.ProdFixture(reg))
 	b := NewMemBackend(reg, &f.Project, f.Version)
 	s := f.Schema("prod")
-	for _, kv := range f.Fix.Keyed {
-		err := b.Add(s.Model(kv.Key), kv.Val.(*lit.List))
+	for _, kv := range f.Fix {
+		err := b.Add(s.Model(kv.Key), kv.Val.(*lit.Vals))
 		if err != nil {
 			log.Printf("test backend error: %v", err)
 		}
@@ -28,7 +28,7 @@ func getBackend(reg *lit.Reg) Backend {
 }
 
 func TestQry(t *testing.T) {
-	reg := &lit.Reg{}
+	reg := &lit.Reg{Cache: &lit.Cache{}}
 	b := getBackend(reg)
 	tests := []struct {
 		Raw  string
@@ -71,7 +71,7 @@ func TestQry(t *testing.T) {
 		{`(*dom.model (eq .schema 'prod') _:name)`, `['Cat' 'Prod' 'Label']`},
 		{`(?dom.model (eq .name 'Cat'))`, `{kind:<obj> name:'Cat' schema:'prod' extra:{topic:true} elems:[{name:'ID' type:<int@prod.Cat.ID> bits:2} {name:'Name' type:<str>}] object:{}}`},
 	}
-	param := &lit.Dict{Keyed: []lit.KeyVal{
+	param := lit.MakeObj(reg, []lit.KeyVal{
 		{Key: "int1", Val: lit.Int(1)},
 		{Key: "strA", Val: lit.Str("a")},
 		{Key: "list", Val: &lit.List{El: typ.Str, Vals: []lit.Val{
@@ -79,7 +79,7 @@ func TestQry(t *testing.T) {
 			lit.Str("b"),
 			lit.Str("c"),
 		}}},
-	}}
+	})
 	qry := New(reg, extlib.Std, b)
 	for _, test := range tests {
 		start := time.Now()
@@ -102,7 +102,7 @@ func TestQry(t *testing.T) {
 }
 
 func TestQryType(t *testing.T) {
-	reg := &lit.Reg{}
+	reg := &lit.Reg{Cache: &lit.Cache{}}
 	b := getBackend(reg)
 	tests := []struct {
 		Raw  string
@@ -123,7 +123,7 @@ func TestQryType(t *testing.T) {
 		{`(?prod.label _ id; label:('Label: ' .name))`,
 			`<obj? ID:int@prod.Label.ID Label:str>`},
 	}
-	param := &lit.Dict{Keyed: []lit.KeyVal{
+	param := lit.MakeObj(reg, []lit.KeyVal{
 		{Key: "int1", Val: lit.Int(1)},
 		{Key: "strA", Val: lit.Str("a")},
 		{Key: "list", Val: &lit.List{El: typ.Str, Vals: []lit.Val{
@@ -131,7 +131,7 @@ func TestQryType(t *testing.T) {
 			lit.Str("b"),
 			lit.Str("c"),
 		}}},
-	}}
+	})
 	qry := New(reg, extlib.Std, b)
 	for _, test := range tests {
 		el, err := qry.Exec(nil, test.Raw, param)

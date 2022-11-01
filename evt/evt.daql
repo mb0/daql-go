@@ -1,7 +1,5 @@
 (schema evt embed;
 
-(use mig.Migration)
-
 (Audit; doc:`holds detailed information for a published revision.`
 	backup;
 	(Rev:time pk;)

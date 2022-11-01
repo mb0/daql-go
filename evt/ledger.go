@@ -8,7 +8,7 @@ import (
 )
 
 // NextRev returns a rev truncated to ms or if rev is not after last the next possible revision one
-// millisecond after the last.
+// millisecond after last.
 func NextRev(last, rev time.Time) time.Time {
 	rev = rev.Truncate(time.Millisecond)
 	if rev.After(last) {

@@ -8,6 +8,7 @@ import (
 	"xelf.org/daql/dom/domtest"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
+	"xelf.org/xelf/typ"
 )
 
 type MyQuery struct {
@@ -24,10 +25,10 @@ type MyQuery struct {
 }
 
 func TestExecAuto(t *testing.T) {
-	reg := &lit.Reg{}
+	reg := &lit.Reg{Cache: &lit.Cache{}}
 	q := New(reg, extlib.Std, getBackend(reg))
 	var res MyQuery
-	mut, err := q.ExecAuto(nil, &res, &lit.Dict{Keyed: []lit.KeyVal{
+	mut, err := q.ExecAuto(nil, &res, &lit.Dict{El: typ.Str, Keyed: []lit.KeyVal{
 		{Key: "name", Val: lit.Str("a")},
 	}})
 	if err != nil {
@@ -42,7 +43,7 @@ func TestExecAuto(t *testing.T) {
 	}
 }
 func TestReflectQuery(t *testing.T) {
-	reg := &lit.Reg{}
+	reg := &lit.Reg{Cache: &lit.Cache{}}
 	var res MyQuery
 	x, err := ReflectQuery(reg, &res)
 	if err != nil {

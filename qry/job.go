@@ -78,11 +78,10 @@ func FindJob(env exp.Env) *Job {
 // ParentJob returns the parent job environment of this job or nil.
 func (e *Job) ParentJob() *Job { return FindJob(e.Env) }
 func (e *Job) Parent() exp.Env { return e.Env }
-func (e *Job) Dyn() exp.Spec   { return e.Env.Dyn() }
-func (e *Job) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	k, ok := exp.DotKey(k)
 	if !ok {
-		return e.Env.Resl(p, s, k, eval)
+		return e.Env.Lookup(s, k, eval)
 	}
 	f, err := e.Task.Field(k[1:])
 	if err != nil {
@@ -99,5 +98,5 @@ func (e *Job) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error
 	if err != nil {
 		return nil, err
 	}
-	return &exp.Lit{Res: typ.Lit, Val: v}, nil
+	return exp.LitVal(v), nil
 }

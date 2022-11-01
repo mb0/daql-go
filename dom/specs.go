@@ -63,12 +63,12 @@ func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_
 		return nil, fmt.Errorf("index %s with nil arg", s)
 	case *exp.Lit:
 		switch av := a.Val.(type) {
-		case *lit.List:
+		case *lit.Vals:
 			if m.Object == nil {
 				m.Object = &Object{}
 			}
 			idx := &Index{Unique: s == "uniq"}
-			for _, v := range av.Vals {
+			for _, v := range *av {
 				s, err := lit.ToStr(v)
 				if err != nil {
 					return nil, err
@@ -76,7 +76,7 @@ func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_
 				idx.Keys = append(idx.Keys, string(s))
 			}
 			m.Object.Indices = append(m.Object.Indices, idx)
-		case lit.Str:
+		case lit.Char:
 			if m.Object == nil {
 				m.Object = &Object{}
 			}
@@ -150,11 +150,10 @@ func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	if err != nil {
 		return nil, err
 	}
-	mut, ok := aa.Value().(lit.Mut)
-	if !ok || mut.Zero() {
-		return nil, fmt.Errorf("not a project value %s", aa)
+	s, ok := mutPtr(aa).(*Schema)
+	if !ok {
+		return nil, fmt.Errorf("expected *Schema got %s", aa.Value())
 	}
-	s := mut.Ptr().(*Schema)
 	pro.Schemas = append(pro.Schemas, s)
 	// here we can resolve type to previously defined schemas
 	for _, m := range s.Models {
@@ -170,12 +169,11 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	if err != nil || aa.Val == nil {
 		return nil, err
 	}
-	mut, ok := aa.Value().(lit.Mut)
-	if !ok || mut.Zero() {
-		return nil, fmt.Errorf("not a model value %s", aa)
+	m, ok := mutPtr(aa).(*Model)
+	if !ok {
+		return nil, fmt.Errorf("expected *Model got %s", aa.Value())
 	}
 	s := n.Ptr().(*Schema)
-	m := mut.Ptr().(*Model)
 	m.Schema = s.Name
 	s.Models = append(s.Models, m)
 	// here we can resolve type references to the model itself and models in the same schema
@@ -405,4 +403,12 @@ func forEach(arg exp.Exp, f func(exp.Exp) error) error {
 		return nil
 	}
 	return f(arg)
+}
+
+func mutPtr(l *exp.Lit) interface{} {
+	mut, ok := l.Value().(lit.Mut)
+	if !ok || mut.Zero() {
+		return nil
+	}
+	return mut.Ptr()
 }

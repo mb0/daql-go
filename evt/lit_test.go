@@ -69,7 +69,7 @@ func TestLedger(t *testing.T) {
 }
 
 func testLedger() (*evt.MemLedger, error) {
-	reg := &lit.Reg{}
+	reg := &lit.Reg{Cache: &lit.Cache{}}
 	p := &dom.Project{}
 	ev, err := dom.OpenSchema(reg, "evt.daql", p)
 	if err != nil {

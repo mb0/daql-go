@@ -72,11 +72,7 @@ func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (*exp.Lit, erro
 
 // ExecExp executes the given query expr with arg and returns a value or an error.
 func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ *exp.Lit, err error) {
-	var env exp.Env = &Doc{Qry: q}
-	if arg != nil {
-		env = &exp.ArgEnv{Par: env, Typ: arg.Type(), Val: arg}
-	}
-	a, err := exp.EvalExp(ctx, q.Reg, env, expr)
+	a, err := exp.NewProg(ctx, q.Reg, &Doc{Qry: q}).Run(expr, exp.LitVal(arg))
 	if err != nil {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
@@ -120,8 +116,7 @@ func (p *Doc) Add(j *Job) {
 }
 
 func (e *Doc) Parent() exp.Env { return e.Env }
-func (e *Doc) Dyn() exp.Spec   { return e.Env.Dyn() }
-func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *Doc) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	switch c := s.Sym[0]; c {
 	case '?', '*', '#':
 		subj, err := e.Subj(s.Sym[1:])
@@ -132,5 +127,5 @@ func (e *Doc) Resl(p *exp.Prog, s *exp.Sym, k string, eval bool) (exp.Exp, error
 		spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
 		return &exp.Lit{Res: sig.Type(), Val: spec, Src: s.Src}, nil
 	}
-	return e.Env.Resl(p, s, k, eval)
+	return e.Env.Lookup(s, k, eval)
 }

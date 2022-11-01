@@ -79,17 +79,17 @@ func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
 }
 
 // Add converts and adds a nested list of values to this backend.
-func (b *MemBackend) Add(m *dom.Model, list *lit.List) error {
+func (b *MemBackend) Add(m *dom.Model, list *lit.Vals) error {
 	if b.Data == nil {
 		b.Data = make(map[string]*lit.List)
 	}
 	mt := m.Type()
-	for i, v := range list.Vals {
-		l := v.(*lit.List)
-		s := &lit.Obj{Reg: b.Reg, Typ: mt, Vals: l.Vals}
-		list.Vals[i] = s
+	for i, v := range *list {
+		l := v.(*lit.Vals)
+		s := &lit.Obj{Reg: b.Reg, Typ: mt, Vals: *l}
+		(*list)[i] = s
 	}
-	b.Data[m.Qualified()] = list
+	b.Data[m.Qualified()] = &lit.List{El: mt, Vals: *list}
 	return nil
 }
 
@@ -99,7 +99,7 @@ var andSpec = lib.And
 func execListQry(p *exp.Prog, j *Job, list *lit.List) (*exp.Lit, error) {
 	var whr exp.Exp
 	if len(j.Whr) > 0 {
-		whr = &exp.Call{Args: append([]exp.Exp{&exp.Lit{Res: andSpec.Type(), Val: andSpec}}, j.Whr...)}
+		whr = &exp.Call{Args: append([]exp.Exp{exp.LitVal(andSpec)}, j.Whr...)}
 	}
 	if j.Kind == KindCount {
 		return collectCount(p, j, list, whr)
@@ -225,7 +225,7 @@ func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*exp.Lit, e
 	if j.Lim > 0 && res > j.Lim {
 		res = j.Lim
 	}
-	return &exp.Lit{Res: typ.Int, Val: lit.Int(res)}, nil
+	return exp.LitVal(lit.Int(res)), nil
 }
 
 func filter(p *exp.Prog, env exp.Env, l lit.Val, whr exp.Exp) (bool, error) {

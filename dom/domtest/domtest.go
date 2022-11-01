@@ -14,7 +14,7 @@ type Fixture struct {
 	Reg *lit.Reg
 	dom.Project
 	*mig.Version
-	Fix *lit.Dict
+	Fix lit.Keyed
 }
 
 func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
@@ -33,7 +33,7 @@ func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fixture: %w", err)
 	}
-	res.Fix = val.(*lit.Dict)
+	res.Fix = *val.(*lit.Keyed)
 	return res, nil
 }
 

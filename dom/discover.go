@@ -58,18 +58,15 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	if err != nil {
 		return nil, fmt.Errorf("read project %s: %v", path, err)
 	}
-	env := NewEnv(nil)
+	env := NewEnv()
 	env.Loader = &FileLoader{Proj: path, Roots: []string{filepath.Dir(path)}}
-	l, err := exp.EvalExp(nil, reg, env, x)
+	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
 	if err != nil {
 		return nil, fmt.Errorf("eval project %s: %v", path, err)
 	}
-	mut, ok := l.Value().(lit.Mut)
-	if ok {
-		p, ok = mut.Ptr().(*Project)
-	}
+	p, ok := mutPtr(l).(*Project)
 	if !ok {
-		return nil, fmt.Errorf("expected *Schema got %s", l.Value())
+		return nil, fmt.Errorf("expected *Project got %s", l.Value())
 	}
 	return p, nil
 }
@@ -96,15 +93,12 @@ func ReadSchema(reg *lit.Reg, r io.Reader, path string, pro *Project) (s *Schema
 	if err != nil {
 		return nil, err
 	}
-	env := &ext.NodeEnv{Par: NewEnv(nil), Node: n}
-	l, err := exp.EvalExp(nil, reg, env, x)
+	env := &ext.NodeEnv{Par: NewEnv(), Node: n}
+	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
 	if err != nil {
 		return nil, err
 	}
-	mut, ok := l.Value().(lit.Mut)
-	if ok {
-		s, ok = mut.Ptr().(*Schema)
-	}
+	s, ok := mutPtr(l).(*Schema)
 	if !ok {
 		return nil, fmt.Errorf("expected *Schema got %s", l.Value())
 	}

@@ -63,6 +63,13 @@ func WriteVal(g *gen.Gen, t typ.Type, v lit.Val) error {
 			g.Byte('*')
 		}
 		return writeCall(g, "cor.Span", v)
+	case knd.Idxr:
+		g.Fmt("[]")
+		err := WriteType(g, typ.Any)
+		if err != nil {
+			return err
+		}
+		return writeIdxer(g, v)
 	case knd.List:
 		g.Fmt("[]")
 		err := WriteType(g, typ.ContEl(t))
@@ -70,6 +77,16 @@ func WriteVal(g *gen.Gen, t typ.Type, v lit.Val) error {
 			return err
 		}
 		return writeIdxer(g, v)
+	case knd.Keyr:
+		g.Fmt("map[string]")
+		err := WriteType(g, typ.Any)
+		if err != nil {
+			return err
+		}
+		return writeKeyer(g, v, func(i int, k string, e lit.Val) error {
+			g.Fmt("%q: ", k)
+			return WriteVal(g, e.Type(), e)
+		})
 	case knd.Dict:
 		g.Fmt("map[string]")
 		err := WriteType(g, typ.ContEl(t))

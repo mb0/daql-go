@@ -36,10 +36,12 @@ func WriteSchemaFile(g *gen.Gen, name string, s *dom.Schema) error {
 // WriteSchame writes the models with package and import declarations.
 func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 	var embed string
-	if emv, err := s.Extra.Key("embed"); err == nil && !emv.Nil() {
-		if fn, err := s.Extra.Key("file"); err == nil {
-			str, _ := lit.ToStr(fn)
-			embed = filepath.Base(string(str))
+	if s.Extra != nil {
+		if emv, err := s.Extra.Key("embed"); err == nil && !emv.Nil() {
+			if fn, err := s.Extra.Key("file"); err == nil {
+				str, _ := lit.ToStr(fn)
+				embed = filepath.Base(string(str))
+			}
 		}
 	}
 	b := bfr.Get()
