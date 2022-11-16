@@ -1,0 +1,19 @@
+(use "auth")
+(mod entry
+	Status:(model Status enum
+		Draft;
+		Pub;
+		Unpub;
+	)
+	Entry:(model Entry obj
+		ID:uuid
+		Status:@entry.Status
+		(Slug:str uniq;)
+		Title:str
+		Desc:str
+		Body:str
+		Auth:list|@auth.Acct.ID
+		Pub:time
+		Rev:time
+	)
+)

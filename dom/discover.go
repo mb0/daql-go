@@ -8,7 +8,9 @@ import (
 
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
+	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
+	"xelf.org/xelf/mod"
 )
 
 const ProjectFileName = "project.daql"
@@ -58,8 +60,11 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	if err != nil {
 		return nil, fmt.Errorf("read project %s: %v", path, err)
 	}
-	env := NewEnv()
-	env.Loader = &FileLoader{Proj: path, Roots: []string{filepath.Dir(path)}}
+	files := mod.FileMods(filepath.Dir(path))
+	files.Ext = append(files.Ext, ".daql")
+	files.Index = append(files.Index, "schema.daql")
+	par := mod.NewLoaderEnv(extlib.Std, files)
+	env := &Env{Par: par}
 	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
 	if err != nil {
 		return nil, fmt.Errorf("eval project %s: %v", path, err)

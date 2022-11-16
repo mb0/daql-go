@@ -37,20 +37,40 @@ var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>"
 		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
-}, func(k string) exp.Spec {
-	if k == "load" {
-		return load
-	}
-	return nil
-})
+	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
+		// TODO always eval and register project modules on resl
+		res, err := c.Spec.Eval(p, c)
+		if err != nil {
+			return c, err
+		}
+		node := c.Env.(*ext.NodeEnv).Node
+		proj := node.Ptr().(*Project)
+		m := &exp.Mod{File: &p.File, Name: proj.Name}
+		m.Decl = exp.LitVal(node)
+		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
+		return res, nil
+	},
+}, nil)
 
 var schemaSpec = domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", true, ext.Rules{
 	Default: ext.Rule{
 		Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
+	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
+		// TODO always eval and register schema modules on resl
+		res, err := c.Spec.Eval(p, c)
+		if err != nil {
+			return c, err
+		}
+		node := c.Env.(*ext.NodeEnv).Node
+		sch := node.Ptr().(*Schema)
+		m := &exp.Mod{File: &p.File, Name: sch.Name, Decl: exp.LitVal(node)}
+		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
+		return res, nil
+	},
 }, func(k string) exp.Spec {
-	if k == ":" || k == "model" {
+	if k == ":" {
 		return modelSpec
 	}
 	return nil
@@ -108,7 +128,7 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 		return c, nil
 	},
 }, func(k string) exp.Spec {
-	if k == ":" || k == "elem" {
+	if k == ":" {
 		return elemSpec
 	}
 	return nil
@@ -154,10 +174,11 @@ func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	}
 	pro.Schemas = append(pro.Schemas, s)
 	// here we can resolve type to previously defined schemas
+	// XXX: this is a hack and should be removed
 	for _, m := range s.Models {
 		err = reslDomRefs(m, s, pro)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("schema prepper: %w", err)
 		}
 	}
 	return nil, nil
@@ -177,8 +198,9 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 	// here we can resolve type references to the model itself and models in the same schema
 	err = reslDomRefs(m, s, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("models prepper: %w", err)
 	}
+	// XXX: this is a hack and should be removed
 	t := m.Type()
 	p.Reg.SetRef(m.Qualified(), t, nil)
 	return nil, nil
@@ -390,17 +412,6 @@ func reslRefField(m *Model, key string, el *Elem) error {
 		return e.Type, nil
 	})
 	return nil
-}
-func forEach(arg exp.Exp, f func(exp.Exp) error) error {
-	if tup, ok := arg.(*exp.Tupl); ok {
-		for _, el := range tup.Els {
-			if err := f(el); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	return f(arg)
 }
 
 func mutPtr(l *exp.Lit) interface{} {

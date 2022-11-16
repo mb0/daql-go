@@ -3,16 +3,10 @@ package dom
 import (
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
-	"xelf.org/xelf/lit"
 )
-
-type Loader interface {
-	Load(reg *lit.Reg, rel string) (exp.Exp, string, error)
-}
 
 type Env struct {
 	Par exp.Env
-	Loader
 }
 
 func NewEnv() *Env { return &Env{Par: extlib.Std} }
@@ -32,6 +26,10 @@ func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 		return exp.LitVal(projectSpec), nil
 	case "schema":
 		return exp.LitVal(schemaSpec), nil
+	case "model":
+		return exp.LitVal(modelSpec), nil
+	case "elem":
+		return exp.LitVal(elemSpec), nil
 	}
 	return e.Par.Lookup(s, k, eval)
 }

@@ -1,0 +1,29 @@
+(schema auth
+	(Role:enum
+		None;
+		User;
+		Admin;
+	)
+	(Acct;
+		ID:uuid
+		(Name:str asc;)
+		@Role;
+		Created?:time
+		Rev:time
+	)
+	(Cred;
+		ID:uuid
+		@Acct.ID
+		(Email:str uniq;)
+		Pass:str
+		Rev:time
+	)
+	(Sess;
+		ID:uuid
+		(Acct?:@Acct.ID idx;)
+		@Role;
+		Name?:str
+		Created?:time
+		Mod:time
+	)
+)

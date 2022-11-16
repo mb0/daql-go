@@ -1,0 +1,17 @@
+(use e:"./entry")
+(schema blog
+	(Tag;
+		ID:int
+		@e.Status;
+		(Slug:str uniq;)
+		Title:str
+		Desc:str
+		Rev:time
+	)
+	e.Entry
+	(Tagged;
+		ID:uuid
+		Tag:@Tag.ID
+		Entry:@e.Entry.ID
+	)
+)
