@@ -29,7 +29,7 @@ func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
 		return nil, fmt.Errorf("manifest: %w", err)
 	}
 	res.Version = mani.First()
-	val, err := lit.Read(reg, strings.NewReader(fix), "")
+	val, err := lit.Read(strings.NewReader(fix), "")
 	if err != nil {
 		return nil, fmt.Errorf("fixture: %w", err)
 	}

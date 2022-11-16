@@ -54,7 +54,7 @@ func OpenProject(reg *lit.Reg, path string) (*Project, error) {
 
 func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	reg.AddFrom(domReg)
-	x, err := exp.Read(reg, r, path)
+	x, err := exp.Read(r, path)
 	if err != nil {
 		return nil, fmt.Errorf("read project %s: %v", path, err)
 	}
@@ -89,7 +89,7 @@ func ReadSchema(reg *lit.Reg, r io.Reader, path string, pro *Project) (s *Schema
 	if err != nil {
 		return nil, err
 	}
-	x, err := exp.Read(reg, r, path)
+	x, err := exp.Read(r, path)
 	if err != nil {
 		return nil, err
 	}

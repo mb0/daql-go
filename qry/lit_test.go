@@ -71,7 +71,7 @@ func TestQry(t *testing.T) {
 		{`(*dom.model (eq .schema 'prod') _:name)`, `['Cat' 'Prod' 'Label']`},
 		{`(?dom.model (eq .name 'Cat'))`, `{kind:<obj> name:'Cat' schema:'prod' extra:{topic:true} elems:[{name:'ID' type:<int@prod.Cat.ID> bits:2} {name:'Name' type:<str>}] object:{}}`},
 	}
-	param := lit.MakeObj(reg, []lit.KeyVal{
+	param := lit.MakeObj(lit.Keyed{
 		{Key: "int1", Val: lit.Int(1)},
 		{Key: "strA", Val: lit.Str("a")},
 		{Key: "list", Val: &lit.List{El: typ.Str, Vals: []lit.Val{
@@ -123,7 +123,7 @@ func TestQryType(t *testing.T) {
 		{`(?prod.label _ id; label:('Label: ' .name))`,
 			`<obj? ID:int@prod.Label.ID Label:str>`},
 	}
-	param := lit.MakeObj(reg, []lit.KeyVal{
+	param := lit.MakeObj(lit.Keyed{
 		{Key: "int1", Val: lit.Int(1)},
 		{Key: "strA", Val: lit.Str("a")},
 		{Key: "list", Val: &lit.List{El: typ.Str, Vals: []lit.Val{

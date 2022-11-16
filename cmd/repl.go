@@ -60,7 +60,7 @@ func (r Repl) Run() {
 			continue
 		}
 		raw = append(raw, got...)
-		el, err := exp.Read(r.Reg, bytes.NewReader(raw), "")
+		el, err := exp.Read(bytes.NewReader(raw), "")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				raw = append(raw, '\n')

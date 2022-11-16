@@ -250,7 +250,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		// write back
 		d.Vals[idx] = mut
 		return func() error {
-			return lit.ParseInto(l.Bend.Reg, org, mut)
+			return lit.ParseInto(org, mut)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown command %s", ev.Cmd)

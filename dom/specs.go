@@ -90,9 +90,7 @@ func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_
 	return nil, fmt.Errorf("index %s unexpected arg %T", s, arg)
 }
 
-func noopSetter(p *exp.Prog, n ext.Node, key string, v lit.Val) error {
-	return nil
-}
+func noopSetter(p *exp.Prog, n ext.Node, key string, v lit.Val) error { return nil }
 
 var idxRule = ext.Rule{Prepper: idxAppender, Setter: noopSetter}
 var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
@@ -104,10 +102,10 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
-	ReslHook: func(p *exp.Prog, c *exp.Call) error {
+	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
 		name := c.Args[0].String()
 		p.Reg.SetRef(name, typ.Type{Kind: knd.Obj | knd.Ref}, nil)
-		return nil
+		return c, nil
 	},
 }, func(k string) exp.Spec {
 	if k == ":" || k == "elem" {
@@ -117,7 +115,7 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 })
 
 var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
-var elemSpec = domSpec(&Elem{}, "<form@field name:sym type:typ tupl?|tag @>", false, ext.Rules{
+var elemSpec = domSpec(&Elem{}, "<form@elem name:sym type:typ tupl?|tag @>", false, ext.Rules{
 	Key: map[string]ext.Rule{
 		"opt":  bitRule,
 		"pk":   bitRule,

@@ -136,18 +136,18 @@ func TestDom(t *testing.T) {
 			`object:{indices:[{keys:['spam' 'egg'] unique:true}]}}]}`,
 		},
 	}
+	reg := &lit.Reg{}
 	for _, test := range tests {
-		reg := &lit.Reg{Cache: &lit.Cache{}}
 		s, err := exp.NewProg(nil, reg, NewEnv()).RunStr(test.raw, nil)
 		if err != nil {
-			t.Errorf("execute %s got error: %+v", test.raw, err)
+			t.Errorf("run %s got error: %+v", test.raw, err)
 			continue
 		}
 		str := bfr.String(s)
 		if str != test.str {
 			t.Errorf("string equal want\n%s\n\tgot\n%s", test.str, str)
 		}
-		res, err := lit.Read(reg, strings.NewReader(test.str), "")
+		res, err := lit.Read(strings.NewReader(test.str), "")
 		if err != nil {
 			t.Errorf("parse %s err: %+v", test.str, err)
 		}

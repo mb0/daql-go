@@ -86,7 +86,7 @@ func (b *MemBackend) Add(m *dom.Model, list *lit.Vals) error {
 	mt := m.Type()
 	for i, v := range *list {
 		l := v.(*lit.Vals)
-		s := &lit.Obj{Reg: b.Reg, Typ: mt, Vals: *l}
+		s := &lit.Obj{Typ: mt, Vals: *l}
 		(*list)[i] = s
 	}
 	b.Data[m.Qualified()] = &lit.List{El: mt, Vals: *list}
@@ -194,7 +194,7 @@ func collectList(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*lit.List, e
 	if j.Lim > 0 && len(res) > int(j.Lim) {
 		res = res[:j.Lim]
 	}
-	return &lit.List{Reg: p.Reg, El: typ.El(j.Res), Vals: res}, nil
+	return &lit.List{El: typ.El(j.Res), Vals: res}, nil
 }
 
 func collectCount(p *exp.Prog, j *Job, list *lit.List, whr exp.Exp) (*exp.Lit, error) {

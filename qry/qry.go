@@ -63,7 +63,7 @@ func (q *Qry) Subj(ref string) (*Subj, error) {
 
 // Exec executes the given query str with arg and returns a value or an error.
 func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (*exp.Lit, error) {
-	x, err := exp.Parse(q.Reg, str)
+	x, err := exp.Parse(str)
 	if err != nil {
 		return nil, fmt.Errorf("parse qry %s error: %w", str, err)
 	}

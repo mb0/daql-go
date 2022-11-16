@@ -27,7 +27,7 @@ func ReflectQuery(reg *lit.Reg, pp interface{}) (exp.Exp, error) {
 	buf.WriteString("({}\n")
 	reflectStruct(pt, buf, 1)
 	buf.WriteString("\n)")
-	x, err := exp.Read(reg, buf, "auto-qry")
+	x, err := exp.Read(buf, "auto-qry")
 	if err != nil {
 		return nil, err
 	}

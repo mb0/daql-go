@@ -96,8 +96,7 @@ func (it *fileStream) Scan() (lit.Val, error) {
 	if err != nil {
 		return nil, err
 	}
-	reg := &lit.Reg{}
-	v, err := reg.ParseVal(tr)
+	v, err := lit.ParseVal(tr)
 	if err != nil {
 		return nil, err
 	}

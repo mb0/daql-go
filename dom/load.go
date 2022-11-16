@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"xelf.org/xelf/exp"
-	"xelf.org/xelf/ext"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
 )
@@ -28,7 +27,7 @@ func (l *FileLoader) Load(reg *lit.Reg, res string) (exp.Exp, string, error) {
 	}
 	for _, r := range l.Roots {
 		for _, try := range tries {
-			x, rel, err := l.try(reg, filepath.Join(r, try))
+			x, rel, err := l.try(filepath.Join(r, try))
 			if err != nil {
 				if err == errNotFound {
 					continue
@@ -43,19 +42,19 @@ func (l *FileLoader) Load(reg *lit.Reg, res string) (exp.Exp, string, error) {
 
 var errNotFound = errors.New("not found")
 
-func (l *FileLoader) try(reg *lit.Reg, path string) (exp.Exp, string, error) {
+func (l *FileLoader) try(path string) (exp.Exp, string, error) {
 	fi, err := os.Stat(path)
 	if err != nil || fi.IsDir() {
 		return nil, "", errNotFound
 	}
-	x, rel, err := l.open(reg, path)
+	x, rel, err := l.open(path)
 	if err != nil {
 		return nil, "", fmt.Errorf("fileloader %s: %w", path, err)
 	}
 	return x, rel, nil
 }
 
-func (l *FileLoader) open(reg *lit.Reg, path string) (exp.Exp, string, error) {
+func (l *FileLoader) open(path string) (exp.Exp, string, error) {
 	rel, err := filepath.Rel(filepath.Dir(l.Proj), path)
 	if err != nil {
 		return nil, "", err
@@ -65,7 +64,7 @@ func (l *FileLoader) open(reg *lit.Reg, path string) (exp.Exp, string, error) {
 		return nil, "", err
 	}
 	defer f.Close()
-	x, err := exp.Read(reg, f, path)
+	x, err := exp.Read(f, path)
 	if err != nil {
 		return nil, "", err
 	}
@@ -73,9 +72,8 @@ func (l *FileLoader) open(reg *lit.Reg, path string) (exp.Exp, string, error) {
 }
 
 var load = func() *loadSpec {
-	n, _ := ext.NewNode(domReg, &Schema{})
 	sig, _ := typ.Parse(`<form@load str @>`)
-	exp.SigRes(sig).Type = n.Type()
+	exp.SigRes(sig).Type = schemaSpec.Type()
 	return &loadSpec{SpecBase: exp.SpecBase{Decl: sig}}
 }()
 
