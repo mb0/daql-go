@@ -9,6 +9,7 @@ import (
 	"xelf.org/daql/mig"
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/lit"
+	"xelf.org/xelf/mod"
 )
 
 type Project struct {
@@ -91,9 +92,10 @@ func (pr *Project) Status(p *bfr.P) {
 
 func SchemaPath(pr *Project, s *dom.Schema) string {
 	v, _ := s.Extra.Key("file")
-	path, _ := lit.ToStr(v)
-	if path != "" {
-		return filepath.Join(pr.Dir, filepath.Dir(string(path)))
+	raw, _ := lit.ToStr(v)
+	loc := mod.ParseLoc(string(raw))
+	if loc.Proto() == "file" {
+		return filepath.Dir(loc.Path())
 	}
 	return pr.Dir
 }

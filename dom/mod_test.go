@@ -15,8 +15,9 @@ func TestMod(t *testing.T) {
 		raw  string
 		want string
 	}{
-		{"simple use", `(use 'auth') (eq (xelf auth.Acct) '<obj@auth.Acct>')`, "true"},
-		{"complex use", `(use 'blog') (eq (xelf blog.Entry) '<obj@blog.Entry>')`, "true"},
+		{"simple use", `(use 'auth') auth.dom.models/name`, "['Role' 'Acct' 'Cred' 'Sess']"},
+		{"complex use", `(use 'blog') blog.Entry`, "<obj@blog.Entry>"},
+		{"project use", `(use 'site') site.dom.schemas/name`, "['auth' 'blog']"},
 	}
 	reg := &lit.Reg{}
 	files := mod.FileMods("testdata/")

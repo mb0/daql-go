@@ -1,0 +1,5 @@
+(use 'auth' 'blog')
+(project site
+	auth.dom
+	blog.dom
+)

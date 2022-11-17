@@ -1,5 +1,6 @@
+(use 'dom' 'mig' 'evt')
 (project daql hist:'.hist'
-	(load 'dom')
-	(load 'mig')
-	(load 'evt')
+	dom.dom
+	mig.dom
+	evt.dom
 )

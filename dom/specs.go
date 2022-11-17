@@ -14,9 +14,7 @@ import (
 
 var domReg = &lit.Reg{}
 
-type subSpecs = func(k string) exp.Spec
-
-func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub subSpecs) *ext.NodeSpec {
+func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub exp.Spec) *ext.NodeSpec {
 	n, err := ext.NewNode(domReg, val)
 	if err != nil {
 		panic(err)
@@ -28,7 +26,14 @@ func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub subSpecs) 
 	exp.SigRes(s).Type = n.Type()
 	spec := ext.NewNodeSpec(s, n, rs)
 	spec.Env = env
-	spec.Sub = sub
+	if sub != nil {
+		spec.Sub = func(k string) exp.Spec {
+			if k == ":" {
+				return sub
+			}
+			return nil
+		}
+	}
 	return spec
 }
 
@@ -45,8 +50,14 @@ var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>"
 		}
 		node := c.Env.(*ext.NodeEnv).Node
 		proj := node.Ptr().(*Project)
-		m := &exp.Mod{File: &p.File, Name: proj.Name}
-		m.Decl = exp.LitVal(node)
+		if p.File.URL != "" {
+			if proj.Extra == nil {
+				proj.Extra = new(lit.Dict)
+			}
+			proj.Extra.SetKey("file", lit.Str(p.File.URL))
+		}
+		decl := lit.Keyed{{Key: "dom", Val: node}}
+		m := &exp.Mod{File: &p.File, Name: proj.Name, Decl: exp.LitVal(lit.MakeObj(decl))}
 		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
 		return res, nil
 	},
@@ -65,16 +76,16 @@ var schemaSpec = domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", t
 		}
 		node := c.Env.(*ext.NodeEnv).Node
 		sch := node.Ptr().(*Schema)
-		m := &exp.Mod{File: &p.File, Name: sch.Name, Decl: exp.LitVal(node)}
+		decl := make(lit.Keyed, 0, 1+len(sch.Models))
+		decl = append(decl, lit.KeyVal{Key: "dom", Val: node})
+		for _, m := range sch.Models {
+			decl = append(decl, lit.KeyVal{Key: m.Name, Val: m.Type()})
+		}
+		m := &exp.Mod{File: &p.File, Name: sch.Name, Decl: exp.LitVal(lit.MakeObj(decl))}
 		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
 		return res, nil
 	},
-}, func(k string) exp.Spec {
-	if k == ":" {
-		return modelSpec
-	}
-	return nil
-})
+}, modelSpec)
 
 func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_ lit.Val, err error) {
 	m := n.Ptr().(*Model)
@@ -122,17 +133,7 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
-	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
-		name := c.Args[0].String()
-		p.Reg.SetRef(name, typ.Type{Kind: knd.Obj | knd.Ref}, nil)
-		return c, nil
-	},
-}, func(k string) exp.Spec {
-	if k == ":" {
-		return elemSpec
-	}
-	return nil
-})
+}, elemSpec)
 
 var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
 var elemSpec = domSpec(&Elem{}, "<form@elem name:sym type:typ tupl?|tag @>", false, ext.Rules{
@@ -149,11 +150,6 @@ var elemSpec = domSpec(&Elem{}, "<form@elem name:sym type:typ tupl?|tag @>", fal
 	Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
 }, nil)
 
-func keySetter(key string) ext.KeySetter {
-	return func(p *exp.Prog, n ext.Node, _ string, v lit.Val) error {
-		return n.SetKey(key, v)
-	}
-}
 func declsPrepper(decl, tag ext.KeyPrepper) ext.KeyPrepper {
 	return func(p *exp.Prog, env exp.Env, n ext.Node, k string, arg exp.Exp) (lit.Val, error) {
 		if k != "" && !cor.IsCased(k) && k[0] != '@' {
@@ -173,14 +169,6 @@ func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 		return nil, fmt.Errorf("expected *Schema got %s", aa.Value())
 	}
 	pro.Schemas = append(pro.Schemas, s)
-	// here we can resolve type to previously defined schemas
-	// XXX: this is a hack and should be removed
-	for _, m := range s.Models {
-		err = reslDomRefs(m, s, pro)
-		if err != nil {
-			return nil, fmt.Errorf("schema prepper: %w", err)
-		}
-	}
 	return nil, nil
 }
 func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) (lit.Val, error) {
@@ -193,16 +181,17 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 		return nil, fmt.Errorf("expected *Model got %s", aa.Value())
 	}
 	s := n.Ptr().(*Schema)
+	if m.Schema != "" {
+		return nil, fmt.Errorf("model %s already part of schema %s", m.Name, m.Schema)
+	}
 	m.Schema = s.Name
+	markPK(m)
 	s.Models = append(s.Models, m)
 	// here we can resolve type references to the model itself and models in the same schema
-	err = reslDomRefs(m, s, nil)
+	err = reslDomRefs(m, s)
 	if err != nil {
 		return nil, fmt.Errorf("models prepper: %w", err)
 	}
-	// XXX: this is a hack and should be removed
-	t := m.Type()
-	p.Reg.SetRef(m.Qualified(), t, nil)
 	return nil, nil
 }
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (_ lit.Val, err error) {
@@ -282,18 +271,22 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 	m.Elems = append(m.Elems, el)
 	return nil, nil
 }
-func reslDomRefs(m *Model, s *Schema, p *Project) (err error) {
-	if m.Kind.Kind&knd.Obj == 0 {
-		return nil
-	}
-	for i, el := range m.Elems {
-		if i == 0 && el.Name == "ID" {
+func markPK(m *Model) {
+	if m.Kind.Kind&knd.Obj != 0 && len(m.Elems) > 0 {
+		if el := m.Elems[0]; el.Name == "ID" {
 			el.Bits |= BitPK
 			el.Type.Ref = m.Qualified() + ".ID"
 		}
+	}
+}
+func reslDomRefs(m *Model, s *Schema) (err error) {
+	if m.Kind.Kind&(knd.Obj|knd.Func) == 0 {
+		return nil
+	}
+	for _, el := range m.Elems {
 		et := typ.ContEl(el.Type)
 		if et.Kind&knd.Ref != 0 {
-			err = reslDomRef(el, et.Ref, m, s, p)
+			err = reslDomRef(el, et.Ref, m, s)
 			if err != nil {
 				return err
 			}
@@ -301,7 +294,7 @@ func reslDomRefs(m *Model, s *Schema, p *Project) (err error) {
 	}
 	return nil
 }
-func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err error) {
+func reslDomRef(el *Elem, name string, m *Model, s *Schema) (err error) {
 	switch ps := strings.Split(name, "."); len(ps) {
 	case 1:
 		m = s.Model(cor.Keyed(name))
@@ -318,10 +311,6 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 		if m != nil {
 			return reslRefField(m, ps[1], el)
 		}
-		if p != nil {
-			m = p.Schema(ps[0]).Model(cor.Keyed(ps[1]))
-			return reslRefType(m, el)
-		}
 		return nil
 	case 3:
 		if ps[0] == "" { // ..Model
@@ -329,12 +318,8 @@ func reslDomRef(el *Elem, name string, m *Model, s *Schema, p *Project) (err err
 				m = s.Model(cor.Keyed(ps[2]))
 				return reslRefType(m, el)
 			}
-		} else if ps[0] == s.Name || p != nil { // schema.Model.Field
-			if ps[0] == s.Name {
-				m = s.Model(cor.Keyed(ps[1]))
-			} else {
-				m = p.Schema(ps[0]).Model(cor.Keyed(ps[1]))
-			}
+		} else if ps[0] == s.Name { // schema.Model.Field
+			m = s.Model(cor.Keyed(ps[1]))
 			return reslRefField(m, ps[2], el)
 		} else {
 			return nil
@@ -357,10 +342,6 @@ func prepRefElem(el *Elem) {
 	el.Type = typ.Ref(ref)
 }
 
-func isModelRef(m *Model, ref string) bool {
-	// TODO also handle qualified names ?
-	return m.Name == ref
-}
 func reslRefType(m *Model, el *Elem) error {
 	if m == nil {
 		return fmt.Errorf("model %s not found", el.Type)
@@ -368,7 +349,7 @@ func reslRefType(m *Model, el *Elem) error {
 	var found bool
 	// update type (usually container type)
 	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
-		if e.Ref != "" && isModelRef(m, e.Ref) {
+		if m.Name == e.Ref {
 			found = true
 			return m.Type(), nil
 		}
