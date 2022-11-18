@@ -37,7 +37,7 @@ func WriteSchemaFile(g *gen.Gen, name string, s *dom.Schema) error {
 func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 	var embed string
 	if s.Extra != nil {
-		if emv, err := s.Extra.Key("embed"); err == nil && !emv.Nil() {
+		if _, err := s.Extra.Key("embed"); err == nil {
 			if fn, err := s.Extra.Key("file"); err == nil {
 				str, _ := lit.ToStr(fn)
 				embed = filepath.Base(string(str))
@@ -53,7 +53,7 @@ func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 		g.Byte('\n')
 		err := WriteModel(g, m)
 		if err != nil {
-			return err
+			return fmt.Errorf("write model %s: %w", m.Name, err)
 		}
 	}
 	// swap back
@@ -98,8 +98,7 @@ func WriteSchema(g *gen.Gen, s *dom.Schema) error {
 // WriteModel writes a type declaration for bits, enum and rec types.
 // For bits and enum types the declaration includes the constant declarations.
 func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
-	doc, err := m.Extra.Key("doc")
-	if err == nil {
+	if doc, err := m.Extra.Key("doc"); err == nil {
 		ch, err := lit.ToStr(doc)
 		if ch != "" && err == nil {
 			g.Prepend(fmt.Sprintf("%s %s", m.Name, ch), "// ")
