@@ -9,12 +9,13 @@ import (
 	"xelf.org/xelf/ext"
 	"xelf.org/xelf/knd"
 	"xelf.org/xelf/lit"
+	"xelf.org/xelf/mod"
 	"xelf.org/xelf/typ"
 )
 
 var domReg = &lit.Reg{}
 
-func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub exp.Spec) *ext.NodeSpec {
+func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub ext.NodeEnvSub) *ext.NodeSpec {
 	n, err := ext.NewNode(domReg, val)
 	if err != nil {
 		panic(err)
@@ -26,15 +27,17 @@ func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub exp.Spec) 
 	exp.SigRes(s).Type = n.Type()
 	spec := ext.NewNodeSpec(s, n, rs)
 	spec.Env = env
-	if sub != nil {
-		spec.Sub = func(k string) exp.Spec {
-			if k == ":" {
-				return sub
-			}
-			return nil
-		}
-	}
+	spec.Sub = sub
 	return spec
+}
+
+func simpleSub(tagSpec exp.Spec) ext.NodeEnvSub {
+	return func(ne *ext.NodeEnv, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+		if k == ":" {
+			return exp.LitVal(tagSpec), nil
+		}
+		return ne.Par.Lookup(s, k, eval)
+	}
 }
 
 var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>", true, ext.Rules{
@@ -43,7 +46,7 @@ var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>"
 		Setter:  ext.ExtraSetter("extra"),
 	},
 	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
-		// TODO always eval and register project modules on resl
+		// always eval and register project module on resl
 		res, err := c.Spec.Eval(p, c)
 		if err != nil {
 			return c, err
@@ -63,29 +66,40 @@ var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>"
 	},
 }, nil)
 
-var schemaSpec = domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", true, ext.Rules{
-	Default: ext.Rule{
-		Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
-		Setter:  ext.ExtraSetter("extra"),
-	},
-	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
-		// TODO always eval and register schema modules on resl
-		res, err := c.Spec.Eval(p, c)
-		if err != nil {
-			return c, err
-		}
-		node := c.Env.(*ext.NodeEnv).Node
-		sch := node.Ptr().(*Schema)
-		decl := make(lit.Keyed, 0, 1+len(sch.Models))
-		decl = append(decl, lit.KeyVal{Key: "dom", Val: node})
-		for _, m := range sch.Models {
-			decl = append(decl, lit.KeyVal{Key: m.Name, Val: m.Type()})
-		}
-		m := &exp.Mod{File: &p.File, Name: sch.Name, Decl: exp.LitVal(lit.MakeObj(decl))}
-		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
-		return res, nil
-	},
-}, modelSpec)
+type schemaNodeSpec struct{ *ext.NodeSpec }
+
+var schemaSpec = &schemaNodeSpec{
+	domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", true, ext.Rules{
+		Default: ext.Rule{
+			Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
+			Setter:  ext.ExtraSetter("extra"),
+		},
+	}, simpleSub(modelSpec)),
+}
+
+func (s *schemaNodeSpec) Value() lit.Val { return s }
+
+func (s *schemaNodeSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.Exp, error) {
+	if c.Env == nil {
+		env = mod.NewModEnv(env, &p.File, c.Src)
+	}
+	_, err := s.NodeSpec.Resl(p, env, c, h)
+	if err != nil {
+		return nil, err
+	}
+	// always eval and register schema module on resl
+	res, err := s.NodeSpec.Eval(p, c)
+	if err != nil {
+		return nil, err
+	}
+	ne := c.Env.(*ext.NodeEnv)
+	sch := ne.Node.Ptr().(*Schema)
+	me := ne.Par.(*mod.ModEnv)
+	me.Name(sch.Name)
+	me.Add("dom", ne.Node)
+	me.Pub()
+	return res, nil
+}
 
 func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_ lit.Val, err error) {
 	m := n.Ptr().(*Model)
@@ -133,7 +147,30 @@ var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp 
 		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
 		Setter:  ext.ExtraSetter("extra"),
 	},
-}, elemSpec)
+}, func(ne *ext.NodeEnv, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+	if k == ":" {
+		return exp.LitVal(elemSpec), nil
+	}
+	k, ok := exp.DotKey(k)
+	if ok {
+		if !eval {
+			s.Env = ne
+			s.Rel = k
+			return s, nil
+		}
+		k := k[1:]
+		m := ne.Node.Ptr().(*Model)
+		for _, el := range m.Elems {
+			if el.Name == k || el.Key() == k {
+				t := el.Type
+				t.Ref = m.Name + "." + el.Name
+				return exp.LitVal(t), nil
+			}
+		}
+		return nil, exp.ErrSymNotFound
+	}
+	return ne.Par.Lookup(s, k, eval)
+})
 
 var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
 var elemSpec = domSpec(&Elem{}, "<form@elem name:sym type:typ tupl?|tag @>", false, ext.Rules{
@@ -181,17 +218,12 @@ func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) 
 		return nil, fmt.Errorf("expected *Model got %s", aa.Value())
 	}
 	s := n.Ptr().(*Schema)
-	if m.Schema != "" {
-		return nil, fmt.Errorf("model %s already part of schema %s", m.Name, m.Schema)
-	}
-	m.Schema = s.Name
-	markPK(m)
+	qualifyModel(m, s.Name)
 	s.Models = append(s.Models, m)
-	// here we can resolve type references to the model itself and models in the same schema
-	err = reslDomRefs(m, s)
-	if err != nil {
-		return nil, fmt.Errorf("models prepper: %w", err)
-	}
+
+	me := mod.FindModEnv(env)
+	me.Mod.Name = s.Name
+	me.Add(m.Name, m.Type())
 	return nil, nil
 }
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (_ lit.Val, err error) {
@@ -231,38 +263,47 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			}
 		}
 	case knd.Obj, knd.Func:
-		if key != "" && key[0] == '@' {
-			prepRefElem(el)
-			if arg != nil {
-				ta, err := p.Eval(env, arg)
-				if err != nil {
-					return nil, err
+		if arg == nil {
+			if key == "" || key[0] != '@' {
+				return nil, fmt.Errorf("invalid element")
+			}
+			ref := key[1:]
+			fst, _, _ := strings.Cut(ref, ".")
+			if fst == "" {
+				fst = m.Name
+			}
+			el.Name = fst
+			arg = exp.LitVal(typ.Ref(ref))
+		}
+		ta, err := p.Eval(env, arg)
+		if err != nil {
+			return nil, err
+		}
+		switch tv := ta.Val.(type) {
+		case lit.Mut:
+			n, ok := tv.Ptr().(*Elem)
+			if !ok {
+				return nil, fmt.Errorf("expected *Elem got %s", tv.Value())
+			}
+			if n.Name == "" {
+				n.Name = el.Name
+			}
+			el = n
+		case typ.Type:
+			el.Type = tv
+			if key == "" && k != knd.Func {
+				if tv.Ref == "" {
+					return nil, fmt.Errorf("must be named type got %s", tv)
+
 				}
-				switch tv := ta.Val.(type) {
-				case lit.Mut:
-					n := tv.Ptr().(*Elem)
-					n.Name = el.Name
-					n.Type = el.Type
-					el = n
+				if tv.Kind&knd.Data != knd.Obj {
+					el.Name = refElemName(tv.Ref)
 				}
 			}
-		} else if arg == nil {
-			el.Type = typ.Any
-		} else {
-			ta, err := p.Eval(env, arg)
-			if err != nil {
-				return nil, err
-			}
-			switch tv := ta.Val.(type) {
-			case lit.Mut:
-				n := tv.Ptr().(*Elem)
-				if n.Name == "" {
-					n.Name = el.Name
-				}
-				el = n
-			case typ.Type:
-				el.Type = tv
-			}
+		}
+		if k == knd.Obj && el.Name == "ID" && len(m.Elems) == 0 {
+			el.Bits |= BitPK
+			el.Type.Ref = m.Name + ".ID"
 		}
 		if strings.HasSuffix(el.Name, "?") {
 			el.Bits |= BitOpt
@@ -271,128 +312,36 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 	m.Elems = append(m.Elems, el)
 	return nil, nil
 }
-func markPK(m *Model) {
-	if m.Kind.Kind&knd.Obj != 0 && len(m.Elems) > 0 {
-		if el := m.Elems[0]; el.Name == "ID" {
-			el.Bits |= BitPK
-			el.Type.Ref = m.Qualified() + ".ID"
-		}
+func qualifyModel(m *Model, sch string) error {
+	if m.Schema != "" {
+		return fmt.Errorf("model %s already part of schema %s", m.Name, m.Schema)
 	}
-}
-func reslDomRefs(m *Model, s *Schema) (err error) {
-	if m.Kind.Kind&(knd.Obj|knd.Func) == 0 {
-		return nil
-	}
-	for _, el := range m.Elems {
-		et := typ.ContEl(el.Type)
-		if et.Kind&knd.Ref != 0 {
-			err = reslDomRef(el, et.Ref, m, s)
-			if err != nil {
-				return err
-			}
+	m.Schema = sch
+	if m.Kind.Kind&(knd.Obj|knd.Func) != 0 {
+		pref := m.Name + "."
+		prep := sch + "."
+		for _, el := range m.Elems {
+			el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
+				if strings.HasPrefix(e.Ref, pref) {
+					e.Ref = prep + e.Ref
+				}
+				return e.Type, nil
+			})
 		}
 	}
 	return nil
 }
-func reslDomRef(el *Elem, name string, m *Model, s *Schema) (err error) {
-	switch ps := strings.Split(name, "."); len(ps) {
-	case 1:
-		m = s.Model(cor.Keyed(name))
-		return reslRefType(m, el)
-	case 2:
-		if ps[0] == "" { // .Field
-			return reslRefField(m, ps[1], el)
-		} // can be schema.Model or Model.Field
-		if ps[0] == s.Name { // this.Model
-			m = s.Model(cor.Keyed(ps[1]))
-			return reslRefType(m, el)
-		}
-		m := s.Model(cor.Keyed(ps[0]))
-		if m != nil {
-			return reslRefField(m, ps[1], el)
-		}
-		return nil
-	case 3:
-		if ps[0] == "" { // ..Model
-			if ps[1] == "" {
-				m = s.Model(cor.Keyed(ps[2]))
-				return reslRefType(m, el)
-			}
-		} else if ps[0] == s.Name { // schema.Model.Field
-			m = s.Model(cor.Keyed(ps[1]))
-			return reslRefField(m, ps[2], el)
-		} else {
-			return nil
-		}
-	case 4:
-		if ps[0] == "" && ps[1] == "" { // ..Model.Field
-			m = s.Model(cor.Keyed(ps[2]))
-			return reslRefField(m, ps[3], el)
-		}
-	}
-	return fmt.Errorf("unsupported dom reference %s", name)
-}
-func prepRefElem(el *Elem) {
-	ref := el.Name[1:]
-	if ref[len(ref)-1] == '?' {
-		el.Bits |= BitOpt
-		ref = ref[:len(ref)-1]
-	}
-	el.Name = "@"
-	el.Type = typ.Ref(ref)
-}
-
-func reslRefType(m *Model, el *Elem) error {
-	if m == nil {
-		return fmt.Errorf("model %s not found", el.Type)
-	}
-	var found bool
-	// update type (usually container type)
-	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
-		if m.Name == e.Ref {
-			found = true
-			return m.Type(), nil
-		}
-		return e.Type, nil
-	})
-	if found {
-		switch el.Name {
-		case "@":
-			el.Name = m.Name
-		case "":
-			if found && m.Kind.Kind&(knd.Enum|knd.Bits) != 0 {
-				el.Name = m.Name
-			}
-		}
-	}
-	return nil
-}
-func reslRefField(m *Model, key string, el *Elem) error {
-	if m == nil {
-		return fmt.Errorf("model %s not found", el.Type)
-	}
-	mt := m.Type()
-	pb := mt.Body.(*typ.ParamBody)
-	idx := pb.FindKeyIndex(cor.Keyed(key))
+func refElemName(ref string) string {
+	idx := strings.IndexByte(ref, '.')
 	if idx < 0 {
-		return fmt.Errorf("key %s not found in %s", key, mt)
+		return ref
 	}
-	p := pb.Params[idx]
-	if el.Name == "@" {
-		el.Name = m.Name
+	snd := ref[idx+1:]
+	idx = strings.IndexByte(snd, '.')
+	if idx < 0 {
+		return snd
 	}
-	if el.Name == "" {
-		el.Name = m.Name
-	}
-	el.Type, _ = typ.Edit(el.Type, func(e *typ.Editor) (typ.Type, error) {
-		if e.Kind&knd.Ref != 0 {
-			t := p.Type
-			t.Ref = m.Qualified() + "." + p.Name
-			return t, nil
-		}
-		return e.Type, nil
-	})
-	return nil
+	return snd[:idx]
 }
 
 func mutPtr(l *exp.Lit) interface{} {

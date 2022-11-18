@@ -105,7 +105,14 @@ func TestDom(t *testing.T) {
 				`{name:'ID' type:<int@test.Entry.ID> bits:2} ` +
 				`{name:'Groups' type:<list|str@test.Group.ID>}]}]}`,
 		},
-		{`(schema tree (Node; ID:str Par:@.ID))`,
+		{`(schema test (Group; ID:str) (Entry; ID:int Groups:list|@Group?)))`,
+			`{name:'test' models:[` +
+				`{kind:<obj> name:'Group' schema:'test' elems:[{name:'ID' type:<str@test.Group.ID> bits:2}]} ` +
+				`{kind:<obj> name:'Entry' schema:'test' elems:[` +
+				`{name:'ID' type:<int@test.Entry.ID> bits:2} ` +
+				`{name:'Groups' type:<list|obj@test.Group?>}]}]}`,
+		},
+		{`(schema tree (Node; ID:str Par:.ID))`,
 			`{name:'tree' models:[` +
 				`{kind:<obj> name:'Node' schema:'tree' elems:[{name:'ID' type:<str@tree.Node.ID> bits:2} ` +
 				`{name:'Par' type:<str@tree.Node.ID>}]}]}`,
@@ -145,7 +152,7 @@ func TestDom(t *testing.T) {
 		}
 		str := bfr.String(s)
 		if str != test.str {
-			t.Errorf("string equal want\n%s\n\tgot\n%s", test.str, str)
+			t.Errorf("string for %s equal want\n%s\n\tgot\n%s", test.raw, test.str, str)
 		}
 		res, err := lit.Read(strings.NewReader(test.str), "")
 		if err != nil {
