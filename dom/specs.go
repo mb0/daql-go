@@ -40,6 +40,16 @@ func simpleSub(tagSpec exp.Spec) ext.NodeEnvSub {
 	}
 }
 
+func setFileExtra(x *lit.Dict, url string) *lit.Dict {
+	if url != "" {
+		if x == nil {
+			x = new(lit.Dict)
+		}
+		x.SetKey("file", lit.Str(url))
+	}
+	return x
+}
+
 var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>", true, ext.Rules{
 	Default: ext.Rule{
 		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
@@ -53,12 +63,7 @@ var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>"
 		}
 		node := c.Env.(*ext.NodeEnv).Node
 		proj := node.Ptr().(*Project)
-		if p.File.URL != "" {
-			if proj.Extra == nil {
-				proj.Extra = new(lit.Dict)
-			}
-			proj.Extra.SetKey("file", lit.Str(p.File.URL))
-		}
+		proj.Extra = setFileExtra(proj.Extra, p.File.URL)
 		decl := lit.Keyed{{Key: "dom", Val: node}}
 		m := &exp.Mod{File: &p.File, Name: proj.Name, Decl: exp.LitVal(lit.MakeObj(decl))}
 		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
@@ -94,6 +99,7 @@ func (s *schemaNodeSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type)
 	}
 	ne := c.Env.(*ext.NodeEnv)
 	sch := ne.Node.Ptr().(*Schema)
+	sch.Extra = setFileExtra(sch.Extra, p.File.URL)
 	me := ne.Par.(*mod.ModEnv)
 	me.Name(sch.Name)
 	me.Add("dom", ne.Node)

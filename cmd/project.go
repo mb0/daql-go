@@ -91,11 +91,12 @@ func (pr *Project) Status(p *bfr.P) {
 }
 
 func SchemaPath(pr *Project, s *dom.Schema) string {
-	v, _ := s.Extra.Key("file")
-	raw, _ := lit.ToStr(v)
-	loc := mod.ParseLoc(string(raw))
-	if loc.Proto() == "file" {
-		return filepath.Dir(loc.Path())
+	v, err := s.Extra.Key("file")
+	if err == nil {
+		loc := mod.ParseLoc(v.String())
+		if loc.Proto() == "file" {
+			return filepath.Dir(loc.Path())
+		}
 	}
 	return pr.Dir
 }
