@@ -4,8 +4,6 @@ package qry
 import (
 	"context"
 	"fmt"
-	"log"
-	"strings"
 
 	"xelf.org/daql/dom"
 	"xelf.org/xelf/exp"
@@ -32,12 +30,8 @@ func New(reg *lit.Reg, env exp.Env, bend Backend) *Qry {
 	if reg == nil {
 		reg = &lit.Reg{}
 	}
-	var pr dom.Project
-	doms, err := dom.ReadSchema(reg, strings.NewReader(dom.RawSchema()), "dom.daql", &pr)
-	if err != nil {
-		log.Fatalf("could not read dom schema: %s", err)
-	}
-	return &Qry{Backend: bend, Env: env, Reg: reg, doms: doms}
+	dom.SetupReg(reg)
+	return &Qry{Backend: bend, Env: env, Reg: reg, doms: dom.Dom}
 }
 
 // Subj returns a subject from the first backend that provides ref or an error.

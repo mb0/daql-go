@@ -7,7 +7,6 @@ import (
 	"xelf.org/daql/dom"
 	"xelf.org/daql/gen"
 	"xelf.org/xelf/bfr"
-	"xelf.org/xelf/lit"
 )
 
 const barRaw = `(schema bar (Kind:enum X; Y; Z;))`
@@ -21,12 +20,11 @@ const fooRaw = `(schema foo
 )`
 
 func TestWriteFile(t *testing.T) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
-	_, err := dom.ReadSchema(reg, strings.NewReader(barRaw), "bar", nil)
+	_, err := dom.ReadSchema(nil, strings.NewReader(barRaw), "bar")
 	if err != nil {
 		t.Fatalf("schema bar error %v", err)
 	}
-	s, err := dom.ReadSchema(reg, strings.NewReader(fooRaw), "foo", nil)
+	s, err := dom.ReadSchema(nil, strings.NewReader(fooRaw), "foo")
 	if err != nil {
 		t.Fatalf("schema foo error %v", err)
 	}

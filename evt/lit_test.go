@@ -70,15 +70,15 @@ func TestLedger(t *testing.T) {
 
 func testLedger() (*evt.MemLedger, error) {
 	reg := &lit.Reg{Cache: &lit.Cache{}}
+	ev, err := dom.OpenSchema(reg, "evt.daql")
+	if err != nil {
+		return nil, err
+	}
+	pr, err := dom.ReadSchema(reg, strings.NewReader(domtest.ProdRaw), "prod.daql")
+	if err != nil {
+		return nil, err
+	}
 	p := &dom.Project{}
-	ev, err := dom.OpenSchema(reg, "evt.daql", p)
-	if err != nil {
-		return nil, err
-	}
-	pr, err := dom.ReadSchema(reg, strings.NewReader(domtest.ProdRaw), "prod.daql", p)
-	if err != nil {
-		return nil, err
-	}
 	p.Schemas = append(p.Schemas, ev, pr)
 	return evt.NewMemLedger(qry.NewMemBackend(reg, p, nil))
 }

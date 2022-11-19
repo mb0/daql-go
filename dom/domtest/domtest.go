@@ -19,7 +19,7 @@ type Fixture struct {
 
 func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
 	res := &Fixture{Reg: reg}
-	s, err := dom.ReadSchema(reg, strings.NewReader(raw), "", nil)
+	s, err := dom.ReadSchema(reg, strings.NewReader(raw), "")
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}

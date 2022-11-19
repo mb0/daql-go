@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"xelf.org/xelf/exp"
-	"xelf.org/xelf/ext"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/mod"
@@ -76,30 +75,27 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	return p, nil
 }
 
-func OpenSchema(reg *lit.Reg, path string, pro *Project) (s *Schema, _ error) {
+func OpenSchema(reg *lit.Reg, path string) (s *Schema, _ error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	return ReadSchema(reg, f, path, pro)
+	return ReadSchema(reg, f, path)
 }
 
-func ReadSchema(reg *lit.Reg, r io.Reader, path string, pro *Project) (s *Schema, _ error) {
-	reg.AddFrom(domReg)
-	if pro == nil {
-		pro = &Project{}
+func ReadSchema(reg *lit.Reg, r io.Reader, path string) (s *Schema, _ error) {
+	if reg == nil {
+		reg = &lit.Reg{}
 	}
-	n, err := ext.NewNode(reg, pro)
-	if err != nil {
-		return nil, err
+	if reg != domReg {
+		reg.AddFrom(domReg)
 	}
 	x, err := exp.Read(r, path)
 	if err != nil {
 		return nil, err
 	}
-	env := &ext.NodeEnv{Par: NewEnv(), Node: n}
-	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
+	l, err := exp.NewProg(nil, reg, NewEnv()).Run(x, nil)
 	if err != nil {
 		return nil, err
 	}
