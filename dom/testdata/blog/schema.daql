@@ -12,6 +12,6 @@
 	(Tagged;
 		ID:uuid
 		Tag:@Tag.ID
-		Entry:@e.Entry.ID
+		Entry:@Entry.ID
 	)
 )

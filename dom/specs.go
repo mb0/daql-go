@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
 	"xelf.org/xelf/knd"
@@ -13,98 +12,98 @@ import (
 	"xelf.org/xelf/typ"
 )
 
-var domReg = &lit.Reg{}
+var projectSpec = prep("<form@project name:sym tags:tupl?|exp @>", &Project{}, &domSpec{
+	Rules:    ext.Rules{Default: ext.Rule{Setter: ext.ExtraSetter("extra")}},
+	nodeProv: func(p *exp.Prog) any { return &Project{Extra: fileExtra(p.File.URL)} },
+	declRule: schemaPrep,
+	modHook:  func(me *mod.ModEnv, n ext.Node) { me.AddDecl("dom", n) },
+})
 
-func domSpec(val interface{}, sig string, env bool, rs ext.Rules, sub ext.NodeEnvSub) *ext.NodeSpec {
-	n, err := ext.NewNode(domReg, val)
+func schemaPrep(p *exp.Prog, env exp.Env, n ext.Node, k string, e exp.Exp) (lit.Val, error) {
+	a, err := p.Eval(env, e)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	s, err := typ.Parse(sig)
+	s, ok := mutPtr(a).(*Schema)
+	if !ok {
+		return nil, fmt.Errorf("expected *Schema got %s", a.Value())
+	}
+	pro := n.Ptr().(*Project)
+	pro.Schemas = append(pro.Schemas, s)
+	return a.Val, nil
+}
+
+var schemaSpec = prep("<form@schema name:sym tags:tupl?|exp @>", &Schema{}, &domSpec{
+	Rules:    ext.Rules{Default: ext.Rule{Setter: ext.ExtraSetter("extra")}},
+	nodeProv: func(p *exp.Prog) any { return &Schema{Extra: fileExtra(p.File.URL)} },
+	declRule: modelPrep,
+	modHook:  func(me *mod.ModEnv, n ext.Node) { me.AddDecl("dom", n) },
+	subSpec:  modelSpec,
+})
+
+func modelPrep(p *exp.Prog, env exp.Env, n ext.Node, key string, e exp.Exp) (lit.Val, error) {
+	a, err := p.Eval(env, e)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	exp.SigRes(s).Type = n.Type()
-	spec := ext.NewNodeSpec(s, n, rs)
-	spec.Env = env
-	spec.Sub = sub
-	return spec
+	m, ok := mutPtr(a).(*Model)
+	if !ok {
+		return nil, fmt.Errorf("expected *Schema got %s", a.Value())
+	}
+	s := n.Ptr().(*Schema)
+	qualifyModel(m, s.Name)
+	s.Models = append(s.Models, m)
+	ne := env.(*NodeEnv)
+	ne.AddDecl(m.Name, m.Type())
+	return a.Val, nil
 }
 
-func simpleSub(tagSpec exp.Spec) ext.NodeEnvSub {
-	return func(ne *ext.NodeEnv, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
-		if k == ":" {
-			return exp.LitVal(tagSpec), nil
-		}
-		return ne.Par.Lookup(s, k, eval)
-	}
-}
-
-func setFileExtra(x *lit.Dict, url string) *lit.Dict {
-	if url != "" {
-		if x == nil {
-			x = new(lit.Dict)
-		}
-		x.SetKey("file", lit.Str(url))
-	}
-	return x
-}
-
-var projectSpec = domSpec(&Project{}, "<form@project name:sym tags:tupl?|exp @>", true, ext.Rules{
-	Default: ext.Rule{
-		Prepper: declsPrepper(schemaPrepper, ext.DynPrepper),
-		Setter:  ext.ExtraSetter("extra"),
-	},
-	ReslHook: func(p *exp.Prog, c *exp.Call) (exp.Exp, error) {
-		// always eval and register project module on resl
-		res, err := c.Spec.Eval(p, c)
-		if err != nil {
-			return c, err
-		}
-		node := c.Env.(*ext.NodeEnv).Node
-		proj := node.Ptr().(*Project)
-		proj.Extra = setFileExtra(proj.Extra, p.File.URL)
-		decl := lit.Keyed{{Key: "dom", Val: node}}
-		m := &exp.Mod{File: &p.File, Name: proj.Name, Decl: exp.LitVal(lit.MakeObj(decl))}
-		p.File.Refs = append(p.File.Refs, exp.ModRef{Pub: true, Mod: m})
-		return res, nil
-	},
-}, nil)
-
-type schemaNodeSpec struct{ *ext.NodeSpec }
-
-var schemaSpec = &schemaNodeSpec{
-	domSpec(&Schema{}, "<form@schema name:sym tags:tupl?|exp @>", true, ext.Rules{
-		Default: ext.Rule{
-			Prepper: declsPrepper(modelsPrepper, ext.DynPrepper),
-			Setter:  ext.ExtraSetter("extra"),
+var modelSpec = prep("<form@model name:sym kind:typ tags:tupl?|exp @dom.Model>", &Model{}, &domSpec{
+	Rules: ext.Rules{
+		Key: map[string]ext.Rule{
+			"idx":  idxRule,
+			"uniq": idxRule,
 		},
-	}, simpleSub(modelSpec)),
-}
+		Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
+	},
+	declRule: elemsPrepper,
+	subSpec:  elemSpec,
+	dotHook: func(ne *NodeEnv, k string) lit.Val {
+		m := ne.Node.Ptr().(*Model)
+		for _, el := range m.Elems {
+			if el.Name == k || el.Key() == k {
+				t := el.Type
+				t.Ref = m.Name + "." + el.Name
+				return t
+			}
+		}
+		return nil
+	},
+})
 
-func (s *schemaNodeSpec) Value() lit.Val { return s }
+var elemSpec = prep("<form@elem name:sym type:typ tupl?|tag @>", &Elem{}, &domSpec{
+	Rules: ext.Rules{
+		Key: map[string]ext.Rule{
+			"opt":  bitRule,
+			"pk":   bitRule,
+			"idx":  bitRule,
+			"uniq": bitRule,
+			"asc":  bitRule,
+			"desc": bitRule,
+			"auto": bitRule,
+			"ro":   bitRule,
+		},
+		Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
+	},
+})
 
-func (s *schemaNodeSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.Exp, error) {
-	if c.Env == nil {
-		env = mod.NewModEnv(env, &p.File, c.Src)
+func fileExtra(url string) *lit.Dict {
+	if url == "" {
+		return nil
 	}
-	_, err := s.NodeSpec.Resl(p, env, c, h)
-	if err != nil {
-		return nil, err
-	}
-	// always eval and register schema module on resl
-	res, err := s.NodeSpec.Eval(p, c)
-	if err != nil {
-		return nil, err
-	}
-	ne := c.Env.(*ext.NodeEnv)
-	sch := ne.Node.Ptr().(*Schema)
-	sch.Extra = setFileExtra(sch.Extra, p.File.URL)
-	me := ne.Par.(*mod.ModEnv)
-	me.Name(sch.Name)
-	me.Add("dom", ne.Node)
-	me.Pub()
-	return res, nil
+	x := new(lit.Dict)
+	x.SetKey("file", lit.Str(url))
+	return x
 }
 
 func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_ lit.Val, err error) {
@@ -144,94 +143,9 @@ func idxAppender(p *exp.Prog, env exp.Env, n ext.Node, s string, arg exp.Exp) (_
 func noopSetter(p *exp.Prog, n ext.Node, key string, v lit.Val) error { return nil }
 
 var idxRule = ext.Rule{Prepper: idxAppender, Setter: noopSetter}
-var modelSpec = domSpec(&Model{}, "<form@model name:sym kind:typ tags:tupl?|exp @>", true, ext.Rules{
-	Key: map[string]ext.Rule{
-		"idx":  idxRule,
-		"uniq": idxRule,
-	},
-	Default: ext.Rule{
-		Prepper: declsPrepper(elemsPrepper, ext.DynPrepper),
-		Setter:  ext.ExtraSetter("extra"),
-	},
-}, func(ne *ext.NodeEnv, s *exp.Sym, k string, eval bool) (exp.Exp, error) {
-	if k == ":" {
-		return exp.LitVal(elemSpec), nil
-	}
-	k, ok := exp.DotKey(k)
-	if ok {
-		if !eval {
-			s.Env = ne
-			s.Rel = k
-			return s, nil
-		}
-		k := k[1:]
-		m := ne.Node.Ptr().(*Model)
-		for _, el := range m.Elems {
-			if el.Name == k || el.Key() == k {
-				t := el.Type
-				t.Ref = m.Name + "." + el.Name
-				return exp.LitVal(t), nil
-			}
-		}
-		return nil, exp.ErrSymNotFound
-	}
-	return ne.Par.Lookup(s, k, eval)
-})
 
 var bitRule = ext.Rule{Prepper: ext.BitsPrepper(bitConsts), Setter: ext.BitsSetter("bits")}
-var elemSpec = domSpec(&Elem{}, "<form@elem name:sym type:typ tupl?|tag @>", false, ext.Rules{
-	Key: map[string]ext.Rule{
-		"opt":  bitRule,
-		"pk":   bitRule,
-		"idx":  bitRule,
-		"uniq": bitRule,
-		"asc":  bitRule,
-		"desc": bitRule,
-		"auto": bitRule,
-		"ro":   bitRule,
-	},
-	Default: ext.Rule{Setter: ext.ExtraSetter("extra")},
-}, nil)
 
-func declsPrepper(decl, tag ext.KeyPrepper) ext.KeyPrepper {
-	return func(p *exp.Prog, env exp.Env, n ext.Node, k string, arg exp.Exp) (lit.Val, error) {
-		if k != "" && !cor.IsCased(k) && k[0] != '@' {
-			return tag(p, env, n, k, arg)
-		}
-		return decl(p, env, n, k, arg)
-	}
-}
-func schemaPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) (lit.Val, error) {
-	pro := n.Ptr().(*Project)
-	aa, err := p.Eval(env, arg)
-	if err != nil {
-		return nil, err
-	}
-	s, ok := mutPtr(aa).(*Schema)
-	if !ok {
-		return nil, fmt.Errorf("expected *Schema got %s", aa.Value())
-	}
-	pro.Schemas = append(pro.Schemas, s)
-	return nil, nil
-}
-func modelsPrepper(p *exp.Prog, env exp.Env, n ext.Node, _ string, arg exp.Exp) (lit.Val, error) {
-	aa, err := p.Eval(env, arg)
-	if err != nil || aa.Val == nil {
-		return nil, err
-	}
-	m, ok := mutPtr(aa).(*Model)
-	if !ok {
-		return nil, fmt.Errorf("expected *Model got %s", aa.Value())
-	}
-	s := n.Ptr().(*Schema)
-	qualifyModel(m, s.Name)
-	s.Models = append(s.Models, m)
-
-	me := mod.FindModEnv(env)
-	me.Mod.Name = s.Name
-	me.Add(m.Name, m.Type())
-	return nil, nil
-}
 func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp) (_ lit.Val, err error) {
 	m := n.Ptr().(*Model)
 	el := &Elem{Name: key}

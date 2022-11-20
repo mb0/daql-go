@@ -54,7 +54,7 @@
 )
 (Status; doc:`holds the current ledger revision migration information.`
 	Rev:time
-	Mig:@mig.Migration
+	Mig:str
 	On?:time
 	Off?:time
 )
