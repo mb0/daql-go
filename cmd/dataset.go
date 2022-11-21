@@ -1,18 +1,11 @@
 package cmd
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net/url"
 
-	"xelf.org/dapgx"
-	"xelf.org/dapgx/qrypgx"
 	"xelf.org/daql/mig"
 	"xelf.org/daql/qry"
-	"xelf.org/xelf/lit"
 )
 
 type Data struct {
@@ -26,48 +19,17 @@ func OpenData(pr *Project, uri string) (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("got uri scheme %s %s", u.Scheme, uri)
-	switch u.Scheme {
-	case "postgres", "postgresql":
-		// postgres://localhost:123/daql
-		// postgres:///daql
-		// postgres:///daql?host=/opt/run/postgresql
-		db, err := dapgx.Open(context.Background(), uri, nil)
-		if err != nil {
-			return nil, err
-		}
-		bend := qrypgx.New(db, pr.Project)
-		return &Data{u, bend, bend}, nil
-	case "", "file":
-		dset, err := mig.ReadDataset(u.Path)
-		if err != nil {
-			return nil, err
-		}
-		bend := &qry.MemBackend{Project: pr.Project}
-		for _, key := range dset.Keys() {
-			m := pr.Project.Model(key)
-			stream, err := dset.Stream(key)
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					continue
-				}
-				return nil, fmt.Errorf("stream error: %v", err)
-			}
-			var vals lit.Vals
-			v, err := stream.Scan()
-			for err == nil {
-				vals = append(vals, v)
-				v, err = stream.Scan()
-			}
-			if err != nil && !errors.Is(err, io.EOF) {
-				return nil, fmt.Errorf("stream error: %v", err)
-			}
-			err = bend.Add(m, &vals)
-			if err != nil {
-				return nil, fmt.Errorf("prepare backend, add %s: %v", key, err)
-			}
-		}
-		return &Data{u, bend, dset}, nil
+	if u.Scheme == "" {
+		u.Scheme = "file"
 	}
-	return nil, fmt.Errorf("no resolver for data uri scheme %s", uri)
+	prov := qry.LoadProvider(u.Scheme)
+	if prov == nil {
+		return nil, fmt.Errorf("no backend provider for %s", u.Scheme)
+	}
+	bend, err := prov.Provide(uri, pr.Project)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating backend for %s: %s", u.Scheme, err)
+	}
+	dset, _ := bend.(mig.Dataset)
+	return &Data{u, bend, dset}, nil
 }

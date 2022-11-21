@@ -48,9 +48,12 @@ last registered project is used.
 
 	(use 'daql/qry' 'myproject')
 	(qry.bend 'postgres:///daql')
+or
+	(use 'daql/qry' 'file:.hist/v0.0.1/project.daql')
+	(qry.bend 'file:./backup/20221121-backup.zip')
 
 The uri scheme represents the backend implementation and the rest of the uri the data source.
-Combined backends can themselves registered with a new url scheme. And the url path query is
+Combined backends can themselves registere with a new url scheme. And the url path query is
 flexible enough to encode the necessary information.
 
  (I mulled over failing when loading more than one project into a program, but feel bad about it.
