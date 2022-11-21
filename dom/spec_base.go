@@ -156,10 +156,7 @@ type any = interface{}
 type dotLookup func(*NodeEnv, string) lit.Val
 
 func prep(sig string, inst any, s *domSpec) *domSpec {
-	t, err := typ.Parse(sig)
-	if err != nil {
-		panic(err)
-	}
+	s.SpecBase = exp.MustSpecBase(sig)
 	p, err := domReg.Proxy(inst)
 	if err != nil {
 		panic(err)
@@ -170,8 +167,7 @@ func prep(sig string, inst any, s *domSpec) *domSpec {
 			return n
 		}
 	}
-	rp := exp.SigRes(t)
+	rp := exp.SigRes(s.Decl)
 	rp.Type = p.Type()
-	s.SpecBase = exp.SpecBase{Decl: t}
 	return s
 }
