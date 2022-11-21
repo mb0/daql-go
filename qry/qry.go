@@ -38,7 +38,7 @@ func New(reg *lit.Reg, env exp.Env, bend Backend) *Qry {
 func (q *Qry) Subj(ref string) (*Subj, error) {
 	switch ref[0] {
 	case '.', '/', '$': // path subj
-		return &Subj{Ref: ref, Bend: &LitBackend{}}, nil
+		return &Subj{Ref: ref, Bend: LitBackend{}}, nil
 	}
 	pr := q.Proj()
 	switch ref {

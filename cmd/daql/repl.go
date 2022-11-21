@@ -21,7 +21,7 @@ func repl(args []string) error {
 	var bend qry.Backend
 	if uri == "" {
 		log.Printf("no -data specified using empty project backend")
-		bend = &qry.MemBackend{Reg: pr.Reg, Project: pr.Project}
+		bend = &qry.MemBackend{Project: pr.Project}
 	} else {
 		data, err := cmd.OpenData(pr, uri)
 		if err != nil {

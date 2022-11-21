@@ -15,8 +15,8 @@ import (
 // LitBackend is a query backend that operates on literal values from the program environment.
 type LitBackend struct{}
 
-func (b *LitBackend) Proj() *dom.Project { return nil }
-func (b *LitBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
+func (LitBackend) Proj() *dom.Project { return nil }
+func (LitBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 	a, err := p.Eval(j.Env, &exp.Sym{Sym: j.Ref})
 	if err != nil {
 		return nil, fmt.Errorf("lit backend: %w", err)
@@ -41,15 +41,14 @@ func (b *LitBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 
 // MemBackend is a query backend that evaluates queries using in-memory literal values.
 type MemBackend struct {
-	*lit.Reg
 	*dom.Project
 	*mig.Version
 	Data map[string]*lit.List
 }
 
 // NewMemBackend returns a new memory backend for the given project.
-func NewMemBackend(reg *lit.Reg, pr *dom.Project, v *mig.Version) *MemBackend {
-	return &MemBackend{reg, pr, v, make(map[string]*lit.List)}
+func NewMemBackend(pr *dom.Project, v *mig.Version) *MemBackend {
+	return &MemBackend{pr, v, make(map[string]*lit.List)}
 }
 
 func (b *MemBackend) Proj() *dom.Project { return b.Project }

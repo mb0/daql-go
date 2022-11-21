@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
 
@@ -41,21 +43,25 @@ func OpenData(pr *Project, uri string) (*Data, error) {
 		if err != nil {
 			return nil, err
 		}
-		bend := &qry.MemBackend{Reg: pr.Reg, Project: pr.Project}
+		bend := &qry.MemBackend{Project: pr.Project}
 		for _, key := range dset.Keys() {
 			m := pr.Project.Model(key)
 			stream, err := dset.Stream(key)
 			if err != nil {
-				log.Printf("stream error: %v", err)
-				continue
+				if errors.Is(err, io.EOF) {
+					continue
+				}
+				return nil, fmt.Errorf("stream error: %v", err)
 			}
 			var vals lit.Vals
 			v, err := stream.Scan()
-			for err != nil {
+			for err == nil {
 				vals = append(vals, v)
 				v, err = stream.Scan()
 			}
-			log.Printf("stream error: %v", err)
+			if err != nil && !errors.Is(err, io.EOF) {
+				return nil, fmt.Errorf("stream error: %v", err)
+			}
 			err = bend.Add(m, &vals)
 			if err != nil {
 				return nil, fmt.Errorf("prepare backend, add %s: %v", key, err)

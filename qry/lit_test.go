@@ -16,7 +16,7 @@ import (
 
 func getBackend(reg *lit.Reg) Backend {
 	f := domtest.Must(domtest.ProdFixture(reg))
-	b := NewMemBackend(reg, &f.Project, f.Version)
+	b := NewMemBackend(&f.Project, f.Version)
 	s := f.Schema("prod")
 	for _, kv := range f.Fix {
 		err := b.Add(s.Model(kv.Key), kv.Val.(*lit.Vals))
@@ -109,8 +109,8 @@ func TestQryType(t *testing.T) {
 		Want string
 	}{
 		{`(#prod.cat)`, `<int>`},
-		//{`([] (#prod.cat) (#prod.prod))`, `<list|int>`},
-		//{`({} cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
+		{`([] (#prod.cat) (#prod.prod))`, `<list>`},
+		{`({} cats:(#prod.cat) prods:(#prod.prod))`, `<keyr>`},
 		{`(list|int (#prod.cat) (#prod.prod))`, `<list|int>`},
 		{`(dict|int cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
 		{`(?prod.cat)`, `<obj@prod.Cat?>`},

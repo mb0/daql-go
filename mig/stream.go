@@ -17,7 +17,9 @@ import (
 // This abstraction allows us to choose an appropriate implementation for any situation, without
 // being forced to load all the data into memory all at once.
 type Stream interface {
+	// Scan returns the next value or an error, normal iteration must end with an eof error.
 	Scan() (lit.Val, error)
+	// Close closes the stream, possibly making it inoperable.
 	Close() error
 }
 
@@ -55,6 +57,12 @@ func (it *litStream) Close() error { return nil }
 
 func (it *litStream) Scan() (lit.Val, error) {
 	v, err := it.Idx(it.idx)
+	if err != nil {
+		if it.idx >= it.Len() {
+			return nil, io.EOF
+		}
+		return nil, err
+	}
 	it.idx++
 	return v, err
 }

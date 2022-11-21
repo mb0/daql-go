@@ -16,6 +16,7 @@ import (
 
 // MemLedger implements an in-memory ledger.
 type MemLedger struct {
+	Reg  *lit.Reg
 	Bend *qry.MemBackend
 	evs  []*Event
 }
@@ -25,7 +26,7 @@ type MemLedger struct {
 // publish. It should only be used for testing or if these constraints are well understood.
 // The ledger assumes sole and full control over b and converts event data to an event slice
 // and swaps previous event values with proxies.
-func NewMemLedger(b *qry.MemBackend) (*MemLedger, error) {
+func NewMemLedger(reg *lit.Reg, b *qry.MemBackend) (*MemLedger, error) {
 	m := b.Project.Model("evt.event")
 	if m == nil {
 		return nil, fmt.Errorf("mem ledger: backend has no event model")
@@ -36,7 +37,7 @@ func NewMemLedger(b *qry.MemBackend) (*MemLedger, error) {
 		evs = make([]*Event, 0, len(list.Vals))
 		for i, v := range list.Vals {
 			ev := new(Event)
-			prx, err := b.Proxy(ev)
+			prx, err := reg.Proxy(ev)
 			if err != nil {
 				return nil, err
 			}
@@ -49,7 +50,7 @@ func NewMemLedger(b *qry.MemBackend) (*MemLedger, error) {
 		}
 		sort.Stable(evtVals{evs, list.Vals})
 	}
-	return &MemLedger{Bend: b, evs: evs}, nil
+	return &MemLedger{Reg: reg, Bend: b, evs: evs}, nil
 }
 func (l *MemLedger) Rev() time.Time {
 	if len(l.evs) > 0 {
@@ -154,7 +155,7 @@ func (l *MemLedger) insertEvents(evs []*Event) error {
 	for _, ev := range evs {
 		last++
 		ev.ID = last
-		prx, err := l.Bend.Proxy(ev)
+		prx, err := l.Reg.Proxy(ev)
 		if err != nil {
 			return err
 		}
@@ -196,7 +197,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 			d = &lit.List{El: m.Type()}
 			l.Bend.Data[ev.Top] = d
 		}
-		val, err := l.Bend.Zero(m.Type())
+		val, err := l.Reg.Zero(m.Type())
 		if err != nil {
 			return nil, fmt.Errorf("apply new %s: %w", ev.Top, err)
 		}
@@ -209,7 +210,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		if err != nil {
 			return nil, fmt.Errorf("apply new %s %s: %w", ev.Top, pk, err)
 		}
-		err = lit.Apply(l.Bend.Reg, mut, lit.Delta(ev.Arg.Keyed))
+		err = lit.Apply(l.Reg, mut, lit.Delta(ev.Arg.Keyed))
 		if err != nil {
 			return nil, fmt.Errorf("apply new %s arg: %w", ev.Top, err)
 		}
@@ -237,7 +238,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		mut := d.Vals[idx].(lit.Keyr)
 		org := mut.String()
 		// mod arg
-		err = lit.Apply(l.Bend.Reg, mut, lit.Delta(ev.Arg.Keyed))
+		err = lit.Apply(l.Reg, mut, lit.Delta(ev.Arg.Keyed))
 		if err != nil {
 			return nil, fmt.Errorf("apply mod %s arg: %w", ev.Top, err)
 		}

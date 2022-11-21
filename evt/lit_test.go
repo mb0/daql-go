@@ -80,5 +80,5 @@ func testLedger() (*evt.MemLedger, error) {
 	}
 	p := &dom.Project{}
 	p.Schemas = append(p.Schemas, ev, pr)
-	return evt.NewMemLedger(qry.NewMemBackend(reg, p, nil))
+	return evt.NewMemLedger(reg, qry.NewMemBackend(p, nil))
 }
