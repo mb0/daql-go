@@ -18,7 +18,7 @@ type domSpec struct {
 	ext.Rules
 	nodeProv func(*exp.Prog) any
 	declRule ext.KeyPrepper
-	modHook  func(*mod.ModEnv, ext.Node)
+	modHook  func(*exp.Prog, *mod.ModEnv, ext.Node)
 	subSpec  exp.Spec
 	dotHook  dotLookup
 }
@@ -115,7 +115,7 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 		c.Args[i] = a
 	}
 	if s.modHook != nil {
-		s.modHook(ne.ModEnv, ne.Node)
+		s.modHook(p, ne.ModEnv, ne.Node)
 	}
 	// keep the call for printing
 	return c, nil

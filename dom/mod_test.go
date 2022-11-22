@@ -45,8 +45,8 @@ func TestPlainMod(t *testing.T) {
 		want string
 	}{
 		{"mod init",
-			`(use 'daql/dom' 'site') site.dom.schemas/name`,
-			"['auth' 'blog']",
+			`(use 'daql/dom' 'site') dom.projects/name`,
+			"['site']",
 		},
 	}
 	reg := &lit.Reg{}

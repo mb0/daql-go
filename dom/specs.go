@@ -16,7 +16,17 @@ var projectSpec = prep("<form@project name:sym tags:tupl?|exp @>", &Project{}, &
 	Rules:    ext.Rules{Default: ext.Rule{Setter: ext.ExtraSetter("extra")}},
 	nodeProv: func(p *exp.Prog) any { return &Project{Extra: fileExtra(p.File.URL)} },
 	declRule: schemaPrep,
-	modHook:  func(me *mod.ModEnv, n ext.Node) { me.AddDecl("dom", n) },
+	modHook: func(p *exp.Prog, me *mod.ModEnv, n ext.Node) {
+		if f := p.Files[Mod.URL]; f != nil {
+			m := f.Refs.Find("dom")
+			a, err := lit.SelectKey(m.Decl.Val, "projects")
+			if err == nil {
+				l := a.(*lit.List)
+				l.Vals = append(l.Vals, n)
+			}
+		}
+		me.AddDecl("dom", n)
+	},
 })
 
 func schemaPrep(p *exp.Prog, env exp.Env, n ext.Node, k string, e exp.Exp) (lit.Val, error) {
@@ -37,7 +47,7 @@ var schemaSpec = prep("<form@schema name:sym tags:tupl?|exp @>", &Schema{}, &dom
 	Rules:    ext.Rules{Default: ext.Rule{Setter: ext.ExtraSetter("extra")}},
 	nodeProv: func(p *exp.Prog) any { return &Schema{Extra: fileExtra(p.File.URL)} },
 	declRule: modelPrep,
-	modHook:  func(me *mod.ModEnv, n ext.Node) { me.AddDecl("dom", n) },
+	modHook:  func(_ *exp.Prog, me *mod.ModEnv, n ext.Node) { me.AddDecl("dom", n) },
 	subSpec:  modelSpec,
 })
 

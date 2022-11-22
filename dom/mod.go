@@ -12,7 +12,7 @@ import (
 
 var domReg = &lit.Reg{}
 
-// Mod is the a xelf module source for this package that encapsulates the setup required to work
+// Mod is the xelf module source for this package that encapsulates the setup required to work
 // with dom specs and gives access to schemas and model beyond their type.
 var Mod *mod.Src
 
@@ -44,10 +44,11 @@ func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 	}
 	f := &exp.File{URL: s.URL}
 	me := mod.NewModEnv(prog, f, ast.Src{})
+	me.SetName("dom")
 	me.AddDecl("dom", lit.MustProxy(prog.Reg, Dom))
-	// TODO we can use the dom module to prvide and register projects used by the program
 	for _, m := range Dom.Models {
 		me.AddDecl(m.Name, m.Type())
 	}
+	me.AddDecl("projects", &lit.List{El: Dom.Model("project").Type()})
 	return f, nil
 }
