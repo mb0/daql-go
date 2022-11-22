@@ -40,6 +40,9 @@ func (q *Qry) Subj(ref string) (*Subj, error) {
 	case '.', '/', '$': // path subj
 		return &Subj{Ref: ref, Bend: LitBackend{}}, nil
 	}
+	if q.Backend == nil {
+		return nil, fmt.Errorf("no qry backend configured")
+	}
 	pr := q.Proj()
 	switch ref {
 	case "dom.model", "dom.schema", "dom.project":
@@ -99,6 +102,15 @@ type Doc struct {
 	*Qry
 	All  []*Job
 	Root []*Job
+}
+
+func FindDoc(env exp.Env) *Doc {
+	for ; env != nil; env = env.Parent() {
+		if d, _ := env.(*Doc); d != nil {
+			return d
+		}
+	}
+	return nil
 }
 
 // Add adds a job to the query document.
