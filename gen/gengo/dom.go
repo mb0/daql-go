@@ -113,7 +113,10 @@ func WriteModel(g *gen.Gen, m *dom.Model) (err error) {
 		writeEnumConsts(g, m)
 	case knd.Obj:
 		g.Fmt("type %s ", m.Name)
-		err = writeRec(g, m.Type())
+		// NOTE: we need this custom type to avoid flattening params of embedded obj types
+		err = writeObj(g, typ.Type{Kind: knd.Obj, Ref: m.Qualified(),
+			Body: &typ.ParamBody{Params: m.Params()},
+		})
 		g.Byte('\n')
 	case knd.Func:
 		ps := m.Params()

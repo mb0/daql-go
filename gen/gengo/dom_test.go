@@ -17,6 +17,7 @@ const fooRaw = `(schema foo
 	(Node2; Start:time)
 	(Node3; Kind:<bits@bar.Kind>)
 	(Node4; Kind:<bits@foo.Kind>)
+	(Node5; @Node4)
 )`
 
 func TestWriteFile(t *testing.T) {
@@ -60,6 +61,9 @@ func TestWriteFile(t *testing.T) {
 		},
 		{"node4", "package foo\n\ntype Node4 struct {\n" +
 			"\tKind Kind `json:\"kind\"`\n" + "}\n",
+		},
+		{"node5", "package foo\n\ntype Node5 struct {\n" +
+			"\tNode4\n" + "}\n",
 		},
 	}
 	pkgs := map[string]string{

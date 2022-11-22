@@ -51,7 +51,7 @@ func WriteType(g *gen.Gen, t typ.Type) error {
 		return g.Fmt(Import(g, "*lit.Dict"))
 	case knd.Obj:
 		if t.Ref == "" {
-			return writeRec(g, t)
+			return writeObj(g, t)
 		}
 		fallthrough
 	case knd.Bits, knd.Enum:
@@ -73,7 +73,7 @@ func WriteType(g *gen.Gen, t typ.Type) error {
 	return g.Fmt(r)
 }
 
-func writeRec(g *gen.Gen, t typ.Type) error {
+func writeObj(g *gen.Gen, t typ.Type) error {
 	opt := t.Kind&knd.None != 0
 	if opt {
 		g.Byte('*')
