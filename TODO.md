@@ -22,7 +22,7 @@ a project has multiple applications that each cover a different part of the proj
 their own config parameters.
 
 We want app dom nodes that specialize and extend the project config. We would have one parent
-project that includes multiple applications nodes. For example if we want to use a central server
+project that includes multiple application nodes. For example if we want to use a central server
 and different satellite applications for a POS-terminals and the office PCs, we would add three
 applications that can exclude certain project schemas, models or fields.
 
@@ -32,29 +32,26 @@ we must also check all possible reference to that model in remaining models.
 Daql Modules
 ------------
 
-Xelf now supports a module system to extend a programs environment. We want to provide custom module
-sources for the dom and qry pacakges, to enable their setup dynamically.
+Xelf now supports a module system to extend a programs environment. We provide custom module sources
+for the dom and qry pacakges, to enable their setup dynamically.
 
-A dom module source is already implemented and provides its own schema and model types. The qry
-module should ensure or load the dom module and setup the doc environment.
+The dom module source provides its own schema and model types, and a list of all projects.
+The qry module source provides the bend spec to setup the qry backend.
 
-To configure the qry doc we need to setup a backend implementation, that in turn requires a dom
-project. The idea would be to export and register projects in the dom module, and register backend
-providers by uri scheme with the qry mod and provide a spec in the qry module to setup the backend.
+New backend provider interface is used to create backend implementations for uris and can be
+registered by scheme in the qry package. The uri scheme represents the backend implementation and
+the rest of the uri the data source. Combined backends can themselves registere with a new url
+scheme. And the url path query is flexible enough to encode the necessary information.
 
-The bend spec to setup the backend takes a uri to identify the backend and data source and
-optionally the project dom or later an app dom node to provide, if the project is omitted the
-last registered project is used.
+The bend spec takes a uri for the backend and data source and optionally the project dom or
+later an app dom node to provide, if the project is omitted the last registered project is used.
 
 	(use 'daql/qry' 'myproject')
 	(qry.bend 'postgres:///daql')
 or
-	(use 'daql/qry' 'file:.hist/v0.0.1/project.daql')
+	(use 'daql/qry' 'file:.hist/v0.0.1/project.xelf')
 	(qry.bend 'file:./backup/20221121-backup.zip')
 
-The uri scheme represents the backend implementation and the rest of the uri the data source.
-Combined backends can themselves registere with a new url scheme. And the url path query is
-flexible enough to encode the necessary information.
 
  (I mulled over failing when loading more than one project into a program, but feel bad about it.
  Loading mutliple projects could mostly be usefull for templates or importing groups of schemas into

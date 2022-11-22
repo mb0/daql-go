@@ -20,10 +20,7 @@ func TestMod(t *testing.T) {
 		{"project use", `(use 'site') site.dom.schemas/name`, "['auth' 'blog']"},
 	}
 	reg := &lit.Reg{}
-	files := mod.FileMods("testdata/")
-	files.Ext = append(files.Ext, ".daql")
-	files.Index = append(files.Index, "schema.daql")
-	par := mod.NewLoaderEnv(extlib.Std, files)
+	par := mod.NewLoaderEnv(extlib.Std, mod.FileMods("testdata/"))
 	for _, test := range tests {
 		prog := exp.NewProg(nil, reg, &Env{Par: par})
 		res, err := prog.RunStr(test.raw, nil)
@@ -50,10 +47,7 @@ func TestPlainMod(t *testing.T) {
 		},
 	}
 	reg := &lit.Reg{}
-	files := mod.FileMods("testdata/")
-	files.Ext = append(files.Ext, ".daql")
-	files.Index = append(files.Index, "schema.daql")
-	par := mod.NewLoaderEnv(extlib.Std, mod.Registry, files)
+	par := mod.NewLoaderEnv(extlib.Std, mod.Registry, mod.FileMods("testdata/"))
 	for _, test := range tests {
 		prog := exp.NewProg(nil, reg, par)
 		res, err := prog.RunStr(test.raw, nil)

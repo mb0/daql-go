@@ -11,7 +11,7 @@ import (
 	"xelf.org/xelf/lit"
 )
 
-//go:embed evt.daql
+//go:embed evt.xelf
 var rawSchema string
 
 func RawSchema() string { return rawSchema }

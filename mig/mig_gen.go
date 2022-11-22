@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-//go:embed mig.daql
+//go:embed mig.xelf
 var rawSchema string
 
 func RawSchema() string { return rawSchema }

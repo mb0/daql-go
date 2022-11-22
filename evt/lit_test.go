@@ -70,11 +70,11 @@ func TestLedger(t *testing.T) {
 
 func testLedger() (*evt.MemLedger, error) {
 	reg := &lit.Reg{Cache: &lit.Cache{}}
-	ev, err := dom.OpenSchema(reg, "evt.daql")
+	ev, err := dom.OpenSchema(reg, "evt.xelf")
 	if err != nil {
 		return nil, err
 	}
-	pr, err := dom.ReadSchema(reg, strings.NewReader(domtest.ProdRaw), "prod.daql")
+	pr, err := dom.ReadSchema(reg, strings.NewReader(domtest.ProdRaw), "prod.xelf")
 	if err != nil {
 		return nil, err
 	}

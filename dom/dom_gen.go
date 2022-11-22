@@ -9,7 +9,7 @@ import (
 	"xelf.org/xelf/typ"
 )
 
-//go:embed dom.daql
+//go:embed dom.xelf
 var rawSchema string
 
 func RawSchema() string { return rawSchema }

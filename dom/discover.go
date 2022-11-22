@@ -12,7 +12,7 @@ import (
 	"xelf.org/xelf/mod"
 )
 
-const ProjectFileName = "project.daql"
+const ProjectFileName = "project.xelf"
 
 // DiscoverProject looks for a project file based on path and returns a cleaned path.
 //
@@ -60,8 +60,6 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 		return nil, fmt.Errorf("read project %s: %v", path, err)
 	}
 	files := mod.FileMods(filepath.Dir(path))
-	files.Ext = append(files.Ext, ".daql")
-	files.Index = append(files.Index, "schema.daql")
 	par := mod.NewLoaderEnv(extlib.Std, files)
 	env := &Env{Par: par}
 	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
