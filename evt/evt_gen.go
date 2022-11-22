@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"time"
 	"xelf.org/daql/hub"
-	"xelf.org/daql/mig"
 	"xelf.org/xelf/lit"
 )
 
@@ -75,10 +74,10 @@ type Update struct {
 
 // Status holds the current ledger revision migration information.
 type Status struct {
-	Rev time.Time     `json:"rev"`
-	Mig mig.Migration `json:"mig"`
-	On  time.Time     `json:"on,omitempty"`
-	Off time.Time     `json:"off,omitempty"`
+	Rev time.Time `json:"rev"`
+	Mig string    `json:"mig"`
+	On  time.Time `json:"on,omitempty"`
+	Off time.Time `json:"off,omitempty"`
 }
 
 type StatRes struct {
