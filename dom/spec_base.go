@@ -45,7 +45,7 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 	}
 	// we already know the result type, check hint now
 	if h != typ.Void {
-		_, err := p.Sys.Unify(nil, ne.Type(), h)
+		_, err := p.Sys.Unify(ne.Type(), h)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +76,12 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 			if err != nil {
 				return nil, err
 			}
-			l, err := p.Eval(c.Env, e)
+			l := e.(*exp.Lit)
+			if l == nil || l.Res != typ.Typ {
+				return nil, fmt.Errorf("expected resolved type got %#v %[1]T", e)
+			}
+			t := l.Val.(typ.Type)
+			l.Val, err = p.Sys.Inst(exp.LookupType(c.Env), t)
 			if err != nil {
 				return nil, err
 			}

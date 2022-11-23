@@ -203,7 +203,11 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 				fst = m.Name
 			}
 			el.Name = fst
-			arg = exp.LitVal(typ.Ref(ref))
+			t, err := p.Sys.Inst(exp.LookupType(env), typ.Ref(ref))
+			if err != nil {
+				return nil, err
+			}
+			arg = exp.LitVal(t)
 		}
 		ta, err := p.Eval(env, arg)
 		if err != nil {
@@ -224,7 +228,6 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			if key == "" && k != knd.Func {
 				if tv.Ref == "" {
 					return nil, fmt.Errorf("must be named type got %s", tv)
-
 				}
 				if tv.Kind&knd.Data != knd.Obj {
 					el.Name = refElemName(tv.Ref)

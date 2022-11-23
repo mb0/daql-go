@@ -45,6 +45,11 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 	f = &exp.File{URL: s.URL}
 	me := mod.NewModEnv(prog, f, ast.Src{})
 	me.SetName("qry")
+	bt, err := prog.Sys.Inst(exp.LookupType(prog), bend.Decl)
+	if err != nil {
+		return nil, err
+	}
+	bend.Decl = bt
 	me.AddDecl("bend", bend)
 	return f, nil
 }
