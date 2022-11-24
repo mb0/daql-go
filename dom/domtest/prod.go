@@ -62,4 +62,4 @@ const ProdFixRaw = `{
 	]
 }`
 
-func ProdFixture(reg *lit.Reg) (*Fixture, error) { return New(reg, ProdRaw, ProdFixRaw) }
+func ProdFixture(reg *lit.Regs) (*Fixture, error) { return New(reg, ProdRaw, ProdFixRaw) }

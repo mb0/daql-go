@@ -8,12 +8,11 @@ import (
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
-	"xelf.org/xelf/lit"
 )
 
 // ReflectQuery takes a tagged struct and generates and returns a query expression or an error.
 // For now we just generate a query string which we then parse.
-func ReflectQuery(reg *lit.Reg, pp interface{}) (exp.Exp, error) {
+func ReflectQuery(pp interface{}) (exp.Exp, error) {
 	pv := reflect.ValueOf(pp)
 	if pv.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("requires pointer to struct got %T", pp)

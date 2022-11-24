@@ -30,7 +30,7 @@ func CollectAll(evs []*Event) map[Sig][]*Event {
 	return res
 }
 
-func Merge(reg *lit.Reg, a, b Action) (_ Action, err error) {
+func Merge(a, b Action) (_ Action, err error) {
 	if a.Sig != b.Sig {
 		return a, fmt.Errorf("event signature mismatch %v != %v", a.Sig, b.Sig)
 	}
@@ -51,9 +51,9 @@ func Merge(reg *lit.Reg, a, b Action) (_ Action, err error) {
 			return a, fmt.Errorf("new action for existing %v", a.Sig)
 		case CmdMod:
 			if a.Cmd == CmdNew {
-				return a, lit.Apply(reg, a.Arg, lit.Delta(b.Arg.Keyed))
+				return a, lit.Apply(a.Arg, lit.Delta(b.Arg.Keyed))
 			}
-			return a, MergeDeltas(reg, lit.Delta(a.Arg.Keyed), lit.Delta(b.Arg.Keyed))
+			return a, MergeDeltas(lit.Delta(a.Arg.Keyed), lit.Delta(b.Arg.Keyed))
 		case CmdDel:
 			return b, nil
 		}
@@ -63,7 +63,7 @@ func Merge(reg *lit.Reg, a, b Action) (_ Action, err error) {
 	return a, fmt.Errorf("unresolved action %s", b.Cmd)
 }
 
-func MergeDeltas(reg *lit.Reg, a, b lit.Delta) error {
+func MergeDeltas(a, b lit.Delta) error {
 	for k, v := range b {
 		// TODO check for common prefix, but we use flat updates for now
 		a[k] = v

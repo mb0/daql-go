@@ -14,7 +14,7 @@ import (
 
 type Project struct {
 	Dir string
-	Reg *lit.Reg
+	Reg *lit.Regs
 	mig.History
 	mig.Record
 }
@@ -24,7 +24,7 @@ func LoadProject(dir string) (*Project, error) {
 	if err != nil {
 		return nil, fmt.Errorf("discover project: %v", err)
 	}
-	reg := &lit.Reg{}
+	reg := &lit.Regs{}
 	h, err := mig.ReadHistory(reg, path)
 	if err != nil && err != mig.ErrNoHistory {
 		return nil, fmt.Errorf("read history: %v", err)

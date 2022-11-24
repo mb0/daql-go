@@ -143,9 +143,8 @@ func TestDom(t *testing.T) {
 			`object:{indices:[{keys:['spam' 'egg'] unique:true}]}}]}`,
 		},
 	}
-	reg := &lit.Reg{}
 	for _, test := range tests {
-		s, err := exp.NewProg(nil, reg, NewEnv()).RunStr(test.raw, nil)
+		s, err := exp.NewProg(NewEnv()).RunStr(test.raw, nil)
 		if err != nil {
 			t.Errorf("run %s got error: %+v", test.raw, err)
 			continue

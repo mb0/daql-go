@@ -26,13 +26,13 @@ func ReplHistoryPath() string {
 }
 
 type Repl struct {
-	Reg  *lit.Reg
+	Reg  *lit.Regs
 	Bend qry.Backend
 	*liner.State
 	Hist string
 }
 
-func NewRepl(reg *lit.Reg, bend qry.Backend, hist string) *Repl {
+func NewRepl(reg *lit.Regs, bend qry.Backend, hist string) *Repl {
 	lin := liner.NewLiner()
 	lin.SetMultiLineMode(true)
 	return &Repl{Reg: reg, Bend: bend, State: lin, Hist: hist}

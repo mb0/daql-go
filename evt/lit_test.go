@@ -69,7 +69,7 @@ func TestLedger(t *testing.T) {
 }
 
 func testLedger() (*evt.MemLedger, error) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
+	reg := lit.NewRegs()
 	ev, err := dom.OpenSchema(reg, "evt.xelf")
 	if err != nil {
 		return nil, err

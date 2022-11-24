@@ -19,19 +19,17 @@ type Backend interface {
 
 // Qry is a context to execute queries on backends.
 type Qry struct {
-	Reg *lit.Reg
+	Reg lit.Regs
 	Env exp.Env
 	Backend
 	doms *dom.Schema
 }
 
 // New returns a new query context with the program environment and backend.
-func New(reg *lit.Reg, env exp.Env, bend Backend) *Qry {
-	if reg == nil {
-		reg = &lit.Reg{}
-	}
-	dom.SetupReg(reg)
-	return &Qry{Backend: bend, Env: env, Reg: reg, doms: dom.Dom}
+func New(reg *lit.Regs, env exp.Env, bend Backend) *Qry {
+	q := &Qry{Backend: bend, Env: env, Reg: *lit.DefaultRegs(reg), doms: dom.Dom}
+	dom.SetupReg(&q.Reg)
+	return q
 }
 
 // Subj returns a subject from the first backend that provides ref or an error.
@@ -69,7 +67,7 @@ func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (*exp.Lit, erro
 
 // ExecExp executes the given query expr with arg and returns a value or an error.
 func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ *exp.Lit, err error) {
-	a, err := exp.NewProg(ctx, q.Reg, &Doc{Qry: q}).Run(expr, exp.LitVal(arg))
+	a, err := exp.NewProg(&Doc{Qry: q}, &q.Reg, ctx).Run(expr, exp.LitVal(arg))
 	if err != nil {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
@@ -78,11 +76,11 @@ func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ *exp.Li
 
 // ExecAuto generates query from and saves the query result into a tagged go struct value pointer.
 func (q *Qry) ExecAuto(ctx context.Context, pp interface{}, arg lit.Val) (lit.Mut, error) {
-	x, err := ReflectQuery(q.Reg, pp)
+	x, err := ReflectQuery(pp)
 	if err != nil {
 		return nil, err
 	}
-	mut, err := q.Reg.Proxy(pp)
+	mut, err := lit.Proxy(q.Reg, pp)
 	if err != nil {
 		return nil, err
 	}

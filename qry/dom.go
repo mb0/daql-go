@@ -20,14 +20,14 @@ func (b *DomBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 		vals = make([]lit.Val, 0, len(b.Schemas)*8)
 		for _, s := range b.Schemas {
 			for _, m := range s.Models {
-				x, _ := p.Reg.Proxy(m)
+				x, _ := lit.Proxy(p.Reg, m)
 				vals = append(vals, x)
 			}
 		}
 	case "dom.schema":
 		vals = make([]lit.Val, 0, len(b.Schemas))
 		for _, s := range b.Schemas {
-			x, _ := p.Reg.Proxy(s)
+			x, _ := lit.Proxy(p.Reg, s)
 			vals = append(vals, x)
 		}
 	case "dom.project":

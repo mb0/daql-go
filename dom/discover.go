@@ -44,7 +44,7 @@ func DiscoverProject(path string) (string, error) {
 	return DiscoverProject(dir)
 }
 
-func OpenProject(reg *lit.Reg, path string) (*Project, error) {
+func OpenProject(reg *lit.Regs, path string) (*Project, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func OpenProject(reg *lit.Reg, path string) (*Project, error) {
 	return ReadProject(reg, f, path)
 }
 
-func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
-	reg.AddFrom(domReg)
+func ReadProject(reg *lit.Regs, r io.Reader, path string) (p *Project, _ error) {
+	lit.UpdateRegs(reg, domReg)
 	x, err := exp.Read(r, path)
 	if err != nil {
 		return nil, fmt.Errorf("read project %s: %v", path, err)
@@ -62,7 +62,7 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	files := mod.FileMods(filepath.Dir(path))
 	par := mod.NewLoaderEnv(extlib.Std, files)
 	env := &Env{Par: par}
-	l, err := exp.NewProg(nil, reg, env).Run(x, nil)
+	l, err := exp.NewProg(env, reg).Run(x, nil)
 	if err != nil {
 		return nil, fmt.Errorf("eval project %s: %v", path, err)
 	}
@@ -73,7 +73,7 @@ func ReadProject(reg *lit.Reg, r io.Reader, path string) (p *Project, _ error) {
 	return p, nil
 }
 
-func OpenSchema(reg *lit.Reg, path string) (s *Schema, _ error) {
+func OpenSchema(reg *lit.Regs, path string) (s *Schema, _ error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -82,18 +82,14 @@ func OpenSchema(reg *lit.Reg, path string) (s *Schema, _ error) {
 	return ReadSchema(reg, f, path)
 }
 
-func ReadSchema(reg *lit.Reg, r io.Reader, path string) (s *Schema, _ error) {
-	if reg == nil {
-		reg = &lit.Reg{}
-	}
-	if reg != domReg {
-		reg.AddFrom(domReg)
-	}
+func ReadSchema(reg *lit.Regs, r io.Reader, path string) (s *Schema, _ error) {
+	reg = lit.DefaultRegs(reg)
+	lit.UpdateRegs(reg, domReg)
 	x, err := exp.Read(r, path)
 	if err != nil {
 		return nil, err
 	}
-	l, err := exp.NewProg(nil, reg, NewEnv()).Run(x, nil)
+	l, err := exp.NewProg(NewEnv(), reg).Run(x, nil)
 	if err != nil {
 		return nil, err
 	}

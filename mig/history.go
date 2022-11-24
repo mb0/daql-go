@@ -41,7 +41,7 @@ type History interface {
 // Record folders can have any name starting with a 'v', the daql tool uses the padded version
 // number and an optional record note that only acts as memory aid. The actual record version should
 // always be read from the included manifest file.
-func ReadHistory(reg *lit.Reg, path string) (_ History, err error) {
+func ReadHistory(reg *lit.Regs, path string) (_ History, err error) {
 	h := &hist{reg: reg}
 	h.path, err = dom.DiscoverProject(path)
 	if err != nil {
@@ -131,7 +131,7 @@ func isJsonStream(path string) bool {
 }
 
 type hist struct {
-	reg  *lit.Reg
+	reg  *lit.Regs
 	path string
 	hdir string
 	curr Record
@@ -234,7 +234,7 @@ func (h *hist) Commit(slug string) error {
 		return fmt.Errorf("write manifest.json.gz: %v", err)
 	}
 	err = writeFileGz(filepath.Join(rdir, "project.json.gz"), func(w io.Writer) error {
-		n, err := ext.NewNode(&lit.Reg{}, rec.Project)
+		n, err := ext.NewNode(lit.GlobalRegs(), rec.Project)
 		if err != nil {
 			return err
 		}

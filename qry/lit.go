@@ -145,10 +145,7 @@ func collectList(p *exp.Prog, j *Job, vals lit.Vals, whr exp.Exp) (res lit.Vals,
 			continue
 		}
 		rec := l.(lit.Keyr)
-		px, err := p.Reg.Zero(j.Sel.Type)
-		if err != nil {
-			return nil, err
-		}
+		px := p.Reg.Zero(j.Sel.Type)
 		z, ok := px.(lit.Keyr)
 		for _, f := range j.Sel.Fields {
 			var val lit.Val

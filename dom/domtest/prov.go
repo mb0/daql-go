@@ -14,7 +14,7 @@ type provider struct{}
 func (provider) Provide(uri string, pro *dom.Project) (_ qry.Backend, err error) {
 	name := mod.ParseLoc(uri).Path()
 	var fix *Fixture
-	reg := &lit.Reg{}
+	reg := &lit.Regs{}
 	switch name {
 	case "person":
 		fix, err = PersonFixture(reg)

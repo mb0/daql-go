@@ -70,4 +70,4 @@ const PersonFixRaw = `{
 	]
 }`
 
-func PersonFixture(reg *lit.Reg) (*Fixture, error) { return New(reg, PersonRaw, PersonFixRaw) }
+func PersonFixture(reg *lit.Regs) (*Fixture, error) { return New(reg, PersonRaw, PersonFixRaw) }

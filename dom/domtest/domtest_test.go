@@ -7,7 +7,7 @@ import (
 )
 
 func TestDomtest(t *testing.T) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
+	reg := lit.NewRegs()
 	_, err := ProdFixture(reg)
 	if err != nil {
 		t.Fatalf("prod fixture error: %v", err)

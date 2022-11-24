@@ -10,7 +10,7 @@ import (
 	"xelf.org/xelf/mod"
 )
 
-var domReg = &lit.Reg{}
+var domReg = lit.NewRegs()
 
 // Mod is the xelf module source for this package that encapsulates the setup required to work
 // with dom specs and gives access to schemas and model beyond their type.
@@ -31,13 +31,13 @@ func init() {
 	})
 }
 
-func SetupReg(reg *lit.Reg) {
-	reg.AddFrom(domReg)
+func SetupReg(reg *lit.Regs) {
+	lit.UpdateRegs(reg, domReg)
 }
 
 func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 	// register dom proxies
-	SetupReg(prog.Reg)
+	SetupReg(&prog.Reg)
 	// ensure a dom env
 	if de := FindEnv(prog.Root); de == nil {
 		prog.Root = &Env{Par: prog.Root}
@@ -45,7 +45,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 	f := &exp.File{URL: s.URL}
 	me := mod.NewModEnv(prog, f, ast.Src{})
 	me.SetName("dom")
-	me.AddDecl("dom", lit.MustProxy(prog.Reg, Dom))
+	me.AddDecl("dom", lit.MustProxy(domReg, Dom))
 	for _, m := range Dom.Models {
 		me.AddDecl(m.Name, m.Type())
 	}

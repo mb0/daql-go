@@ -162,14 +162,13 @@ type dotLookup func(*NodeEnv, string) lit.Val
 
 func prep(sig string, inst any, s *domSpec) *domSpec {
 	s.SpecBase = exp.MustSpecBase(sig)
-	p, err := domReg.Proxy(inst)
+	p, err := lit.Proxy(domReg, inst)
 	if err != nil {
 		panic(err)
 	}
 	if s.nodeProv == nil {
 		s.nodeProv = func(_ *exp.Prog) any {
-			n, _ := p.New()
-			return n
+			return p.New()
 		}
 	}
 	rp := exp.SigRes(s.Decl)

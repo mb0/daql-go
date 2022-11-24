@@ -5,7 +5,6 @@ import (
 
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
-	"xelf.org/xelf/lit"
 	"xelf.org/xelf/mod"
 )
 
@@ -21,10 +20,9 @@ func TestPlainMod(t *testing.T) {
 			`[7 6]`,
 		},
 	}
-	reg := &lit.Reg{}
 	par := mod.NewLoaderEnv(extlib.Std, mod.Registry)
 	for _, test := range tests {
-		prog := exp.NewProg(nil, reg, par)
+		prog := exp.NewProg(par)
 		res, err := prog.RunStr(test.raw, nil)
 		if err != nil {
 			t.Errorf("run %s got error: %+v", test.name, err)

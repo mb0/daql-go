@@ -9,11 +9,9 @@ import (
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib"
-	"xelf.org/xelf/lit"
 )
 
 func TestWriteLit(t *testing.T) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
 	tests := []struct {
 		xelf    string
 		want    string
@@ -30,7 +28,7 @@ func TestWriteLit(t *testing.T) {
 			"lit": "xelf/lit",
 			"cor": "xelf/cor",
 		}}
-		l, err := exp.NewProg(nil, reg, lib.Std).RunStr(test.xelf, nil)
+		l, err := exp.NewProg(lib.Std).RunStr(test.xelf, nil)
 		if err != nil {
 			t.Errorf("parse %s err: %v", test.xelf, err)
 			continue

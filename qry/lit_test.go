@@ -14,7 +14,7 @@ import (
 	"xelf.org/xelf/typ"
 )
 
-func getBackend(reg *lit.Reg) Backend {
+func getBackend(reg *lit.Regs) Backend {
 	f := domtest.Must(domtest.ProdFixture(reg))
 	b := NewMemBackend(&f.Project, f.Version)
 	s := f.Schema("prod")
@@ -28,7 +28,7 @@ func getBackend(reg *lit.Reg) Backend {
 }
 
 func TestQry(t *testing.T) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
+	reg := lit.NewRegs()
 	b := getBackend(reg)
 	tests := []struct {
 		Raw  string
@@ -102,7 +102,7 @@ func TestQry(t *testing.T) {
 }
 
 func TestQryType(t *testing.T) {
-	reg := &lit.Reg{Cache: &lit.Cache{}}
+	reg := lit.NewRegs()
 	b := getBackend(reg)
 	tests := []struct {
 		Raw  string

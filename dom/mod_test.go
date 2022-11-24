@@ -5,7 +5,6 @@ import (
 
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
-	"xelf.org/xelf/lit"
 	"xelf.org/xelf/mod"
 )
 
@@ -19,10 +18,9 @@ func TestMod(t *testing.T) {
 		{"complex use", `(use 'blog') blog.Entry`, "<obj@blog.Entry>"},
 		{"project use", `(use 'site') site.dom.schemas/name`, "['auth' 'blog']"},
 	}
-	reg := &lit.Reg{}
 	par := mod.NewLoaderEnv(extlib.Std, mod.FileMods("testdata/"))
 	for _, test := range tests {
-		prog := exp.NewProg(nil, reg, &Env{Par: par})
+		prog := exp.NewProg(&Env{Par: par})
 		res, err := prog.RunStr(test.raw, nil)
 		if err != nil {
 			t.Errorf("run %s got error: %+v", test.name, err)
@@ -46,10 +44,9 @@ func TestPlainMod(t *testing.T) {
 			"['site']",
 		},
 	}
-	reg := &lit.Reg{}
 	par := mod.NewLoaderEnv(extlib.Std, mod.Registry, mod.FileMods("testdata/"))
 	for _, test := range tests {
-		prog := exp.NewProg(nil, reg, par)
+		prog := exp.NewProg(par)
 		res, err := prog.RunStr(test.raw, nil)
 		if err != nil {
 			t.Errorf("run %s got error: %+v", test.name, err)

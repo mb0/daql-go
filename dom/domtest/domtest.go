@@ -11,13 +11,13 @@ import (
 )
 
 type Fixture struct {
-	Reg *lit.Reg
+	Reg *lit.Regs
 	dom.Project
 	*mig.Version
 	Fix lit.Keyed
 }
 
-func New(reg *lit.Reg, raw, fix string) (*Fixture, error) {
+func New(reg *lit.Regs, raw, fix string) (*Fixture, error) {
 	res := &Fixture{Reg: reg}
 	s, err := dom.ReadSchema(reg, strings.NewReader(raw), "")
 	if err != nil {

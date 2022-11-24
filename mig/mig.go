@@ -75,7 +75,7 @@ type Record struct {
 //
 // The returned record represent the current malleable project state, and may contain unrecorded
 // changes and preliminary versions, not representing the eventually recorded version definition.
-func ReadRecord(reg *lit.Reg, path string) (res Record, err error) {
+func ReadRecord(reg *lit.Regs, path string) (res Record, err error) {
 	res.Project, err = dom.OpenProject(reg, path)
 	if err != nil {
 		return res, err
