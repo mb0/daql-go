@@ -123,7 +123,7 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 		s.modHook(p, ne.ModEnv, ne.Node)
 	}
 	// keep the call for printing
-	return c, nil
+	return c, ne.Publish()
 }
 func (s *domSpec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
 	return exp.LitVal(c.Env.(*NodeEnv).Node), nil

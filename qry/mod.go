@@ -32,7 +32,10 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 		if err != nil {
 			return nil, err
 		}
-		prog.File.Refs = append(prog.File.Refs, f.Refs...)
+		err := prog.File.AddRefs(f.Refs...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// ensure a qry doc
 	doc := FindDoc(prog.Root)
@@ -50,7 +53,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 	}
 	bend.Decl = bt
 	me.AddDecl("bend", bend)
-	return f, nil
+	return f, me.Publish()
 }
 
 var bend = &bendSpec{exp.MustSpecBase("<form@qry.bend uri:str pro?:@dom.Project none>")}

@@ -49,5 +49,5 @@ func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 		me.AddDecl(m.Name, m.Type())
 	}
 	me.AddDecl("projects", &lit.List{El: Dom.Model("project").Type()})
-	return f, nil
+	return f, me.Publish()
 }

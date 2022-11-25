@@ -7,7 +7,7 @@
 	)
 	Entry:(model Entry obj
 		ID:uuid
-		Status:@entry.Status
+		Status:@Status
 		(Slug:str uniq;)
 		Title:str
 		Desc:str
