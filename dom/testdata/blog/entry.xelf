@@ -1,5 +1,5 @@
-(use "auth")
-(mod entry
+(import "auth")
+(module entry
 	Status:(model Status enum
 		Draft;
 		Pub;

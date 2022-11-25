@@ -14,9 +14,9 @@ func TestMod(t *testing.T) {
 		raw  string
 		want string
 	}{
-		{"simple use", `(use 'auth') auth.dom.models/name`, "['Role' 'Acct' 'Cred' 'Sess']"},
-		{"complex use", `(use 'blog') blog.Entry`, "<obj@blog.Entry>"},
-		{"project use", `(use 'site') site.dom.schemas/name`, "['auth' 'blog']"},
+		{"simple import", `(import 'auth') auth.dom.models/name`, "['Role' 'Acct' 'Cred' 'Sess']"},
+		{"complex import", `(import 'blog') blog.Entry`, "<obj@blog.Entry>"},
+		{"project import", `(import 'site') site.dom.schemas/name`, "['auth' 'blog']"},
 	}
 	par := mod.NewLoaderEnv(extlib.Std, mod.FileMods("testdata/"))
 	for _, test := range tests {
@@ -40,7 +40,7 @@ func TestPlainMod(t *testing.T) {
 		want string
 	}{
 		{"mod init",
-			`(use 'daql/dom' 'site') dom.projects/name`,
+			`(import 'daql/dom' 'site') dom.projects/name`,
 			"['site']",
 		},
 	}

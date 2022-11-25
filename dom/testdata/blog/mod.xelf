@@ -1,4 +1,4 @@
-(use e:"./entry")
+(import e:"./entry")
 (schema blog
 	(Tag;
 		ID:int
