@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"xelf.org/daql/dom"
-	"xelf.org/xelf/ast"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/mod"
@@ -43,7 +42,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 		prog.Root = doc
 	}
 	f = &exp.File{URL: s.URL}
-	me := mod.NewModEnv(prog, f, ast.Src{})
+	me := mod.NewModEnv(prog, f)
 	me.SetName("qry")
 	bt, err := prog.Sys.Inst(exp.LookupType(prog), bend.Decl)
 	if err != nil {
@@ -88,7 +87,7 @@ func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.
 			if m == nil {
 				return nil, fmt.Errorf("dom module not found")
 			}
-			a, err := lit.SelectKey(m.Decl.Val, "projects")
+			a, err := lit.SelectKey(m.Decl, "projects")
 			if err == nil {
 				l := a.(*lit.List)
 				if n := len(l.Vals); n > 0 {

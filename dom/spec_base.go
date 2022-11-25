@@ -35,7 +35,7 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 		}
 		ne = &NodeEnv{Node: n, Sub: s.subSpec, dot: s.dotHook}
 		if s.modHook != nil {
-			ne.ModEnv = mod.NewModEnv(env, &p.File, c.Src)
+			ne.ModEnv = mod.NewModEnv(env, &p.File)
 		} else {
 			ne.ModEnv = &mod.ModEnv{Par: env}
 		}

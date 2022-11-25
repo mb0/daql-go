@@ -19,7 +19,7 @@ var projectSpec = prep("<form@project name:sym tags:tupl?|exp @>", &Project{}, &
 	modHook: func(p *exp.Prog, me *mod.ModEnv, n ext.Node) {
 		if f := p.Files[Mod.URL]; f != nil {
 			m := f.Refs.Find("dom")
-			a, err := lit.SelectKey(m.Decl.Val, "projects")
+			a, err := lit.SelectKey(m.Decl, "projects")
 			if err == nil {
 				l := a.(*lit.List)
 				l.Vals = append(l.Vals, n)

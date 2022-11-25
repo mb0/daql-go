@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"xelf.org/xelf/ast"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/mod"
@@ -43,7 +42,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 		prog.Root = &Env{Par: prog.Root}
 	}
 	f := &exp.File{URL: s.URL}
-	me := mod.NewModEnv(prog, f, ast.Src{})
+	me := mod.NewModEnv(prog, f)
 	me.SetName("dom")
 	me.AddDecl("dom", lit.MustProxy(domReg, Dom))
 	for _, m := range Dom.Models {
