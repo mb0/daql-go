@@ -143,13 +143,13 @@ func (e *NodeEnv) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	if e.dot != nil {
 		var ok bool
 		if k, ok = exp.DotKey(k); ok {
-			if !eval {
-				s.Env = e
-				s.Rel = k
-				return s, nil
-			}
 			if v := e.dot(e, k[1:]); v != nil {
-				return exp.LitVal(v), nil
+				l := exp.LitVal(v)
+				s.Update(l.Res, e, k)
+				return l, nil
+			}
+			if s.Update(typ.Void, e, k); !eval {
+				return s, nil
 			}
 			return nil, exp.ErrSymNotFound
 		}

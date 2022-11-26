@@ -87,8 +87,7 @@ func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !eval {
-		s.Type, s.Env, s.Rel = f.Type, e, k
+	if s.Update(f.Type, e, k); !eval {
 		return s, nil
 	}
 	if e.Cur == nil && e.Val == nil {
