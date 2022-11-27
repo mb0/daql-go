@@ -1,0 +1,4 @@
+{name:'daql' mods:[
+	'daql/dom'
+	'daql/qry'
+]}
