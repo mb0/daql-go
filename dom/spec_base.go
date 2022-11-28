@@ -23,8 +23,6 @@ type domSpec struct {
 	dotHook  dotLookup
 }
 
-func (s *domSpec) Value() lit.Val { return s }
-
 func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp.Exp, err error) {
 	// get or create our custom node mod env
 	var ne *NodeEnv
@@ -138,7 +136,7 @@ type NodeEnv struct {
 
 func (e *NodeEnv) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	if k == ":" && e.Sub != nil {
-		return exp.LitVal(e.Sub), nil
+		return exp.LitVal(exp.NewSpecRef(e.Sub)), nil
 	}
 	if e.dot != nil {
 		var ok bool

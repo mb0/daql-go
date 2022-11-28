@@ -129,7 +129,7 @@ func (e *Doc) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 		}
 		sig := typ.Form(s.Sym, typ.P("", typ.Opt(typ.ElemTupl(typ.Exp))), typ.Param{})
 		spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
-		return &exp.Lit{Res: sig.Type(), Val: spec, Src: s.Src}, nil
+		return &exp.Lit{Res: sig, Val: &exp.SpecRef{Spec: spec, Decl: sig}, Src: s.Src}, nil
 	}
 	return e.Env.Lookup(s, k, eval)
 }

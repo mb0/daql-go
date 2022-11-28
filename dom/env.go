@@ -23,13 +23,13 @@ func (e *Env) Parent() exp.Env { return e.Par }
 func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	switch s.Sym {
 	case "project":
-		return exp.LitVal(projectSpec), nil
+		return exp.LitVal(exp.NewSpecRef(projectSpec)), nil
 	case "schema":
-		return exp.LitVal(schemaSpec), nil
+		return exp.LitVal(exp.NewSpecRef(schemaSpec)), nil
 	case "model":
-		return exp.LitVal(modelSpec), nil
+		return exp.LitVal(exp.NewSpecRef(modelSpec)), nil
 	case "elem":
-		return exp.LitVal(elemSpec), nil
+		return exp.LitVal(exp.NewSpecRef(elemSpec)), nil
 	}
 	return e.Par.Lookup(s, k, eval)
 }

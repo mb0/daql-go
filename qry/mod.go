@@ -52,7 +52,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 		return nil, err
 	}
 	bend.Decl = bt
-	me.AddDecl("bend", bend)
+	me.AddDecl("bend", exp.NewSpecRef(bend))
 	return f, me.Publish()
 }
 
@@ -61,8 +61,6 @@ var bend = &bendSpec{exp.MustSpecBase("<form@qry.bend uri:str pro?:@dom.Project 
 type bendSpec struct {
 	exp.SpecBase
 }
-
-func (s *bendSpec) Value() lit.Val { return s }
 
 func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.Exp, error) {
 	if c.Env != nil {

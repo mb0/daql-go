@@ -97,7 +97,7 @@ var _ mig.Dataset = (*MemBackend)(nil)
 func execListQry(p *exp.Prog, j *Job, vals lit.Vals) (*exp.Lit, error) {
 	var whr exp.Exp
 	if len(j.Whr) > 0 {
-		whr = &exp.Call{Args: append([]exp.Exp{exp.LitVal(lib.And)}, j.Whr...)}
+		whr = &exp.Call{Args: append([]exp.Exp{exp.LitVal(exp.NewSpecRef(lib.And))}, j.Whr...)}
 	}
 	if j.Kind == KindCount {
 		return collectCount(p, j, vals, whr)

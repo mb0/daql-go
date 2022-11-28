@@ -18,7 +18,6 @@ type Spec struct {
 	Task Task
 }
 
-func (s *Spec) Value() lit.Val { return s }
 func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp, error) {
 	t := &s.Task
 	j, ok := c.Env.(*Job)
