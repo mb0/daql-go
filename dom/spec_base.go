@@ -67,8 +67,8 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 			if !ok {
 				return nil, fmt.Errorf("want a lit got %T", a)
 			}
-			ne.SetName(s.Value().String())
-			ne.SetKey(pa.Key, s.Value())
+			ne.SetName(s.String())
+			ne.SetKey(pa.Key, s.Val)
 		} else if pa.Kind == knd.Typ { // model kind and elem type
 			e, err := p.Resl(c.Env, a, pa.Type)
 			if err != nil {

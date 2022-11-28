@@ -217,7 +217,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 		case lit.Mut:
 			n, ok := tv.Ptr().(*Elem)
 			if !ok {
-				return nil, fmt.Errorf("expected *Elem got %s", tv.Value())
+				return nil, fmt.Errorf("expected *Elem got %s", tv)
 			}
 			if n.Name == "" {
 				n.Name = el.Name
