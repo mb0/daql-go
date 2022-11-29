@@ -72,7 +72,7 @@ func (b *MemBackend) Exec(p *exp.Prog, j *Job) (*exp.Lit, error) {
 }
 func (b *MemBackend) list(m *dom.Model) (list *lit.List) {
 	if list = b.Data[m.Qualified()]; list == nil {
-		list = &lit.List{El: m.Type()}
+		list = lit.NewList(m.Type())
 	}
 	return list
 }
@@ -88,7 +88,7 @@ func (b *MemBackend) Add(m *dom.Model, list *lit.Vals) error {
 		s := &lit.Obj{Typ: mt, Vals: *l}
 		(*list)[i] = s
 	}
-	b.Data[m.Qualified()] = &lit.List{El: mt, Vals: *list}
+	b.Data[m.Qualified()] = lit.NewList(mt, *list...)
 	return nil
 }
 
@@ -115,7 +115,7 @@ func execListQry(p *exp.Prog, j *Job, vals lit.Vals) (*exp.Lit, error) {
 			l.Val = res[0]
 		}
 	case KindMany:
-		l.Val = &lit.List{El: typ.El(j.Res), Vals: res}
+		l.Val = lit.NewList(typ.El(j.Res), res...)
 	default:
 		return nil, fmt.Errorf("exec unknown query kind %s", j.Ref)
 	}

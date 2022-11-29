@@ -150,7 +150,7 @@ func (l *MemLedger) insertEvents(evs []*Event) error {
 	}
 	list := l.Bend.Data["evt.event"]
 	if list == nil {
-		list = &lit.List{}
+		list = &lit.List{Typ: typ.List}
 		l.Bend.Data["evt.event"] = list
 	}
 	for _, ev := range evs {
@@ -195,7 +195,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		}, nil
 	case CmdNew:
 		if d == nil {
-			d = &lit.List{El: m.Type()}
+			d = lit.NewList(m.Type())
 			l.Bend.Data[ev.Top] = d
 		}
 		val := l.Reg.Zero(m.Type())

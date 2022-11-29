@@ -28,9 +28,9 @@ func TestExecAuto(t *testing.T) {
 	reg := lit.NewRegs()
 	q := New(reg, extlib.Std, getBackend(reg))
 	var res MyQuery
-	mut, err := q.ExecAuto(nil, &res, &lit.Dict{El: typ.Str, Keyed: []lit.KeyVal{
-		{Key: "name", Val: lit.Str("a")},
-	}})
+	mut, err := q.ExecAuto(nil, &res, lit.NewDict(typ.Str,
+		lit.KeyVal{Key: "name", Val: lit.Str("a")},
+	))
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

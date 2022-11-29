@@ -48,6 +48,6 @@ func modSetup(prog *exp.Prog, s *mod.Src) (*mod.File, error) {
 	for _, m := range Dom.Models {
 		me.AddDecl(m.Name, m.Type())
 	}
-	me.AddDecl("projects", &lit.List{El: Dom.Model("project").Type()})
+	me.AddDecl("projects", lit.NewList(Dom.Model("project").Type()))
 	return f, me.Publish()
 }

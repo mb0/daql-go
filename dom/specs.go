@@ -111,7 +111,7 @@ func fileExtra(url string) *lit.Dict {
 	if url == "" {
 		return nil
 	}
-	x := new(lit.Dict)
+	x := &lit.Dict{Typ: typ.Dict}
 	x.SetKey("file", lit.Str(url))
 	return x
 }
