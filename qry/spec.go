@@ -35,7 +35,7 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 			if err != nil {
 				return c, err
 			}
-			rt := res.Resl()
+			rt := typ.Res(res.Type())
 			if rt.Kind&knd.List == 0 {
 				return nil, fmt.Errorf("resl subj want list got %s", rt)
 			}

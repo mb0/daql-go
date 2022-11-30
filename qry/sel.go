@@ -103,7 +103,8 @@ func reslSel(p *exp.Prog, j *Job, ds []*exp.Tag) (*Sel, error) {
 			if err != nil && !errors.Is(err, exp.ErrDefer) {
 				return nil, err
 			}
-			f := &Field{Key: cor.Keyed(name), Name: cor.Cased(name), Exp: el, Type: el.Resl()}
+			et := typ.Res(el.Type())
+			f := &Field{Key: cor.Keyed(name), Name: cor.Cased(name), Exp: el, Type: et}
 			return &Sel{Type: f.Type, Fields: Fields{f}}, nil
 		case "":
 			return nil, fmt.Errorf("unnamed selection %s", d)
@@ -145,7 +146,7 @@ func reslSel(p *exp.Prog, j *Job, ds []*exp.Tag) (*Sel, error) {
 					}
 				}
 				if f.Type == typ.Void {
-					f.Type = el.Resl()
+					f.Type = typ.Res(el.Type())
 				}
 				fs, _ = fs.with(f)
 			}

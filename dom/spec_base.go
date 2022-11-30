@@ -75,7 +75,7 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 				return nil, err
 			}
 			l := e.(*exp.Lit)
-			if l == nil || l.Res != typ.Typ {
+			if l == nil || l.Res.Kind != knd.Typ {
 				return nil, fmt.Errorf("expected resolved type got %#v %[1]T", e)
 			}
 			t := l.Val.(typ.Type)
