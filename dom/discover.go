@@ -62,13 +62,13 @@ func ReadProject(reg *lit.Regs, r io.Reader, path string) (p *Project, _ error) 
 	files := mod.FileMods(filepath.Dir(path))
 	par := mod.NewLoaderEnv(extlib.Std, files)
 	env := &Env{Par: par}
-	l, err := exp.NewProg(env, reg).Run(x, nil)
+	v, err := exp.NewProg(env, reg).Run(x, nil)
 	if err != nil {
 		return nil, fmt.Errorf("eval project %s: %v", path, err)
 	}
-	p, ok := mutPtr(l).(*Project)
+	p, ok := mutPtr(v).(*Project)
 	if !ok {
-		return nil, fmt.Errorf("expected *Project got %s", l.Value())
+		return nil, fmt.Errorf("expected *Project got %s", v.Value())
 	}
 	return p, nil
 }
@@ -89,13 +89,13 @@ func ReadSchema(reg *lit.Regs, r io.Reader, path string) (s *Schema, _ error) {
 	if err != nil {
 		return nil, err
 	}
-	l, err := exp.NewProg(NewEnv(), reg).Run(x, nil)
+	v, err := exp.NewProg(NewEnv(), reg).Run(x, nil)
 	if err != nil {
 		return nil, err
 	}
-	s, ok := mutPtr(l).(*Schema)
+	s, ok := mutPtr(v).(*Schema)
 	if !ok {
-		return nil, fmt.Errorf("expected *Schema got %s", l.Value())
+		return nil, fmt.Errorf("expected *Schema got %s", v.Value())
 	}
 	return s, nil
 }

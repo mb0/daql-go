@@ -3,6 +3,7 @@ package dom
 import (
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
+	"xelf.org/xelf/lit"
 )
 
 type Env struct {
@@ -20,16 +21,16 @@ func FindEnv(env exp.Env) *Env {
 	return nil
 }
 func (e *Env) Parent() exp.Env { return e.Par }
-func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
 	switch s.Sym {
 	case "project":
-		return exp.LitVal(exp.NewSpecRef(projectSpec)), nil
+		return exp.NewSpecRef(projectSpec), nil
 	case "schema":
-		return exp.LitVal(exp.NewSpecRef(schemaSpec)), nil
+		return exp.NewSpecRef(schemaSpec), nil
 	case "model":
-		return exp.LitVal(exp.NewSpecRef(modelSpec)), nil
+		return exp.NewSpecRef(modelSpec), nil
 	case "elem":
-		return exp.LitVal(exp.NewSpecRef(elemSpec)), nil
+		return exp.NewSpecRef(elemSpec), nil
 	}
 	return e.Par.Lookup(s, k, eval)
 }

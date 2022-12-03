@@ -78,7 +78,7 @@ func FindJob(env exp.Env) *Job {
 // ParentJob returns the parent job environment of this job or nil.
 func (e *Job) ParentJob() *Job { return FindJob(e.Env) }
 func (e *Job) Parent() exp.Env { return e.Env }
-func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
 	k, ok := exp.DotKey(k)
 	if !ok {
 		return e.Env.Lookup(s, k, eval)
@@ -88,7 +88,7 @@ func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 		return nil, err
 	}
 	if s.Update(f.Type, e, k); !eval {
-		return s, nil
+		return nil, nil
 	}
 	if e.Cur == nil && e.Val == nil {
 		return nil, fmt.Errorf("job env unresolved %s in %s", s.Sym, e.Subj.Type)
@@ -97,5 +97,5 @@ func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
 	if err != nil {
 		return nil, err
 	}
-	return exp.LitVal(v), nil
+	return v, nil
 }

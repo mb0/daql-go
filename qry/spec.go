@@ -75,7 +75,7 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 			if err != nil {
 				return c, err
 			}
-			n, err := lit.ToInt(el.Val)
+			n, err := lit.ToInt(el)
 			if err != nil {
 				return c, err
 			}
@@ -106,7 +106,7 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 	return c, nil
 }
 
-func (s *Spec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
+func (s *Spec) Eval(p *exp.Prog, c *exp.Call) (lit.Val, error) {
 	// query arguments must all be evaluated or else skip until next run
 	j := c.Env.(*Job)
 	v, err := j.Bend.Exec(p, j)
@@ -114,8 +114,7 @@ func (s *Spec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
 		return nil, err
 	}
 	v.Src = c.Src
-	j.Val = v
-	return j.Val, nil
+	return v.Val, nil
 }
 
 func splitPlain(args []exp.Exp) (plain, rest []exp.Exp) {

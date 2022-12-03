@@ -106,20 +106,20 @@ func execListQry(p *exp.Prog, j *Job, vals lit.Vals) (*exp.Lit, error) {
 	if err != nil {
 		return nil, err
 	}
-	l := &exp.Lit{Res: j.Res}
+	var v lit.Mut
 	switch j.Kind {
 	case KindOne:
 		if len(res) == 0 {
-			l.Val = lit.Null{}
+			v = lit.ZeroWrap(j.Res)
 		} else {
-			l.Val = res[0]
+			v = lit.Wrap(res[0].Mut(), j.Res)
 		}
 	case KindMany:
-		l.Val = lit.NewList(typ.El(j.Res), res...)
+		v = &lit.List{Typ: j.Res, Vals: res}
 	default:
 		return nil, fmt.Errorf("exec unknown query kind %s", j.Ref)
 	}
-	return l, nil
+	return exp.LitVal(v), nil
 }
 
 func collectList(p *exp.Prog, j *Job, vals lit.Vals, whr exp.Exp) (res lit.Vals, _ error) {
@@ -151,11 +151,10 @@ func collectList(p *exp.Prog, j *Job, vals lit.Vals, whr exp.Exp) (res lit.Vals,
 			var val lit.Val
 			var err error
 			if f.Exp != nil {
-				el, err := p.Eval(j, f.Exp)
+				val, err = p.Eval(j, f.Exp)
 				if err != nil {
 					return nil, err
 				}
-				val = el.Val
 			} else {
 				val, err = rec.Key(f.Key)
 				if err != nil {
@@ -232,7 +231,7 @@ func filter(p *exp.Prog, env exp.Env, v lit.Val, whr exp.Exp) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	b, err := lit.ToBool(res.Val)
+	b, err := lit.ToBool(res)
 	if err != nil {
 		return false, err
 	}

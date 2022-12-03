@@ -28,14 +28,15 @@ func TestWriteLit(t *testing.T) {
 			"lit": "xelf/lit",
 			"cor": "xelf/cor",
 		}}
-		l, err := exp.NewProg(lib.Std).RunStr(test.xelf, nil)
+		v, err := exp.NewProg(lib.Std).RunStr(test.xelf, nil)
 		if err != nil {
 			t.Errorf("parse %s err: %v", test.xelf, err)
 			continue
 		}
-		err = WriteLit(c, l)
+		// TODO use val
+		err = WriteLit(c, exp.LitVal(v))
 		if err != nil {
-			t.Errorf("write %s error: %v", l, err)
+			t.Errorf("write %s error: %v", v, err)
 			continue
 		}
 		res := b.String()

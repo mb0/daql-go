@@ -40,7 +40,7 @@ func schemaPrep(p *exp.Prog, env exp.Env, n ext.Node, k string, e exp.Exp) (lit.
 	}
 	pro := n.Ptr().(*Project)
 	pro.Schemas = append(pro.Schemas, s)
-	return a.Val, nil
+	return a, nil
 }
 
 var schemaSpec = prep("<form@schema name:sym tags:tupl?|exp @>", &Schema{}, &domSpec{
@@ -65,7 +65,7 @@ func modelPrep(p *exp.Prog, env exp.Env, n ext.Node, key string, e exp.Exp) (lit
 	s.Models = append(s.Models, m)
 	ne := env.(*NodeEnv)
 	ne.AddDecl(m.Name, m.Type())
-	return a.Val, nil
+	return a, nil
 }
 
 var modelSpec = prep("<form@model name:sym kind:typ tags:tupl?|exp @dom.Model>", &Model{}, &domSpec{
@@ -177,7 +177,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			if err != nil {
 				return nil, err
 			}
-			switch tv := ta.Val.(type) {
+			switch tv := ta.(type) {
 			case lit.Mut:
 				n := tv.Ptr().(*Elem)
 				if n.Name == "" {
@@ -185,7 +185,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 				}
 				el = n
 			case lit.Val:
-				val, err := lit.ToInt(ta.Val)
+				val, err := lit.ToInt(ta)
 				if err != nil {
 					return nil, err
 				}
@@ -213,7 +213,7 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 		if err != nil {
 			return nil, err
 		}
-		switch tv := ta.Val.(type) {
+		switch tv := ta.(type) {
 		case lit.Mut:
 			n, ok := tv.Ptr().(*Elem)
 			if !ok {
@@ -277,10 +277,9 @@ func refElemName(ref string) string {
 	return snd[:idx]
 }
 
-func mutPtr(l *exp.Lit) interface{} {
-	mut, ok := l.Value().(lit.Mut)
-	if !ok || mut.Zero() {
+func mutPtr(v lit.Val) interface{} {
+	if v.Zero() {
 		return nil
 	}
-	return mut.Ptr()
+	return v.Mut().Ptr()
 }

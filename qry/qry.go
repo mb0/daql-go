@@ -57,7 +57,7 @@ func (q *Qry) Subj(ref string) (*Subj, error) {
 }
 
 // Exec executes the given query str with arg and returns a value or an error.
-func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (*exp.Lit, error) {
+func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (lit.Val, error) {
 	x, err := exp.Parse(str)
 	if err != nil {
 		return nil, fmt.Errorf("parse qry %s error: %w", str, err)
@@ -66,8 +66,8 @@ func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (*exp.Lit, erro
 }
 
 // ExecExp executes the given query expr with arg and returns a value or an error.
-func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ *exp.Lit, err error) {
-	a, err := exp.NewProg(&Doc{Qry: q}, &q.Reg, ctx).Run(expr, exp.LitVal(arg))
+func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
+	a, err := exp.NewProg(&Doc{Qry: q}, &q.Reg, ctx).Run(expr, arg)
 	if err != nil {
 		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
 	}
@@ -88,7 +88,7 @@ func (q *Qry) ExecAuto(ctx context.Context, pp interface{}, arg lit.Val) (lit.Mu
 	if err != nil {
 		return nil, err
 	}
-	err = mut.Assign(el.Val)
+	err = mut.Assign(el)
 	if err != nil {
 		return nil, err
 	}
@@ -120,16 +120,16 @@ func (p *Doc) Add(j *Job) {
 }
 
 func (e *Doc) Parent() exp.Env { return e.Env }
-func (e *Doc) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *Doc) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
 	switch c := s.Sym[0]; c {
 	case '?', '*', '#':
 		subj, err := e.Subj(s.Sym[1:])
 		if err != nil {
-			return s, err
+			return nil, err
 		}
 		sig := typ.Form(s.Sym, typ.P("", typ.Opt(typ.ElemTupl(typ.Exp))), typ.Param{})
 		spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
-		return &exp.Lit{Res: sig, Val: &exp.SpecRef{Spec: spec, Decl: sig}, Src: s.Src}, nil
+		return &exp.SpecRef{Spec: spec, Decl: sig}, nil
 	}
 	return e.Env.Lookup(s, k, eval)
 }

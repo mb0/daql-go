@@ -12,7 +12,7 @@ import (
 )
 
 // WriteLit writes the native go literal for l to c or returns an error.
-func WriteLit(g *gen.Gen, l *exp.Lit) error { return WriteVal(g, l.Res, l.Val) }
+func WriteLit(g *gen.Gen, l *exp.Lit) error { return WriteVal(g, typ.Res(l.Type()), l.Val) }
 
 // WriteLit writes the native go literal for l to c or returns an error.
 func WriteVal(g *gen.Gen, t typ.Type, v lit.Val) error {
@@ -123,7 +123,7 @@ func writeCall(g *gen.Gen, name string, v lit.Val) error {
 }
 
 func writeIdxer(g *gen.Gen, vv lit.Val) error {
-	v, ok := vv.(lit.Idxr)
+	v, ok := vv.Value().(lit.Idxr)
 	if !ok {
 		return fmt.Errorf("expect idxer got %T", vv)
 	}
@@ -146,7 +146,7 @@ func writeIdxer(g *gen.Gen, vv lit.Val) error {
 }
 
 func writeKeyer(g *gen.Gen, vv lit.Val, el func(int, string, lit.Val) error) error {
-	v, ok := vv.(lit.Keyr)
+	v, ok := vv.Value().(lit.Keyr)
 	if !ok {
 		return fmt.Errorf("expect keyer got %T", vv)
 	}

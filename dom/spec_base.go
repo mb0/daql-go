@@ -70,20 +70,22 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 			ne.SetName(s.String())
 			ne.SetKey(pa.Key, s.Val)
 		} else if pa.Kind == knd.Typ { // model kind and elem type
-			e, err := p.Resl(c.Env, a, pa.Type)
+			a, err = p.Resl(c.Env, a, pa.Type)
 			if err != nil {
 				return nil, err
 			}
-			l := e.(*exp.Lit)
-			if l == nil || l.Res.Kind != knd.Typ {
-				return nil, fmt.Errorf("expected resolved type got %#v %[1]T", e)
+			rt := typ.Res(a.Type())
+			if rt.Kind != knd.Typ {
+				return nil, fmt.Errorf("expected resolved type got %#v %[1]T", a)
 			}
-			t := l.Val.(typ.Type)
-			l.Val, err = p.Sys.Inst(exp.LookupType(c.Env), t)
+			l := a.(*exp.Lit)
+			t := l.Value().(typ.Type)
+			t, err = p.Sys.Inst(exp.LookupType(c.Env), t)
 			if err != nil {
 				return nil, err
 			}
-			ne.SetKey(pa.Key, l.Val)
+			l.Val = t
+			ne.SetKey(pa.Key, t)
 			a = l
 		} else if pa.Kind&knd.Tupl != 0 {
 			tup := a.(*exp.Tupl)
@@ -123,8 +125,8 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 	// keep the call for printing
 	return c, ne.Publish()
 }
-func (s *domSpec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
-	return exp.LitVal(c.Env.(*NodeEnv).Node), nil
+func (s *domSpec) Eval(p *exp.Prog, c *exp.Call) (lit.Val, error) {
+	return c.Env.(*NodeEnv).Node, nil
 }
 
 type NodeEnv struct {
@@ -134,20 +136,19 @@ type NodeEnv struct {
 	Sub exp.Spec
 }
 
-func (e *NodeEnv) Lookup(s *exp.Sym, k string, eval bool) (exp.Exp, error) {
+func (e *NodeEnv) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
 	if k == ":" && e.Sub != nil {
-		return exp.LitVal(exp.NewSpecRef(e.Sub)), nil
+		return exp.NewSpecRef(e.Sub), nil
 	}
 	if e.dot != nil {
 		var ok bool
 		if k, ok = exp.DotKey(k); ok {
 			if v := e.dot(e, k[1:]); v != nil {
-				l := exp.LitVal(v)
-				s.Update(l.Res, e, k)
-				return l, nil
+				s.Update(v.Type(), e, k)
+				return v, nil
 			}
-			if s.Update(typ.Void, e, k); !eval {
-				return s, nil
+			if s.Update(s.Res, e, k); !eval {
+				return nil, nil
 			}
 			return nil, exp.ErrSymNotFound
 		}

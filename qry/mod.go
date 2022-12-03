@@ -74,7 +74,7 @@ func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.
 	if err != nil {
 		return nil, err
 	}
-	uri := a.Val.String()
+	uri := a.String()
 	var pro *dom.Project
 	if len(c.Args) > 1 && c.Args[1] != nil {
 		a, err = p.Eval(c.Env, c.Args[1])
@@ -120,6 +120,6 @@ func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.
 	return c, nil
 }
 
-func (s *bendSpec) Eval(p *exp.Prog, c *exp.Call) (*exp.Lit, error) {
-	return exp.LitVal(lit.Null{}), nil
+func (s *bendSpec) Eval(p *exp.Prog, c *exp.Call) (lit.Val, error) {
+	return lit.Null{}, nil
 }

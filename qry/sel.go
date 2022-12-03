@@ -139,7 +139,7 @@ func reslSel(p *exp.Prog, j *Job, ds []*exp.Tag) (*Sel, error) {
 				f := &Field{Key: key, Name: name, Exp: el}
 				call, ok := el.(*exp.Call)
 				if ok {
-					if _, ok = exp.UnwrapSpec(call.Spec).(*Spec); ok {
+					if s := exp.UnwrapSpec(call.Spec); s != nil {
 						if f.Sub, ok = call.Env.(*Job); ok {
 							f.Type = f.Sub.Res
 						}

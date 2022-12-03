@@ -109,7 +109,7 @@ func TestQryType(t *testing.T) {
 		Want string
 	}{
 		{`(#prod.cat)`, `<int>`},
-		{`([] (#prod.cat) (#prod.prod))`, `<list>`},
+		{`([] (#prod.cat) (#prod.prod))`, `<idxr>`},
 		{`({} cats:(#prod.cat) prods:(#prod.prod))`, `<keyr>`},
 		{`(list|int (#prod.cat) (#prod.prod))`, `<list|int>`},
 		{`(dict|int cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
@@ -143,7 +143,7 @@ func TestQryType(t *testing.T) {
 			t.Errorf("qry %s got nil result", test.Raw)
 			continue
 		}
-		if got := bfr.String(el.Res); got != test.Want {
+		if got := bfr.String(el.Type()); got != test.Want {
 			t.Errorf("want for %s\n\t%s got %s", test.Raw, test.Want, got)
 			continue
 		}
