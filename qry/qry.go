@@ -4,8 +4,10 @@ package qry
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"xelf.org/daql/dom"
+	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
@@ -120,16 +122,18 @@ func (p *Doc) Add(j *Job) {
 }
 
 func (e *Doc) Parent() exp.Env { return e.Env }
-func (e *Doc) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
-	switch c := s.Sym[0]; c {
-	case '?', '*', '#':
-		subj, err := e.Subj(s.Sym[1:])
-		if err != nil {
-			return nil, err
+func (e *Doc) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
+	if len(p) > 0 && p[0].Key != "" && strings.HasPrefix(s.Sym, p[0].Key) {
+		switch c := s.Sym[0]; c {
+		case '?', '*', '#':
+			subj, err := e.Subj(s.Sym[1:])
+			if err != nil {
+				return nil, err
+			}
+			sig := typ.Form(s.Sym, typ.P("", typ.Opt(typ.ElemTupl(typ.Exp))), typ.Param{})
+			spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
+			return &exp.SpecRef{Spec: spec, Decl: sig}, nil
 		}
-		sig := typ.Form(s.Sym, typ.P("", typ.Opt(typ.ElemTupl(typ.Exp))), typ.Param{})
-		spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
-		return &exp.SpecRef{Spec: spec, Decl: sig}, nil
 	}
-	return e.Env.Lookup(s, k, eval)
+	return e.Env.Lookup(s, p, eval)
 }

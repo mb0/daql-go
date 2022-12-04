@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"xelf.org/daql/dom"
+	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
@@ -78,24 +79,20 @@ func FindJob(env exp.Env) *Job {
 // ParentJob returns the parent job environment of this job or nil.
 func (e *Job) ParentJob() *Job { return FindJob(e.Env) }
 func (e *Job) Parent() exp.Env { return e.Env }
-func (e *Job) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
-	k, ok := exp.DotKey(k)
+func (e *Job) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
+	p, ok := exp.DotPath(p)
 	if !ok {
-		return e.Env.Lookup(s, k, eval)
+		return e.Env.Lookup(s, p, eval)
 	}
-	f, err := e.Task.Field(k[1:])
+	f, err := e.Task.Field(p[0].Key) // TODO
 	if err != nil {
 		return nil, err
 	}
-	if s.Update(f.Type, e, k); !eval {
+	if s.Update(f.Type, e, p); !eval {
 		return nil, nil
 	}
 	if e.Cur == nil && e.Val == nil {
 		return nil, fmt.Errorf("job env unresolved %s in %s", s.Sym, e.Subj.Type)
 	}
-	v, err := lit.Select(e.Cur, k)
-	if err != nil {
-		return nil, err
-	}
-	return v, nil
+	return lit.SelectPath(e.Cur, p)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
 	"xelf.org/xelf/knd"
@@ -81,13 +82,15 @@ var modelSpec = prep("<form@model name:sym kind:typ tags:tupl?|exp @dom.Model>",
 	},
 	declRule: elemsPrepper,
 	subSpec:  elemSpec,
-	dotHook: func(ne *NodeEnv, k string) lit.Val {
-		m := ne.Node.Ptr().(*Model)
-		for _, el := range m.Elems {
-			if el.Name == k || el.Key() == k {
-				t := el.Type
-				t.Ref = m.Name + "." + el.Name
-				return t
+	dotHook: func(ne *NodeEnv, p cor.Path) lit.Val {
+		if len(p) > 0 {
+			f, m := p[0], ne.Node.Ptr().(*Model)
+			for _, el := range m.Elems {
+				if el.Name == f.Key || el.Key() == f.Key {
+					t := el.Type
+					t.Ref = m.Name + "." + el.Name
+					return t
+				}
 			}
 		}
 		return nil

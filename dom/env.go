@@ -1,6 +1,7 @@
 package dom
 
 import (
+	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
@@ -21,8 +22,8 @@ func FindEnv(env exp.Env) *Env {
 	return nil
 }
 func (e *Env) Parent() exp.Env { return e.Par }
-func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
-	switch s.Sym {
+func (e *Env) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
+	switch p.Plain() {
 	case "project":
 		return exp.NewSpecRef(projectSpec), nil
 	case "schema":
@@ -32,5 +33,5 @@ func (e *Env) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
 	case "elem":
 		return exp.NewSpecRef(elemSpec), nil
 	}
-	return e.Par.Lookup(s, k, eval)
+	return e.Par.Lookup(s, p, eval)
 }

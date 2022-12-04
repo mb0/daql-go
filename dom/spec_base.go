@@ -136,28 +136,29 @@ type NodeEnv struct {
 	Sub exp.Spec
 }
 
-func (e *NodeEnv) Lookup(s *exp.Sym, k string, eval bool) (lit.Val, error) {
-	if k == ":" && e.Sub != nil {
+func (e *NodeEnv) Lookup(s *exp.Sym, path cor.Path, eval bool) (lit.Val, error) {
+	if path.Plain() == ":" && e.Sub != nil {
 		return exp.NewSpecRef(e.Sub), nil
 	}
+	p := path
 	if e.dot != nil {
 		var ok bool
-		if k, ok = exp.DotKey(k); ok {
-			if v := e.dot(e, k[1:]); v != nil {
-				s.Update(v.Type(), e, k)
+		if p, ok = exp.DotPath(p); ok {
+			if v := e.dot(e, p); v != nil {
+				s.Update(v.Type(), e, path)
 				return v, nil
 			}
-			if s.Update(s.Res, e, k); !eval {
+			if s.Update(s.Res, e, path); !eval {
 				return nil, nil
 			}
 			return nil, exp.ErrSymNotFound
 		}
 	}
-	return e.ModEnv.Lookup(s, k, eval)
+	return e.ModEnv.Lookup(s, p, eval)
 }
 
 type any = interface{}
-type dotLookup func(*NodeEnv, string) lit.Val
+type dotLookup func(*NodeEnv, cor.Path) lit.Val
 
 func prep(sig string, inst any, s *domSpec) *domSpec {
 	s.SpecBase = exp.MustSpecBase(sig)
