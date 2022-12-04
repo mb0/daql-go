@@ -58,10 +58,13 @@ func modelPrep(p *exp.Prog, env exp.Env, n ext.Node, key string, e exp.Exp) (lit
 	}
 	m, ok := mutPtr(a).(*Model)
 	if !ok {
-		return nil, fmt.Errorf("expected *Schema got %s", a.Value())
+		return nil, fmt.Errorf("expected *Model got %s", a.Value())
 	}
 	s := n.Ptr().(*Schema)
-	qualifyModel(m, s.Name)
+	err = qualifyModel(m, s.Name)
+	if err != nil {
+		return nil, err
+	}
 	s.Models = append(s.Models, m)
 	ne := env.(*NodeEnv)
 	ne.AddDecl(m.Name, m.Type())
