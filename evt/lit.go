@@ -208,7 +208,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		if err != nil {
 			return nil, fmt.Errorf("apply new %s %s: %w", ev.Top, pk, err)
 		}
-		err = lit.Apply(mut, lit.Delta(ev.Arg.Keyed))
+		_, err = lit.Apply(mut, lit.Delta(ev.Arg.Keyed))
 		if err != nil {
 			return nil, fmt.Errorf("apply new %s arg: %w", ev.Top, err)
 		}
@@ -236,7 +236,7 @@ func (l *MemLedger) applyEvent(ev *Event) (func() error, error) {
 		mut := d.Vals[idx].(lit.Keyr)
 		org := mut.String()
 		// mod arg
-		err = lit.Apply(mut, lit.Delta(ev.Arg.Keyed))
+		_, err = lit.Apply(mut, lit.Delta(ev.Arg.Keyed))
 		if err != nil {
 			return nil, fmt.Errorf("apply mod %s arg: %w", ev.Top, err)
 		}

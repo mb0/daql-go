@@ -51,7 +51,8 @@ func Merge(a, b Action) (_ Action, err error) {
 			return a, fmt.Errorf("new action for existing %v", a.Sig)
 		case CmdMod:
 			if a.Cmd == CmdNew {
-				return a, lit.Apply(a.Arg, lit.Delta(b.Arg.Keyed))
+				_, err := lit.Apply(a.Arg, lit.Delta(b.Arg.Keyed))
+				return a, err
 			}
 			return a, MergeDeltas(lit.Delta(a.Arg.Keyed), lit.Delta(b.Arg.Keyed))
 		case CmdDel:

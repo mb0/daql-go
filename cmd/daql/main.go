@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	xcmd "xelf.org/cmd"
 	"xelf.org/dapgx"
 	"xelf.org/dapgx/dompgx"
 	"xelf.org/daql/cmd"
@@ -76,7 +77,6 @@ func main() {
 	case "gengo", "genpg":
 		err = genGen(cmd, args)
 	case "repl":
-		log.SetPrefix("· ")
 		err = repl(args)
 	case "webui":
 		var srv *dawui.Server
@@ -163,7 +163,7 @@ func genGen(gen string, args []string) error {
 }
 
 func gogen(pr *cmd.Project, ss []*dom.Schema) error {
-	ppkg, err := cmd.GoModPath(pr.Dir)
+	ppkg, err := xcmd.GoModPath(pr.Dir)
 	if err != nil {
 		return err
 	}

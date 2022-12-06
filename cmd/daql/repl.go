@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	xcmd "xelf.org/cmd"
 	"xelf.org/daql/cmd"
 	"xelf.org/daql/qry"
+	"xelf.org/xelf/exp"
 )
 
 func repl(args []string) error {
@@ -19,17 +20,18 @@ func repl(args []string) error {
 		uri = os.Getenv("DAQL_DATA")
 	}
 	var bend qry.Backend
-	if uri == "" {
-		log.Printf("no -data specified using empty project backend")
-		bend = &qry.MemBackend{Project: pr.Project}
-	} else {
+	if uri != "" {
 		data, err := cmd.OpenData(pr, uri)
 		if err != nil {
 			return fmt.Errorf("open data: %v", err)
 		}
 		bend = data.Backend
 	}
-	r := cmd.NewRepl(pr.Reg, bend, cmd.ReplHistoryPath())
+	q := qry.New(pr.Reg, xcmd.ProgRoot(), bend)
+	r := xcmd.NewRepl(xcmd.ReplHistoryPath("daql/repl.history"))
+	r.Wrap = func(env exp.Env) exp.Env {
+		return &qry.Doc{Qry: q}
+	}
 	r.Run()
 	return nil
 }

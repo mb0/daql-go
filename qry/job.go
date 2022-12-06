@@ -84,7 +84,7 @@ func (e *Job) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
 	if !ok {
 		return e.Env.Lookup(s, p, eval)
 	}
-	f, err := e.Task.Field(p[0].Key) // TODO
+	f, err := e.Task.Field(p.Fst().Key) // TODO
 	if err != nil {
 		return nil, err
 	}

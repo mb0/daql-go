@@ -123,7 +123,7 @@ func (p *Doc) Add(j *Job) {
 
 func (e *Doc) Parent() exp.Env { return e.Env }
 func (e *Doc) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
-	if len(p) > 0 && p[0].Key != "" && strings.HasPrefix(s.Sym, p[0].Key) {
+	if f := p.Fst(); f.Key != "" && strings.HasPrefix(s.Sym, f.Key) {
 		switch c := s.Sym[0]; c {
 		case '?', '*', '#':
 			subj, err := e.Subj(s.Sym[1:])
