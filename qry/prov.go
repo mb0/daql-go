@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"sync"
 
 	"xelf.org/daql/dom"
@@ -12,6 +13,32 @@ import (
 )
 
 var bends sync.Map
+
+type Data struct {
+	URL *url.URL
+	Backend
+	mig.Dataset
+}
+
+func Open(pr *dom.Project, uri string) (*Data, error) {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return nil, err
+	}
+	if u.Scheme == "" {
+		u.Scheme = "file"
+	}
+	prov := LoadProvider(u.Scheme)
+	if prov == nil {
+		return nil, fmt.Errorf("no backend provider for %s", u.Scheme)
+	}
+	bend, err := prov.Provide(uri, pr)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating backend for %s: %s", u.Scheme, err)
+	}
+	dset, _ := bend.(mig.Dataset)
+	return &Data{u, bend, dset}, nil
+}
 
 // Provider produces backends based on an uri.
 type Provider interface {

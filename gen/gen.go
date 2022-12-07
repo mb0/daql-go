@@ -8,6 +8,11 @@ import (
 	"xelf.org/xelf/bfr"
 )
 
+func Nogen(s *dom.Schema) bool {
+	l, err := s.Extra.Key("nogen")
+	return err == nil && !l.Nil()
+}
+
 // Gen is the code generation context holding the buffer and additional information.
 type Gen struct {
 	bfr.P

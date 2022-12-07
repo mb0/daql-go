@@ -1,4 +1,12 @@
 {name:'daql' mods:[
 	'daql/dom'
 	'daql/qry'
-]}
+] cmds:{
+	'':'Daql project commands'
+	status:'Prints the model version manifest for the current project.'
+	commit:'Writes the current project changes to the project history.'
+	graph:`Prints a dot graph for the specified schema names. Use graphviz to render:
+               $ xelf daql graph | dot -Tsvg > graph.svg && open graph.svg`
+	gen:'Generates go code alongside the schema files.'
+	repl:'A daql repl with the current project and a qry backend'
+}}

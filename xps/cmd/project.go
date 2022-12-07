@@ -31,6 +31,20 @@ func LoadProject(dir string) (*Project, error) {
 	}
 	return &Project{filepath.Dir(path), reg, h, h.Curr()}, nil
 }
+func LoadProjectSchemas(dir string, args []string) (pr *Project, ss []*dom.Schema, err error) {
+	pr, err = LoadProject(dir)
+	if err != nil {
+		return
+	}
+	ss = pr.Schemas
+	if len(args) > 0 {
+		ss, err = pr.FilterSchemas(args...)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
 
 func (pr *Project) FilterSchemas(names ...string) ([]*dom.Schema, error) {
 	if len(names) == 0 {
