@@ -3,6 +3,7 @@ package dom
 import (
 	"fmt"
 
+	"xelf.org/xelf/ast"
 	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/ext"
@@ -54,8 +55,10 @@ func (s *domSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (_ exp
 		if a == nil {
 			if pa.Key == "kind" {
 				a = exp.LitVal(typ.Type{Kind: knd.Obj})
+			} else if pa.Key == "type" {
+				a = exp.LitVal(typ.Type{Kind: knd.Void})
 			} else {
-				return nil, fmt.Errorf("nil arg %s %s", pa.Name, pa.Type)
+				return nil, ast.ErrReslSpec(c.Src, fmt.Sprintf("nil arg %s %s", pa.Name, pa.Type), nil)
 			}
 		}
 		if i == 0 { // name:sym in all dom specs

@@ -200,19 +200,14 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 		}
 	case knd.Obj, knd.Func:
 		if arg == nil {
-			if key == "" || key[0] != '@' {
-				return nil, fmt.Errorf("invalid element")
+			t, fst, err := refElemType(p, env, key)
+			if err != nil {
+				return nil, err
 			}
-			ref := key[1:]
-			fst, _, _ := strings.Cut(ref, ".")
 			if fst == "" {
 				fst = m.Name
 			}
 			el.Name = fst
-			t, err := p.Sys.Inst(exp.LookupType(env), typ.Ref(ref))
-			if err != nil {
-				return nil, err
-			}
 			arg = exp.LitVal(t)
 		}
 		ta, err := p.Eval(env, arg)
@@ -227,6 +222,17 @@ func elemsPrepper(p *exp.Prog, env exp.Env, n ext.Node, key string, arg exp.Exp)
 			}
 			if n.Name == "" {
 				n.Name = el.Name
+			}
+			if n.Type == typ.Void {
+				t, fst, err := refElemType(p, env, n.Name)
+				if err != nil {
+					return nil, err
+				}
+				if fst == "" {
+					fst = m.Name
+				}
+				n.Name = fst
+				n.Type = t
 			}
 			el = n
 		case typ.Type:
@@ -269,6 +275,25 @@ func qualifyModel(m *Model, sch string) error {
 		}
 	}
 	return nil
+}
+func refElemType(p *exp.Prog, env exp.Env, key string) (typ.Type, string, error) {
+	if key == "" || key[0] != '@' {
+		return typ.Void, "", fmt.Errorf("invalid element")
+	}
+	opt := key[len(key)-1] == '?'
+	ref := key[1:]
+	if opt {
+		ref = ref[:len(ref)-1]
+	}
+	t, err := p.Sys.Inst(exp.LookupType(env), typ.Ref(ref))
+	if err != nil {
+		return t, "", err
+	}
+	if opt {
+		t.Kind |= knd.None
+	}
+	fst, _, _ := strings.Cut(ref, ".")
+	return t, fst, nil
 }
 func refElemName(ref string) string {
 	idx := strings.IndexByte(ref, '.')

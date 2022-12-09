@@ -1,8 +1,9 @@
 (import e:"./entry")
 (schema blog
+	e.Status
 	(Tag;
 		ID:int
-		@e.Status;
+		@Status;
 		(Slug:str uniq;)
 		Title:str
 		Desc:str

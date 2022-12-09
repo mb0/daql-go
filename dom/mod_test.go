@@ -16,6 +16,7 @@ func TestMod(t *testing.T) {
 	}{
 		{"simple import", `(import 'auth') auth.dom.models/name`, "['Role' 'Acct' 'Cred' 'Sess']"},
 		{"complex import", `(import 'blog') blog.Entry`, "<obj@blog.Entry>"},
+		{"other import", `(import 'other') other.Other`, "<obj@other.Other>"},
 		{"project import", `(import 'site') site.dom.schemas/name`, "['auth' 'blog']"},
 	}
 	par := mod.NewLoaderEnv(extlib.Std, mod.FileMods("testdata/"))

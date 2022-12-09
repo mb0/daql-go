@@ -1,0 +1,7 @@
+(import "blog")
+(schema other
+	(Other;
+		@blog.Status?;
+		Second:@blog.Status?
+	)
+)
