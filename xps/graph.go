@@ -1,11 +1,12 @@
-package cmd
+package main
 
 import (
+	"xelf.org/daql"
 	"xelf.org/daql/dom"
 	"xelf.org/xelf/bfr"
 )
 
-func GraphSchemas(p *bfr.P, pr *Project, ss []*dom.Schema) error {
+func GraphSchemas(p *bfr.P, pr *daql.Project, ss []*dom.Schema) error {
 	p.Fmt("// install graphviz to turn the output into an image. for example:\n")
 	p.Fmt("// $ daql graph | dot -Tsvg > graph.svg && open graph.svg\n")
 	p.Fmt("digraph %s {\ngraph [rankdir=LR]\n", pr.Name)

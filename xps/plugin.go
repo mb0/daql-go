@@ -8,37 +8,58 @@ import (
 	"path/filepath"
 	"strings"
 
-	xcmd "xelf.org/cmd"
+	"xelf.org/daql"
 	_ "xelf.org/daql/dom"
 	_ "xelf.org/daql/evt"
 	"xelf.org/daql/gen"
 	"xelf.org/daql/gen/gengo"
 	"xelf.org/daql/mig"
+	"xelf.org/daql/qry"
 	_ "xelf.org/daql/qry"
-	"xelf.org/daql/xps/cmd"
 	"xelf.org/xelf/bfr"
+	"xelf.org/xelf/exp"
+	"xelf.org/xelf/xps"
 )
 
-func Cmd(dir string, args []string) error {
-	_, args = split(args)
-	fst, args := split(args)
-	switch fst {
+func Cmd(ctx *xps.CmdCtx) error {
+	switch ctx.Split() {
 	case "", "status":
-		return status(dir, args)
+		return status(ctx)
 	case "commit":
-		return commit(dir, args)
+		return commit(ctx)
 	case "graph":
-		return graph(dir, args)
+		return graph(ctx)
 	case "gen":
-		return genGo(dir, args)
+		return genGo(ctx)
 	case "repl":
-		return cmd.Repl(dir, args)
+		return repl(ctx)
 	}
 	return nil
 }
 
-func status(dir string, args []string) error {
-	pr, err := cmd.LoadProject(dir)
+func repl(ctx *xps.CmdCtx) error {
+	pr, err := daql.LoadProject(ctx.Dir)
+	if err != nil {
+		return err
+	}
+	var bend qry.Backend
+	if len(ctx.Args) > 0 {
+		data, err := qry.Open(pr.Project, ctx.Args[0])
+		if err != nil {
+			return fmt.Errorf("open data: %v", err)
+		}
+		bend = data.Backend
+		ctx.Args = ctx.Args[1:]
+	}
+	ctx.Wrap = func(ctx *xps.CmdCtx, env exp.Env) exp.Env {
+		q := qry.New(pr.Reg, env, bend)
+		return &qry.Doc{Qry: q}
+	}
+	return &xps.CmdRedir{Cmd: "repl"}
+}
+
+func status(ctx *xps.CmdCtx) error {
+	pr, err := daql.LoadProject(ctx.Dir)
 	if err != nil {
 		return err
 	}
@@ -47,12 +68,12 @@ func status(dir string, args []string) error {
 	return b.Flush()
 }
 
-func commit(dir string, args []string) error {
-	pr, err := cmd.LoadProject(dir)
+func commit(ctx *xps.CmdCtx) error {
+	pr, err := daql.LoadProject(ctx.Dir)
 	if err != nil {
 		return err
 	}
-	err = pr.Commit(strings.Join(args, " "))
+	err = pr.Commit(strings.Join(ctx.Args, " "))
 	if err == mig.ErrNoChanges {
 		fmt.Printf("%s %s unchanged\n", pr.Name, pr.First().Vers)
 		return nil
@@ -64,25 +85,25 @@ func commit(dir string, args []string) error {
 	return nil
 }
 
-func graph(dir string, args []string) error {
-	pr, ss, err := cmd.LoadProjectSchemas(dir, args)
+func graph(ctx *xps.CmdCtx) error {
+	pr, ss, err := daql.LoadProjectSchemas(ctx.Dir, ctx.Args)
 	if err != nil {
 		return err
 	}
 	b := bufio.NewWriter(os.Stdout)
-	err = cmd.GraphSchemas(&bfr.P{Writer: b}, pr, ss)
+	err = GraphSchemas(&bfr.P{Writer: b}, pr, ss)
 	if err != nil {
 		return err
 	}
 	return b.Flush()
 }
 
-func genGo(dir string, args []string) error {
-	pr, ss, err := cmd.LoadProjectSchemas(dir, args)
+func genGo(ctx *xps.CmdCtx) error {
+	pr, ss, err := daql.LoadProjectSchemas(ctx.Dir, ctx.Args)
 	if err != nil {
 		return err
 	}
-	ppkg, err := xcmd.GoModPath(pr.Dir)
+	ppkg, err := xps.GoModPath(pr.Dir)
 	if err != nil {
 		return err
 	}
@@ -91,7 +112,7 @@ func genGo(dir string, args []string) error {
 		if gen.Nogen(s) {
 			continue
 		}
-		out := filepath.Join(cmd.SchemaPath(pr, s), fmt.Sprintf("%s_gen.go", s.Name))
+		out := filepath.Join(daql.SchemaPath(pr, s), fmt.Sprintf("%s_gen.go", s.Name))
 		b := gengo.NewGenPkgs(pr.Project, s.Name, path.Join(ppkg, s.Name), pkgs)
 		err := gengo.WriteSchemaFile(b, out, s)
 		if err != nil {
@@ -100,11 +121,4 @@ func genGo(dir string, args []string) error {
 		fmt.Println(out)
 	}
 	return nil
-}
-
-func split(args []string) (string, []string) {
-	if len(args) > 0 {
-		return args[0], args[1:]
-	}
-	return "", nil
 }

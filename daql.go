@@ -1,4 +1,4 @@
-package cmd
+package daql
 
 import (
 	"fmt"
