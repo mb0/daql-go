@@ -14,6 +14,10 @@ type PlugBackends struct {
 	*xps.Plugs
 }
 
+func NewPlugBackends(plugs *xps.Plugs) *PlugBackends {
+	return &PlugBackends{qry.Backends, plugs}
+}
+
 func (r *PlugBackends) Provide(uri string, pr *dom.Project) (qry.Backend, error) {
 	bend, err := r.Registry.Provide(uri, pr)
 	if err == qry.ErrNoProvider {

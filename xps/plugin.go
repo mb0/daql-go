@@ -9,13 +9,12 @@ import (
 	"strings"
 
 	"xelf.org/daql"
-	_ "xelf.org/daql/dom"
 	_ "xelf.org/daql/evt"
 	"xelf.org/daql/gen"
 	"xelf.org/daql/gen/gengo"
 	"xelf.org/daql/mig"
 	"xelf.org/daql/qry"
-	_ "xelf.org/daql/qry"
+	"xelf.org/daql/xps/prov"
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/exp"
 	"xelf.org/xelf/xps"
@@ -44,7 +43,8 @@ func repl(ctx *xps.CmdCtx) error {
 	}
 	var bend qry.Backend
 	if len(ctx.Args) > 0 {
-		bend, err = qry.Backends.Provide(ctx.Args[0], pr.Project)
+		plugBends := prov.NewPlugBackends(&ctx.Plugs)
+		bend, err = plugBends.Provide(ctx.Args[0], pr.Project)
 		if err != nil {
 			return fmt.Errorf("open data: %v", err)
 		}
