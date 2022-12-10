@@ -12,15 +12,33 @@ import (
 	"xelf.org/xelf/lit"
 )
 
-var bends sync.Map
-
-type Data struct {
-	URL *url.URL
-	Backend
-	mig.Dataset
+// Provider produces backends based on an uri.
+type Provider interface {
+	Provide(uri string, pr *dom.Project) (Backend, error)
 }
 
-func Open(pr *dom.Project, uri string) (*Data, error) {
+var Backends = &Registry{}
+
+type Registry struct {
+	sync.Mutex
+	bends map[string]Provider
+}
+
+func (r *Registry) Register(prov Provider, schemes ...string) Provider {
+	r.Lock()
+	defer r.Unlock()
+	if r.bends == nil {
+		r.bends = make(map[string]Provider)
+	}
+	for _, s := range schemes {
+		r.bends[s] = prov
+	}
+	return prov
+}
+
+var ErrNoProvider = fmt.Errorf("no backend provider found")
+
+func (r *Registry) Provide(uri string, pr *dom.Project) (Backend, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -28,37 +46,16 @@ func Open(pr *dom.Project, uri string) (*Data, error) {
 	if u.Scheme == "" {
 		u.Scheme = "file"
 	}
-	prov := LoadProvider(u.Scheme)
+	r.Lock()
+	prov := r.bends[u.Scheme]
+	defer r.Unlock()
 	if prov == nil {
-		return nil, fmt.Errorf("no backend provider for %s", u.Scheme)
+		return nil, ErrNoProvider
 	}
-	bend, err := prov.Provide(uri, pr)
-	if err != nil {
-		return nil, fmt.Errorf("failed creating backend for %s: %s", u.Scheme, err)
-	}
-	dset, _ := bend.(mig.Dataset)
-	return &Data{u, bend, dset}, nil
+	return prov.Provide(uri, pr)
 }
 
-// Provider produces backends based on an uri.
-type Provider interface {
-	Provide(uri string, pr *dom.Project) (Backend, error)
-}
-
-func RegisterProvider(prov Provider, schemes ...string) Provider {
-	for _, s := range schemes {
-		bends.Store(s, prov)
-	}
-	return prov
-}
-
-func LoadProvider(scheme string) Provider {
-	a, _ := bends.Load(scheme)
-	prov, _ := a.(Provider)
-	return prov
-}
-
-var Prov = RegisterProvider(dsetProvider{}, "file")
+var Prov = Backends.Register(dsetProvider{}, "file")
 
 type dsetProvider struct{}
 

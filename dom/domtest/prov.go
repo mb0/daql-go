@@ -7,7 +7,7 @@ import (
 	"xelf.org/xelf/mod"
 )
 
-var Prov = qry.RegisterProvider(provider{}, "domtest")
+var Prov = qry.Backends.Register(provider{}, "domtest")
 
 type provider struct{}
 

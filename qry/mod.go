@@ -107,14 +107,9 @@ func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.
 	if doc.Backend != nil {
 		return nil, fmt.Errorf("backend already set")
 	}
-	loc := mod.ParseLoc(string(uri))
-	prov := LoadProvider(loc.Proto())
-	if prov == nil {
-		return nil, fmt.Errorf("no backend found for %s", uri)
-	}
-	bend, err := prov.Provide(string(uri), pro)
+	bend, err := Backends.Provide(uri, pro)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("no backend found for %s: %v", uri, err)
 	}
 	doc.Qry.Backend = bend
 	return c, nil

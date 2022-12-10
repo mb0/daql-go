@@ -44,11 +44,10 @@ func repl(ctx *xps.CmdCtx) error {
 	}
 	var bend qry.Backend
 	if len(ctx.Args) > 0 {
-		data, err := qry.Open(pr.Project, ctx.Args[0])
+		bend, err = qry.Backends.Provide(ctx.Args[0], pr.Project)
 		if err != nil {
 			return fmt.Errorf("open data: %v", err)
 		}
-		bend = data.Backend
 		ctx.Args = ctx.Args[1:]
 	}
 	ctx.Wrap = func(ctx *xps.CmdCtx, env exp.Env) exp.Env {
