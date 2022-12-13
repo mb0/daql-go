@@ -8,7 +8,29 @@ import (
 	"xelf.org/xelf/bfr"
 	"xelf.org/xelf/cor"
 	"xelf.org/xelf/exp"
+	"xelf.org/xelf/lit"
 )
+
+// AutoQuery generates query from and saves the query result into a tagged go struct value pointer.
+func AutoQuery(p *exp.Prog, pp interface{}, arg lit.Val) (lit.Mut, error) {
+	x, err := ReflectQuery(pp)
+	if err != nil {
+		return nil, err
+	}
+	mut, err := lit.Proxy(p.Reg, pp)
+	if err != nil {
+		return nil, err
+	}
+	el, err := p.Run(x, arg)
+	if err != nil {
+		return nil, err
+	}
+	err = mut.Assign(el)
+	if err != nil {
+		return nil, err
+	}
+	return mut, nil
+}
 
 // ReflectQuery takes a tagged struct and generates and returns a query expression or an error.
 // For now we just generate a query string which we then parse.

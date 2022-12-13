@@ -51,8 +51,7 @@ func repl(ctx *xps.CmdCtx) error {
 		ctx.Args = ctx.Args[1:]
 	}
 	ctx.Wrap = func(ctx *xps.CmdCtx, env exp.Env) exp.Env {
-		q := qry.New(pr.Reg, env, bend)
-		return &qry.Doc{Qry: q}
+		return qry.NewDoc(env, bend)
 	}
 	return &xps.CmdRedir{Cmd: "repl"}
 }

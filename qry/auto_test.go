@@ -3,9 +3,10 @@ package qry_test
 import (
 	"testing"
 
-	. "xelf.org/daql/qry"
+	"xelf.org/daql/qry"
 
 	"xelf.org/daql/dom/domtest"
+	"xelf.org/xelf/exp"
 	"xelf.org/xelf/lib/extlib"
 	"xelf.org/xelf/lit"
 	"xelf.org/xelf/typ"
@@ -26,9 +27,9 @@ type MyQuery struct {
 
 func TestExecAuto(t *testing.T) {
 	reg := lit.NewRegs()
-	q := New(reg, extlib.Std, getBackend(reg))
 	var res MyQuery
-	mut, err := q.ExecAuto(nil, &res, lit.NewDict(typ.Str,
+	p := exp.NewProg(qry.NewDoc(extlib.Std, getBackend(reg)), reg)
+	mut, err := qry.AutoQuery(p, &res, lit.NewDict(typ.Str,
 		lit.KeyVal{Key: "name", Val: lit.Str("a")},
 	))
 	if err != nil {
@@ -44,7 +45,7 @@ func TestExecAuto(t *testing.T) {
 }
 func TestReflectQuery(t *testing.T) {
 	var res MyQuery
-	x, err := ReflectQuery(&res)
+	x, err := qry.ReflectQuery(&res)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

@@ -41,7 +41,7 @@ func modSetup(prog *exp.Prog, s *mod.Src) (f *mod.File, err error) {
 	doc := FindDoc(prog.Root)
 	if doc == nil {
 		// leave backend empty here
-		doc = &Doc{Qry: &Qry{Env: prog.Root, Reg: prog.Reg, doms: dom.Dom}}
+		doc = &Doc{Par: prog.Root, Doms: dom.Dom}
 		prog.Root = doc
 	}
 	f = &exp.File{URL: s.URL}
@@ -111,7 +111,7 @@ func (s *bendSpec) Resl(p *exp.Prog, env exp.Env, c *exp.Call, h typ.Type) (exp.
 	if err != nil {
 		return nil, fmt.Errorf("no backend found for %s: %v", uri, err)
 	}
-	doc.Qry.Backend = bend
+	doc.Backend = bend
 	return c, nil
 }
 

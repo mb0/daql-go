@@ -2,7 +2,6 @@
 package qry
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -19,89 +18,19 @@ type Backend interface {
 	Exec(*exp.Prog, *Job) (*exp.Lit, error)
 }
 
-// Qry is a context to execute queries on backends.
-type Qry struct {
-	Reg lit.Regs
-	Env exp.Env
-	Backend
-	doms *dom.Schema
-}
-
-// New returns a new query context with the program environment and backend.
-func New(reg *lit.Regs, env exp.Env, bend Backend) *Qry {
-	q := &Qry{Backend: bend, Env: env, Reg: *lit.DefaultRegs(reg), doms: dom.Dom}
-	dom.SetupReg(&q.Reg)
-	return q
-}
-
-// Subj returns a subject from the first backend that provides ref or an error.
-func (q *Qry) Subj(ref string) (*Subj, error) {
-	switch ref[0] {
-	case '.', '/', '$': // path subj
-		return &Subj{Ref: ref, Bend: LitBackend{}}, nil
-	}
-	if q.Backend == nil {
-		return nil, fmt.Errorf("no qry backend configured")
-	}
-	pr := q.Proj()
-	switch ref {
-	case "dom.model", "dom.schema", "dom.project":
-		m := q.doms.Model(ref[4:])
-		return &Subj{Ref: ref, Bend: &DomBackend{pr}, Model: m}, nil
-	}
-	if m := pr.Model(ref); m != nil {
-		s := &Subj{Ref: ref, Bend: q.Backend, Model: m}
-		s.Type = m.Type()
-		s.Fields = subjFields(s.Type)
-		return s, nil
-	}
-	return nil, fmt.Errorf("no subj found for %q", ref)
-}
-
-// Exec executes the given query str with arg and returns a value or an error.
-func (q *Qry) Exec(ctx context.Context, str string, arg lit.Val) (lit.Val, error) {
-	x, err := exp.Parse(str)
-	if err != nil {
-		return nil, fmt.Errorf("parse qry %s error: %w", str, err)
-	}
-	return q.ExecExp(ctx, x, arg)
-}
-
-// ExecExp executes the given query expr with arg and returns a value or an error.
-func (q *Qry) ExecExp(ctx context.Context, expr exp.Exp, arg lit.Val) (_ lit.Val, err error) {
-	a, err := exp.NewProg(&Doc{Qry: q}, &q.Reg, ctx).Run(expr, arg)
-	if err != nil {
-		return nil, fmt.Errorf("eval qry %s error: %w", expr, err)
-	}
-	return a, nil
-}
-
-// ExecAuto generates query from and saves the query result into a tagged go struct value pointer.
-func (q *Qry) ExecAuto(ctx context.Context, pp interface{}, arg lit.Val) (lit.Mut, error) {
-	x, err := ReflectQuery(pp)
-	if err != nil {
-		return nil, err
-	}
-	mut, err := lit.Proxy(q.Reg, pp)
-	if err != nil {
-		return nil, err
-	}
-	el, err := q.ExecExp(ctx, x, arg)
-	if err != nil {
-		return nil, err
-	}
-	err = mut.Assign(el)
-	if err != nil {
-		return nil, err
-	}
-	return mut, nil
-}
-
-// Doc is an query program environment that collects and tracks all jobs.
+// Doc is a query program environment that resolves query subjects and collects and tracks all jobs.
 type Doc struct {
-	*Qry
+	Par exp.Env
+	Backend
+	Doms *dom.Schema
+
 	All  []*Job
 	Root []*Job
+}
+
+// New returns a new program environment to enable qry specs on the given backend.
+func NewDoc(env exp.Env, bend Backend) *Doc {
+	return &Doc{Par: env, Backend: bend, Doms: dom.Dom}
 }
 
 func FindDoc(env exp.Env) *Doc {
@@ -121,19 +50,45 @@ func (p *Doc) Add(j *Job) {
 	}
 }
 
-func (e *Doc) Parent() exp.Env { return e.Env }
+func (e *Doc) Parent() exp.Env { return e.Par }
 func (e *Doc) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
 	if f := p.Fst(); f.Key != "" && strings.HasPrefix(s.Sym, f.Key) {
 		switch c := s.Sym[0]; c {
 		case '?', '*', '#':
-			subj, err := e.Subj(s.Sym[1:])
+			subj, err := e.Subject(s.Sym[1:])
 			if err != nil {
 				return nil, err
 			}
-			sig := typ.Form(s.Sym, typ.P("", typ.Opt(typ.ElemTupl(typ.Exp))), typ.Param{})
-			spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e, Task: Task{Kind: Kind(c), Subj: subj}}
+			ps := []typ.Param{{Type: typ.Opt(typ.ElemTupl(typ.Exp))}, {}}
+			sig := typ.Form(s.Sym, ps...)
+			spec := &Spec{SpecBase: exp.SpecBase{Decl: sig}, Doc: e,
+				Task: Task{Kind: Kind(c), Subj: subj}}
 			return &exp.SpecRef{Spec: spec, Decl: sig}, nil
 		}
 	}
-	return e.Env.Lookup(s, p, eval)
+	return e.Par.Lookup(s, p, eval)
+}
+
+// Subj returns a subject from the first backend that provides ref or an error.
+func (q *Doc) Subject(ref string) (*Subj, error) {
+	switch ref[0] {
+	case '.', '/', '$': // path subj
+		return &Subj{Ref: ref, Bend: LitBackend{}}, nil
+	}
+	if q.Backend == nil {
+		return nil, fmt.Errorf("no qry backend configured")
+	}
+	pr := q.Proj()
+	switch ref {
+	case "dom.model", "dom.schema", "dom.project":
+		m := q.Doms.Model(ref[4:])
+		return &Subj{Ref: ref, Bend: &DomBackend{pr}, Model: m}, nil
+	}
+	if m := pr.Model(ref); m != nil {
+		s := &Subj{Ref: ref, Bend: q.Backend, Model: m}
+		s.Type = m.Type()
+		s.Fields = subjFields(s.Type)
+		return s, nil
+	}
+	return nil, fmt.Errorf("no subj found for %q", ref)
 }
