@@ -27,9 +27,9 @@ type Default struct {
 	Tags []interface{}
 }
 
-func (l *Default) Debug(m string, ts ...interface{}) { log.Printf(line("DEB ", m, ts, l.Tags)) }
-func (l *Default) Error(m string, ts ...interface{}) { log.Printf(line("ERR ", m, ts, l.Tags)) }
-func (l *Default) Crit(m string, ts ...interface{})  { log.Printf(line("CRI ", m, ts, l.Tags)) }
+func (l *Default) Debug(m string, ts ...interface{}) { log.Print(line("DEB ", m, ts, l.Tags)) }
+func (l *Default) Error(m string, ts ...interface{}) { log.Print(line("ERR ", m, ts, l.Tags)) }
+func (l *Default) Crit(m string, ts ...interface{})  { log.Print(line("CRI ", m, ts, l.Tags)) }
 func (l *Default) With(tags ...interface{}) Logger   { return l.with(tags) }
 func (l *Default) with(tags ...interface{}) *Default {
 	t := make([]interface{}, 0, len(tags)+len(l.Tags))

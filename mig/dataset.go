@@ -336,10 +336,7 @@ type streamFile struct {
 
 // newStreamFile returns a new file stream descriptor.
 func newStreamFile(path string) streamFile {
-	name := path
-	if strings.HasSuffix(name, ".gz") {
-		name = name[:len(name)-3]
-	}
+	name := strings.TrimSuffix(path, ".gz")
 	idx := strings.LastIndexByte(name, '/')
 	if idx >= 0 {
 		name = name[idx+1:]

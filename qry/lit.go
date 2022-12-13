@@ -235,7 +235,7 @@ func filter(p *exp.Prog, env exp.Env, v lit.Val, whr exp.Exp) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return b == true, nil
+	return bool(b), nil
 }
 
 func orderResult(sel, subj lit.Vals, ords []Ord) (res error) {
