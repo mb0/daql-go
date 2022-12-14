@@ -16,7 +16,7 @@ func TestPlainMod(t *testing.T) {
 	}{
 		{"mod init",
 			`(import 'daql/qry') (project test)
-			(qry.bend 'domtest:prod') ([] (#prod.cat) (#prod.prod))`,
+			(qry.bend 'domtest:prod') ([]+ (#prod.cat) (#prod.prod))`,
 			`[7 6]`,
 		},
 	}

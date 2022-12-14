@@ -140,13 +140,22 @@ func reslSel(p *exp.Prog, j *Job, ds []*exp.Tag) (*Sel, error) {
 				call, ok := el.(*exp.Call)
 				if ok {
 					if s := exp.UnwrapSpec(call.Spec); s != nil {
-						if f.Sub, ok = call.Env.(*Job); ok {
-							f.Type = f.Sub.Res
+						if sub, ok := call.Env.(*Job); ok && sub != j {
+							f.Sub = sub
+							f.Type = sub.Res
 						}
 					}
 				}
 				if f.Type == typ.Void {
 					f.Type = typ.Res(el.Type())
+				}
+				switch k := f.Type.Kind; k & knd.Data {
+				case knd.Num:
+					f.Type = typ.Real
+					f.Type.Kind |= (k & knd.None)
+				case knd.Char:
+					f.Type = typ.Str
+					f.Type.Kind |= (k & knd.None)
 				}
 				fs, _ = fs.with(f)
 			}

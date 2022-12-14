@@ -37,7 +37,7 @@ func TestQry(t *testing.T) {
 	}{
 		{`(#prod.cat)`, `7`},
 		{`(#prod.prod)`, `6`},
-		{`([] (#prod.cat) (#prod.prod))`, `[7 6]`},
+		{`([]+ (#prod.cat) (#prod.prod))`, `[7 6]`},
 		{`({} cats:(#prod.cat) prods:(#prod.prod))`, `{cats:7 prods:6}`},
 		{`(#prod.cat off:5 lim:5)`, `2`},
 		{`(#prod.prod (eq .cat $int1))`, `2`},
@@ -56,7 +56,7 @@ func TestQry(t *testing.T) {
 		{`(*prod.cat lim:2)`, `[{id:25 name:'y'} {id:2 name:'b'}]`},
 		{`(*prod.cat asc:name off:1 lim:2)`, `[{id:2 name:'b'} {id:3 name:'c'}]`},
 		{`(*prod.cat desc:name lim:2)`, `[{id:26 name:'z'} {id:25 name:'y'}]`},
-		{`(?prod.label _ id; label:('Label: ' .name))`, `{id:1 label:'Label: M'}`},
+		{`(?prod.label _ id; label:('Label: '+ .name))`, `{id:1 label:'Label: M'}`},
 		{`(*prod.label off:1 lim:2 - tmpl;)`, `[{id:2 name:'N'} {id:3 name:'O'}]`},
 		{`(*prod.prod desc:cat asc:name lim:3)`,
 			`[{id:1 name:'A' cat:3} {id:3 name:'C' cat:3} {id:2 name:'B' cat:2}]`},
@@ -86,7 +86,7 @@ func TestQry(t *testing.T) {
 		el, err := exp.NewProg(NewDoc(extlib.Std, b)).RunStr(test.Raw, param)
 		end := time.Now()
 		if err != nil {
-			t.Errorf("%v", err)
+			t.Errorf("qry %s failed: %v", test.Raw, err)
 			continue
 		}
 		if el == nil {
@@ -109,9 +109,9 @@ func TestQryType(t *testing.T) {
 		Want string
 	}{
 		{`(#prod.cat)`, `<int>`},
-		{`([] (#prod.cat) (#prod.prod))`, `<idxr>`},
+		{`([]+ (#prod.cat) (#prod.prod))`, `<idxr>`},
 		{`({} cats:(#prod.cat) prods:(#prod.prod))`, `<keyr>`},
-		{`(list|int (#prod.cat) (#prod.prod))`, `<list|int>`},
+		{`(list|int + (#prod.cat) (#prod.prod))`, `<list|int>`},
 		{`(dict|int cats:(#prod.cat) prods:(#prod.prod))`, `<dict|int>`},
 		{`(?prod.cat)`, `<obj@prod.Cat?>`},
 		{`(?$list)`, `<str?>`},
@@ -120,7 +120,7 @@ func TestQryType(t *testing.T) {
 		{`(?prod.cat _:id)`, `<int@prod.Cat.ID?>`},
 		{`(*prod.cat _:id)`, `<list|int@prod.Cat.ID>`},
 		{`(*prod.cat lim:2)`, `<list|obj@prod.Cat>`},
-		{`(?prod.label _ id; label:('Label: ' .name))`,
+		{`(?prod.label _ id; label:('Label: '+ .name))`,
 			`<obj? ID:int@prod.Label.ID Label:str>`},
 	}
 	param := lit.MakeObj(lit.Keyed{
@@ -135,7 +135,7 @@ func TestQryType(t *testing.T) {
 	for _, test := range tests {
 		el, err := exp.NewProg(NewDoc(extlib.Std, b)).RunStr(test.Raw, param)
 		if err != nil {
-			t.Errorf("%v", err)
+			t.Errorf("qry %s failed: %v", test.Raw, err)
 			continue
 		}
 		if el == nil {
