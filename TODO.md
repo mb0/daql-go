@@ -101,3 +101,12 @@ couple of go files and call go run. We can even call go generate as part of the 
 We could add a option to pass the json serialized project to generator commands (as to not resolve
 the daql project for each generator). But it should be an option so we exec any command that
 does not expect project data on stdin (like go generate) to kick of related workflows.
+
+Websocket Library
+-----------------
+
+The gorilla websocket library is not maintained and now archived. I attempted to changed the
+implementation to one of the nhooyr websocket package, but rolled back the change for some reason.
+
+I have the intuition, that keeping the gorilla is a better for now. If we ever want to migrate from
+the gorilla package, we should rather look into gobwas/ws.
