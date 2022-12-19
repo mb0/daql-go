@@ -10,13 +10,14 @@ import (
 )
 
 func TestDom(t *testing.T) {
+	domSchema := lit.MustProxy(domReg, Dom).String()
 	tests := []struct {
 		raw string
 		str string
 	}{
 		{`(project app)`, `{name:'app' schemas:[]}`},
 		{`(schema test)`, `{name:'test' models:[]}`},
-		{`(project app (schema test))`, `{name:'app' schemas:[{name:'test' models:[]}]}`},
+		{`(project app (schema test))`, `{name:'app' schemas:[` + domSchema + ` {name:'test' models:[]}]}`},
 		{`(schema test label:'Test Schema')`,
 			`{name:'test' extra:{label:'Test Schema'} models:[]}`,
 		},

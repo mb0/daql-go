@@ -40,6 +40,11 @@ func schemaPrep(p *exp.Prog, env exp.Env, n ext.Node, k string, e exp.Exp) (lit.
 		return nil, fmt.Errorf("expected *Schema got %s", a.Value())
 	}
 	pro := n.Ptr().(*Project)
+	if len(pro.Schemas) == 0 {
+		// fresh project, we always want at least the dom schema we probably want to…
+		// TODO auto-add the mig schema too, but have a dependency problem
+		pro.Schemas = append(pro.Schemas, Dom)
+	}
 	pro.Schemas = append(pro.Schemas, s)
 	return a, nil
 }
