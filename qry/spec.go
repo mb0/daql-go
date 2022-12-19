@@ -31,7 +31,7 @@ func (s *Spec) Resl(p *exp.Prog, par exp.Env, c *exp.Call, h typ.Type) (exp.Exp,
 			t.Subj.Type = j.Model.Type()
 			t.Subj.Fields = subjFields(t.Subj.Type)
 		} else {
-			res, err := p.Resl(par, &exp.Sym{Sym: t.Ref}, typ.Void)
+			res, err := exp.LookupKey(par, t.Ref)
 			if err != nil {
 				return c, err
 			}

@@ -15,7 +15,7 @@ func TestMod(t *testing.T) {
 		want string
 	}{
 		{"simple import", `(import 'auth') auth.dom.models/name`, "['Role' 'Acct' 'Cred' 'Sess']"},
-		{"complex import", `(import 'blog') blog.Entry`, "<obj@blog.Entry>"},
+		{"complex import", `(import 'blog') list|@blog.Entry`, "<list|obj@blog.Entry>"},
 		{"other import", `(import 'other') other.Other`, "<obj@other.Other>"},
 		{"project import", `(import 'site') site.dom.schemas/name`, "['dom' 'auth' 'blog']"},
 	}
