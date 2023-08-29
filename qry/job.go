@@ -94,5 +94,16 @@ func (e *Job) Lookup(s *exp.Sym, p cor.Path, eval bool) (lit.Val, error) {
 	if e.Cur == nil && e.Val == nil {
 		return nil, fmt.Errorf("job env unresolved %s in %s", s.Sym, e.Subj.Type)
 	}
-	return lit.SelectPath(e.Cur, p)
+	v, err := lit.SelectPath(e.Cur, p)
+	if err != nil {
+		return nil, err
+	}
+	// Lets select the value
+	v = v.Value()
+	// If we still got a mutable literal clone it. We want to allow mut exprs like in query
+	// selections without actually mutating the backend data.
+	if _, ok := v.(lit.Mut); ok {
+		return lit.Clone(v)
+	}
+	return v, nil
 }

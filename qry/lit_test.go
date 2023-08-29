@@ -28,6 +28,36 @@ func getBackend(reg *lit.Regs) Backend {
 	return b
 }
 
+// TestQryMutSel makes shure that mut expressions in query selections work without side effects.
+func TestQryMutSel(t *testing.T) {
+	reg := lit.NewRegs()
+	b := getBackend(reg)
+	tests := []struct {
+		Raw  string
+		Want string
+	}{
+		{`(?prod.cat _:(.name + '!'))`, `'y!'`},
+		{`(?prod.cat _:(.name + '!'))`, `'y!'`},
+		{`(?dom.model _:(.schema + '.' .name))`, `'prod.Cat'`},
+		{`(?dom.model _:(.schema + '.' .name))`, `'prod.Cat'`},
+	}
+	for _, test := range tests {
+		el, err := exp.NewProg(NewDoc(extlib.Std, b)).RunStr(test.Raw, nil)
+		if err != nil {
+			t.Errorf("qry %s failed: %v", test.Raw, err)
+			continue
+		}
+		if el == nil {
+			t.Errorf("qry %s got nil result", test.Raw)
+			continue
+		}
+		if got := bfr.String(el); got != test.Want {
+			t.Errorf("want for %s\n\t%s got %s", test.Raw, test.Want, got)
+			continue
+		}
+	}
+}
+
 func TestQry(t *testing.T) {
 	reg := lit.NewRegs()
 	b := getBackend(reg)
