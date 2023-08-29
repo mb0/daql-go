@@ -130,11 +130,10 @@ func domRef(pro *Project, s *Schema, m *Model, ref string) *Model {
 }
 
 func (res *Relations) relate(pro *Project, s *Schema, m *Model) error {
-	for i, e := range m.Elems {
+	for _, e := range m.Elems {
 		rel := Relation{A: ModelRef{m, e.Key()}}
-		e := m.Elems[i]
 		ref := e.Type.Ref
-		if ref != "" {
+		if ref != "" && e.Type.Kind&knd.Ref != 0 {
 			rel.B.Model = domRef(pro, s, m, ref)
 			// TODO check field type if uuid or cont|uuid or other
 			rel.B.Key = "_" // signifies primary key

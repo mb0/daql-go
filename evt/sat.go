@@ -94,7 +94,7 @@ func (sat *Satellite) pub(m *hub.Msg, req PubReq) (*Update, error) {
 		return nil, nil // async
 	}
 	// otherwise publish authoritative models directly without revision
-	// that means we will only reply to the sender and not the subsribers
+	// that means we will only reply to the sender and not the subscribers
 	oldrev := sat.LocalRev()
 	rev, evs, err := sat.PublishLocal(req.Trans)
 	if err != nil {
