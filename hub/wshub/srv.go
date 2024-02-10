@@ -14,6 +14,7 @@ import (
 type Server struct {
 	*hub.Hub
 	websocket.Upgrader
+	Timeout  time.Duration
 	UserFunc func(*http.Request) (string, error)
 	Log      log.Logger
 }
@@ -40,12 +41,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 	c := newConn(ctx, hub.NextID(), wc, nil, user)
-	t := time.NewTicker(60 * time.Second)
+	if s.Timeout == 0 {
+		s.Timeout = time.Minute
+	}
+	t := time.NewTicker(s.Timeout)
 	defer t.Stop()
 	c.tick = t.C
 	route := s.Hub.Chan()
 	route <- &hub.Msg{From: c, Subj: hub.Signon}
-	go c.writeAll(0, s.Log, 20*time.Second)
+	go c.writeAll(0, s.Log, s.Timeout)
 	err = c.readAll(route)
 	route <- &hub.Msg{From: c, Subj: hub.Signoff}
 	if err != nil {
